@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Fix Login Issues</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .step { margin: 20px 0; padding: 15px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .warning { border-left-color: #dc3545; background: #fff5f5; }
+        .success { border-left-color: #28a745; background: #f8fff8; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .clear-btn { background: #dc3545; }
+        .clear-btn:hover { background: #c82333; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 แก้ปัญหา Login System</h1>
+    
+    <div class="step warning">
+        <h3>🚨 ปัญหาที่พบ:</h3>
+        <ul>
+            <li><strong>JsonWebTokenError: invalid signature</strong> - Token เก่าใน localStorage มี signature ไม่ถูกต้อง</li>
+            <li><strong>Dev token bypass</strong> ยังคงอยู่ในโค้ด backend (แก้ไขแล้ว)</li>
+            <li><strong>Old dev token</strong> ยังอยู่ใน browser localStorage</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>🧹 Step 1: Clear All Old Tokens</h3>
+        <p>ลบ token เก่าทั้งหมดออกจาก localStorage:</p>
+        <button class="clear-btn" onclick="clearAllTokens()">🗑️ Clear All Tokens</button>
+        <div id="clearResult"></div>
+    </div>
+
+    <div class="step">
+        <h3>🔐 Step 2: Fresh Login</h3>
+        <p>Login ใหม่เพื่อได้ valid token:</p>
+        <button onclick="freshLogin()">🚀 Login with Admin Account</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="step">
+        <h3>🔍 Step 3: Verify Token</h3>
+        <p>ตรวจสอบว่า token ใหม่ทำงานได้:</p>
+        <button onclick="testToken()">✅ Test API with New Token</button>
+        <div id="testResult"></div>
+    </div>
+
+    <div class="step success">
+        <h3>✅ Expected Result:</h3>
+        <p>หลังจากทำตามขั้นตอน Room Status page ควรจะทำงานได้ปกติโดยไม่มี 401 errors</p>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001/api/v1';
+        
+        function clearAllTokens() {
+            const keys = ['hotel_admin_token', 'hotel_admin_refresh_token', 'hotel_admin_user', 'token'];
+            const cleared = [];
+            
+            keys.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    localStorage.removeItem(key);
+                    cleared.push(key);
+                }
+            });
+            
+            const resultDiv = document.getElementById('clearResult');
+            if (cleared.length > 0) {
+                resultDiv.innerHTML = `
+                    <div class="result" style="background: #fff5f5; color: #721c24; border: 1px solid #f5c6cb;">
+                        <strong>🗑️ Cleared tokens:</strong><br>
+                        ${cleared.map(key => `• ${key}`).join('<br>')}
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result" style="background: #f8fff8; color: #155724; border: 1px solid #c3e6cb;">
+                        <strong>✅ No old tokens found - localStorage is clean</strong>
+                    </div>
+                `;
+            }
+        }
+        
+        async function freshLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                console.log('🔐 Starting fresh login...');
+                
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@hotel.com',
+                        password: 'SecureAdmin123!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Save new tokens
+                    localStorage.setItem('hotel_admin_token', data.data.tokens.accessToken);
+                    localStorage.setItem('token', data.data.tokens.accessToken);
+                    localStorage.setItem('hotel_admin_refresh_token', data.data.tokens.refreshToken);
+                    localStorage.setItem('hotel_admin_user', JSON.stringify(data.data.user));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result" style="background: #f8fff8; color: #155724; border: 1px solid #c3e6cb;">
+                            <strong>✅ Login successful!</strong><br>
+                            • User: ${data.data.user.firstName} ${data.data.user.lastName}<br>
+                            • Email: ${data.data.user.email}<br>
+                            • Role: ${data.data.user.userType}<br>
+                            • Token: ${data.data.tokens.accessToken.substring(0, 30)}...<br>
+                            <strong>💾 New token saved to localStorage</strong>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result" style="background: #fff5f5; color: #721c24; border: 1px solid #f5c6cb;">
+                        <strong>❌ Login failed:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        async function testToken() {
+            const resultDiv = document.getElementById('testResult');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="result" style="background: #fff5f5; color: #721c24; border: 1px solid #f5c6cb;">
+                        <strong>❌ No token found!</strong><br>
+                        Please login first.
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                console.log('🧪 Testing API with new token...');
+                
+                // Test multiple endpoints
+                const tests = [
+                    { name: 'Rooms', endpoint: '/rooms/' },
+                    { name: 'Arrivals', endpoint: '/bookings/arrivals' },
+                    { name: 'Departures', endpoint: '/bookings/departures' }
+                ];
+                
+                const results = [];
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}${test.endpoint}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        
+                        if (response.ok) {
+                            results.push(`✅ ${test.name}: OK (${response.status})`);
+                        } else {
+                            results.push(`❌ ${test.name}: ${response.status} ${response.statusText}`);
+                        }
+                    } catch (error) {
+                        results.push(`❌ ${test.name}: ${error.message}`);
+                    }
+                }
+                
+                const allPassed = results.every(r => r.includes('✅'));
+                
+                resultDiv.innerHTML = `
+                    <div class="result" style="background: ${allPassed ? '#f8fff8' : '#fff5f5'}; color: ${allPassed ? '#155724' : '#721c24'}; border: 1px solid ${allPassed ? '#c3e6cb' : '#f5c6cb'};">
+                        <strong>🧪 API Test Results:</strong><br>
+                        ${results.join('<br>')}
+                        <br><br>
+                        ${allPassed ? 
+                            '<strong>🎉 All tests passed! Your Room Status page should work now.</strong>' : 
+                            '<strong>⚠️ Some tests failed. Please check your login and try again.</strong>'
+                        }
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result" style="background: #fff5f5; color: #721c24; border: 1px solid #f5c6cb;">
+                        <strong>❌ Test failed:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

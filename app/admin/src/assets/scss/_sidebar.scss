@@ -1,0 +1,76 @@
+.menu-list{
+    > li {
+        margin-bottom: 2px;
+        a{
+            color: var(--bs-body-color);
+            position: relative;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 3px;
+            font-size: 18px;
+
+            &:hover,
+            &.active{
+                background: rgba(var(--accent-rgb),.1);
+                color: var(--accent-color);
+            }
+            &[aria-expanded="true"]{
+                background: rgba(var(--accent-rgb),.1);
+                color: var(--accent-color);
+                &::after{
+                    transform: rotate(180deg);
+                }
+            }
+
+            &::after{
+                display: block;
+                position: absolute;
+                top: 50%;
+                right: 10px;
+                -webkit-transform: translateY(-50%);
+                -ms-transform: translateY(-50%);
+                transform: translateY(-50%);
+            }
+        }
+        ul {
+            position: relative;
+            
+            &::after{
+                background-color: var(--reverse-color);
+                content: '';
+                position: absolute;
+                left: 20px;
+                top: 0;
+                height: 100%;
+                width: 1px;
+            }
+            li {
+                margin-left: 38px;
+                a{
+                    color: var(--bs-body-color);
+                    display: inline-flex;
+                    position: relative;
+                    text-decoration: none;
+                    padding: 4px 12px;
+                    font-size: 16px;
+
+                    &:hover,
+                    &.active{
+                        background: rgba(var(--accent-rgb),.1);
+                        color: var(--accent-color);
+                    }
+                }
+                &:first-child{
+                    margin-top: 2px;
+                }
+            }
+        }
+    }
+    &.icon-color{
+        .svg-stroke{
+            color: var(--accent-color);
+        }
+    }
+}

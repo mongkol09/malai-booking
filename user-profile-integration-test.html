@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ทดสอบการเชื่อมต่อ User Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .link-box { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin: 10px 0; background: #f8f9fa; }
+        .link-box a { text-decoration: none; color: #007bff; font-weight: bold; }
+        .link-box a:hover { color: #0056b3; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .code { background: #f8f9fa; border: 1px solid #e9ecef; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 การเชื่อมต่อ User Management กับ HRMS</h1>
+        
+        <div class="link-box success">
+            <h3>✅ การเชื่อมต่อสำเร็จ!</h3>
+            <p>ระบบได้เชื่อมต่อ UserList กับ Employee Profile แล้ว</p>
+        </div>
+
+        <div class="link-box info">
+            <h3>📋 หน้าที่สำคัญ</h3>
+            <ul>
+                <li><a href="http://localhost:3000/user-list" target="_blank">📊 User Management (UserList)</a></li>
+                <li><a href="http://localhost:3000/hrms" target="_blank">🏢 HRMS Dashboard</a></li>
+                <li><a href="http://localhost:3000/employee-profile" target="_blank">👤 Employee Profile (แบบทั่วไป)</a></li>
+            </ul>
+        </div>
+
+        <div class="link-box">
+            <h3>🎯 วิธีการใช้งาน</h3>
+            <ol>
+                <li><strong>เข้าสู่หน้า UserList:</strong> <code>/user-list</code></li>
+                <li><strong>คลิกปุ่ม 👁️:</strong> ในแถวของผู้ใช้ที่ต้องการดู</li>
+                <li><strong>ระบบจะนำไปที่:</strong> <code>/employee-profile/{userId}</code></li>
+                <li><strong>แสดงข้อมูล:</strong> ข้อมูลผู้ใช้จริงจาก API</li>
+                <li><strong>กลับมา UserList:</strong> คลิก "👈 กลับสู่รายการผู้ใช้"</li>
+            </ol>
+        </div>
+
+        <div class="link-box">
+            <h3>📊 ข้อมูลที่แสดงใน Employee Profile</h3>
+            <ul>
+                <li>✅ ชื่อ-นามสกุล (จาก User Management)</li>
+                <li>✅ บทบาท (admin/employee/customer)</li>
+                <li>✅ Employee ID (ย่อจาก userId)</li>
+                <li>✅ เบอร์โทรศัพท์</li>
+                <li>✅ อีเมล</li>
+                <li>✅ สถานะการใช้งาน</li>
+                <li>✅ ประเทศ</li>
+                <li>✅ วันที่สร้างบัญชี</li>
+                <li>🔄 ข้อมูลพนักงานเพิ่มเติม (อนาคต)</li>
+            </ul>
+        </div>
+
+        <div class="link-box">
+            <h3>🔧 การพัฒนาในอนาคต</h3>
+            <ul>
+                <li>🏢 เชื่อมต่อกับระบบ HRMS เต็มรูปแบบ</li>
+                <li>📈 ข้อมูลประสิทธิภาพการทำงาน</li>
+                <li>📅 ประวัติการลา/เข้างาน</li>
+                <li>💰 ข้อมูลเงินเดือน</li>
+                <li>🏆 ข้อมูลการประเมิน</li>
+                <li>📚 ประวัติการฝึกอบรม</li>
+            </ul>
+        </div>
+
+        <div class="code">
+            <strong>🔗 URL Pattern:</strong><br>
+            /employee-profile/{userId}<br><br>
+            <strong>📝 ตัวอย่าง:</strong><br>
+            /employee-profile/da670fdb-824c-4595-931b-f77b98c12b15
+        </div>
+
+        <div class="link-box info">
+            <h3>🧪 ทดสอบการเชื่อมต่อ</h3>
+            <p>1. เข้าสู่ <a href="http://localhost:3000/user-list" target="_blank">UserList</a></p>
+            <p>2. คลิกปุ่ม 👁️ ของผู้ใช้ใดก็ได้</p>
+            <p>3. ตรวจสอบว่าข้อมูลแสดงถูกต้อง</p>
+            <p>4. คลิกลิงค์กลับเพื่อทดสอบ navigation</p>
+        </div>
+    </div>
+</body>
+</html>

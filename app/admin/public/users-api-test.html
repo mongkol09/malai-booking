@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users API Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: #f9f9f9;
+        }
+        .error { color: #dc3545; font-weight: bold; }
+        .success { color: #28a745; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 12px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+        .response-display { 
+            word-break: break-all; 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .step { 
+            background: #e7f3ff; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-left: 4px solid #007bff; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Users API Structure Test</h1>
+        <p class="info">ทดสอบ structure ของ Users API response</p>
+        
+        <div class="section">
+            <h3>🔑 Login First</h3>
+            <button onclick="doLogin()" class="success">Login & Get Token</button>
+            <div id="loginStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h3>👥 Test Users API</h3>
+            <button onclick="testUsersAPI()">Get Users</button>
+            <div id="usersResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>📊 Response Analysis</h3>
+            <div id="analysis"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🔧 Recommended Fix</h3>
+            <div id="recommendations"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost:3001/api/v1';
+        const tokenKey = 'hotel_admin_token';
+        
+        let currentToken = null;
+        
+        async function doLogin() {
+            const statusEl = document.getElementById('loginStatus');
+            
+            try {
+                statusEl.innerHTML = '<div class="info">🔄 Logging in...</div>';
+                
+                const response = await fetch(`${baseURL}/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        email: 'admin@hotel.com',
+                        password: 'SecureAdmin123!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    currentToken = data.data.tokens.accessToken;
+                    localStorage.setItem(tokenKey, currentToken);
+                    
+                    statusEl.innerHTML = `
+                        <div class="success">✅ Login successful!</div>
+                        <div class="info">Token: ${currentToken.substring(0, 30)}...</div>
+                    `;
+                } else {
+                    statusEl.innerHTML = `<div class="error">❌ Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                statusEl.innerHTML = `<div class="error">❌ Login error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testUsersAPI() {
+            const resultEl = document.getElementById('usersResult');
+            const analysisEl = document.getElementById('analysis');
+            const recommendEl = document.getElementById('recommendations');
+            
+            const token = currentToken || localStorage.getItem(tokenKey);
+            
+            if (!token) {
+                resultEl.innerHTML = '<div class="error">❌ No token - please login first</div>';
+                return;
+            }
+            
+            try {
+                resultEl.innerHTML = '<div class="info">🔄 Testing Users API...</div>';
+                
+                const response = await fetch(`${baseURL}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div class="success">✅ Users API successful!</div>
+                        <h4>Full Response:</h4>
+                        <div class="response-display">${JSON.stringify(data, null, 2)}</div>
+                    `;
+                    
+                    // Analyze structure
+                    analyzeStructure(data, analysisEl, recommendEl);
+                } else {
+                    resultEl.innerHTML = `
+                        <div class="error">❌ API call failed: ${data.message}</div>
+                        <div class="warning">Status: ${response.status}</div>
+                    `;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ API test error: ${error.message}</div>`;
+            }
+        }
+        
+        function analyzeStructure(data, analysisEl, recommendEl) {
+            let analysis = '<h4>📊 Structure Analysis:</h4>';
+            let recommendations = '<h4>💡 Recommended Fix:</h4>';
+            
+            // Check top level
+            analysis += `<div class="step"><strong>Top Level:</strong><br>`;
+            analysis += `- success: ${data.success}<br>`;
+            analysis += `- message: "${data.message}"<br>`;
+            analysis += `- data type: ${typeof data.data}<br>`;
+            analysis += `</div>`;
+            
+            // Check data structure
+            if (data.data) {
+                analysis += `<div class="step"><strong>Data Level:</strong><br>`;
+                
+                if (data.data.users) {
+                    const users = data.data.users;
+                    analysis += `- users: Array (${users.length} items)<br>`;
+                    analysis += `- pagination: ${data.data.pagination ? 'Present' : 'Missing'}<br>`;
+                    
+                    if (users.length > 0) {
+                        const user = users[0];
+                        analysis += `- First user sample: {id: "${user.id}", email: "${user.email}"}<br>`;
+                    }
+                    
+                    // Recommendations
+                    recommendations += `
+                        <div class="step">
+                            <strong>✅ Current Structure (Correct):</strong><br>
+                            <code>response.data.users</code> contains the array<br><br>
+                            
+                            <strong>Frontend Fix:</strong><br>
+                            <pre>
+// In UserList.jsx loadUsers function:
+const response = await userService.getAllUsers(params);
+const usersData = response.data?.users || [];
+const formattedUsers = usersData.map(user => userService.formatUserData(user));
+                            </pre>
+                        </div>
+                    `;
+                } else if (Array.isArray(data.data)) {
+                    analysis += `- data is direct Array (${data.data.length} items)<br>`;
+                    
+                    recommendations += `
+                        <div class="step">
+                            <strong>⚠️ Alternative Structure:</strong><br>
+                            <code>response.data</code> is direct array<br><br>
+                            
+                            <strong>Frontend Fix:</strong><br>
+                            <pre>
+// In UserList.jsx loadUsers function:
+const response = await userService.getAllUsers(params);
+const usersData = Array.isArray(response.data) ? response.data : response.data?.users || [];
+const formattedUsers = usersData.map(user => userService.formatUserData(user));
+                            </pre>
+                        </div>
+                    `;
+                } else {
+                    analysis += `- data structure: ${JSON.stringify(Object.keys(data.data))}<br>`;
+                }
+                analysis += `</div>`;
+            }
+            
+            // Error check
+            if (!data.data || (!data.data.users && !Array.isArray(data.data))) {
+                recommendations += `
+                    <div class="step">
+                        <strong>🚨 Problem Detected:</strong><br>
+                        No users array found in response<br><br>
+                        
+                        <strong>Debug Steps:</strong><br>
+                        1. Check backend /users endpoint<br>
+                        2. Verify response format<br>
+                        3. Update frontend accordingly
+                    </div>
+                `;
+            }
+            
+            analysisEl.innerHTML = analysis;
+            recommendEl.innerHTML = recommendations;
+        }
+        
+        // Auto-check token on load
+        window.onload = function() {
+            const token = localStorage.getItem(tokenKey);
+            if (token) {
+                currentToken = token;
+                document.getElementById('loginStatus').innerHTML = 
+                    `<div class="success">✅ Token found: ${token.substring(0, 30)}...</div>`;
+            }
+        };
+    </script>
+</body>
+</html>

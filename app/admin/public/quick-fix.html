@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 Simple Token Fix Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        button { background: #007bff; color: white; border: none; padding: 12px 20px; margin: 10px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        h1 { color: #333; text-align: center; }
+        h3 { color: #555; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Simple Token Fix Tool</h1>
+        
+        <h3>Step 1: Clear & Login</h3>
+        <button onclick="clearAndLogin()">🔄 Clear Storage & Fresh Login</button>
+        <div id="step1-result"></div>
+        
+        <h3>Step 2: Test API Call</h3>
+        <button onclick="testUserAPI()">👥 Test Get Users API</button>
+        <div id="step2-result"></div>
+        
+        <h3>Step 3: Check Token Details</h3>
+        <button onclick="analyzeToken()">🔍 Analyze Current Token</button>
+        <div id="step3-result"></div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = message;
+        }
+
+        async function clearAndLogin() {
+            try {
+                showResult('step1-result', '🔄 Clearing storage and logging in...', 'info');
+                
+                // Clear storage
+                localStorage.clear();
+                
+                // Fresh login
+                const response = await fetch('http://localhost:3001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@hotel.com',
+                        password: 'SecureAdmin123!'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Save tokens
+                    localStorage.setItem('hotel_admin_token', data.data.accessToken);
+                    localStorage.setItem('hotel_admin_refresh_token', data.data.refreshToken);
+                    localStorage.setItem('hotel_admin_user', JSON.stringify(data.data.user));
+                    
+                    showResult('step1-result', 
+                        `✅ LOGIN SUCCESS!\n` +
+                        `User: ${data.data.user.email}\n` +
+                        `Token saved to localStorage\n` +
+                        `Ready to test API calls!`, 'success');
+                } else {
+                    showResult('step1-result', `❌ Login failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('step1-result', `💥 Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUserAPI() {
+            try {
+                const token = localStorage.getItem('hotel_admin_token');
+                if (!token) {
+                    showResult('step2-result', '❌ No token found! Please login first.', 'error');
+                    return;
+                }
+
+                showResult('step2-result', '🔄 Testing GET /api/v1/users...', 'info');
+                
+                const response = await fetch('http://localhost:3001/api/v1/users', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('step2-result', 
+                        `✅ API CALL SUCCESS!\n` +
+                        `Status: ${response.status}\n` +
+                        `Users found: ${data.data?.users?.length || 0}\n` +
+                        `Token is working correctly!`, 'success');
+                } else {
+                    showResult('step2-result', 
+                        `❌ API CALL FAILED!\n` +
+                        `Status: ${response.status}\n` +
+                        `Error: ${data.message}\n` +
+                        `This means the token issue persists.`, 'error');
+                }
+            } catch (error) {
+                showResult('step2-result', `💥 API Error: ${error.message}`, 'error');
+            }
+        }
+
+        function analyzeToken() {
+            const token = localStorage.getItem('hotel_admin_token');
+            
+            if (!token) {
+                showResult('step3-result', '❌ No token found in localStorage', 'error');
+                return;
+            }
+
+            try {
+                // Analyze token
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    showResult('step3-result', `❌ Invalid JWT: ${parts.length} parts (should be 3)`, 'error');
+                    return;
+                }
+
+                const payload = JSON.parse(atob(parts[1]));
+                const currentTime = Math.floor(Date.now() / 1000);
+                const timeLeft = payload.exp - currentTime;
+                const isValid = timeLeft > 0;
+
+                showResult('step3-result',
+                    `🔍 TOKEN ANALYSIS:\n` +
+                    `Length: ${token.length} chars\n` +
+                    `Parts: ${parts.length} (✅ valid)\n` +
+                    `User: ${payload.email}\n` +
+                    `Expires: ${new Date(payload.exp * 1000).toLocaleString()}\n` +
+                    `Time left: ${timeLeft} seconds\n` +
+                    `Status: ${isValid ? '✅ VALID' : '❌ EXPIRED'}\n\n` +
+                    `Raw token:\n${token}`, 
+                    isValid ? 'success' : 'error');
+
+            } catch (error) {
+                showResult('step3-result', `❌ Token analysis failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check on load
+        window.onload = function() {
+            const token = localStorage.getItem('hotel_admin_token');
+            if (token) {
+                showResult('step1-result', '🔍 Found existing token. Click "Analyze Current Token" to check it.', 'info');
+            } else {
+                showResult('step1-result', '⚠️ No token found. Click "Clear Storage & Fresh Login" to start.', 'info');
+            }
+        };
+    </script>
+</body>
+</html>

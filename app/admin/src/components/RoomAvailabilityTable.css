@@ -1,0 +1,466 @@
+/* Room Availability Table Styles */
+.room-availability-table {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Table Styles */
+.availability-table {
+  font-size: 0.9rem;
+}
+
+.availability-table th,
+.availability-table td {
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  padding: 12px 8px;
+}
+
+/* Sticky first column */
+.sticky-column {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 10;
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);
+  min-width: 200px;
+  max-width: 200px;
+}
+
+.table-dark .sticky-column {
+  background: #212529;
+}
+
+/* Date headers */
+.date-header {
+  min-width: 100px;
+}
+
+.day-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.day-number {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.month-name {
+  opacity: 0.8;
+  color: #fff;
+}
+
+.today-column {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+  position: relative;
+}
+
+.today-column::after {
+  content: 'วันนี้';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.6rem;
+  background: rgba(255,255,255,0.9);
+  color: #28a745;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+/* Status cells */
+.status-cell {
+  min-width: 100px;
+  max-width: 100px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.status-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 5;
+  position: relative;
+}
+
+/* Status content */
+.status-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+  margin-bottom: 2px;
+}
+
+.room-numbers {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.room-numbers .available {
+  color: #28a745;
+  font-size: 1rem;
+}
+
+.room-numbers .separator {
+  color: #6c757d;
+  margin: 0 2px;
+}
+
+.room-numbers .total {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.status-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.occupancy-percent {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+/* Status color backgrounds */
+.status-available {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-left: 4px solid #4caf50;
+}
+
+.status-available:hover {
+  background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+}
+
+.status-medium {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border-left: 4px solid #ff9800;
+}
+
+.status-medium:hover {
+  background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
+}
+
+.status-high {
+  background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%);
+  border-left: 4px solid #ffeb3b;
+}
+
+.status-high:hover {
+  background: linear-gradient(135deg, #fff9c4 0%, #fff176 100%);
+}
+
+.status-critical {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+  border-left: 4px solid #ff5722;
+}
+
+.status-critical:hover {
+  background: linear-gradient(135deg, #ffcc80 0%, #ffab91 100%);
+}
+
+.status-full {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-left: 4px solid #f44336;
+}
+
+.status-full:hover {
+  background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+}
+
+.status-no-data {
+  background: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  opacity: 0.6;
+}
+
+/* Room type info */
+.room-type-info {
+  text-align: left;
+}
+
+.room-type-name {
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.room-type-details {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+/* Total row styling */
+.total-row {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  font-weight: bold;
+}
+
+.total-row .sticky-column {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.total-row .status-content {
+  transform: scale(1.1);
+}
+
+/* Room type rows */
+.room-type-row:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.room-type-row:hover {
+  background-color: #e9ecef;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sticky-column {
+    min-width: 150px;
+    max-width: 150px;
+  }
+  
+  .date-header {
+    min-width: 80px;
+  }
+  
+  .status-cell {
+    min-width: 80px;
+    max-width: 80px;
+  }
+  
+  .room-numbers {
+    font-size: 0.8rem;
+  }
+  
+  .status-text {
+    font-size: 0.6rem;
+  }
+  
+  .status-icon {
+    font-size: 1.2rem;
+  }
+  
+  .room-type-name {
+    font-size: 0.85rem;
+  }
+  
+  .room-type-details {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .sticky-column {
+    min-width: 120px;
+    max-width: 120px;
+  }
+  
+  .date-header {
+    min-width: 70px;
+  }
+  
+  .day-number {
+    font-size: 1rem;
+  }
+  
+  .status-cell {
+    min-width: 70px;
+    max-width: 70px;
+  }
+  
+  .status-icon {
+    font-size: 1rem;
+  }
+  
+  .room-numbers {
+    font-size: 0.7rem;
+  }
+  
+  .status-text {
+    display: none; /* Hide status text on very small screens */
+  }
+  
+  .occupancy-percent {
+    font-size: 0.6rem;
+  }
+}
+
+/* Card hover effects */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+/* Button styles */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Form controls */
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Summary cards animations */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card-body i {
+  opacity: 0.8;
+}
+
+.card:hover .card-body i {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Loading spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Table scrolling on mobile */
+.table-responsive {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Enhanced hover effects for status cells */
+.status-cell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.status-cell:hover::before {
+  opacity: 1;
+}
+
+/* Print styles */
+@media print {
+  .room-availability-table {
+    background: white;
+  }
+  
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+  
+  .btn, .form-select {
+    display: none;
+  }
+  
+  .status-cell:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .today-column::after {
+    display: none;
+  }
+}
+
+/* Accessibility improvements */
+.status-cell:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Animation for table load */
+.availability-table {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Status icon animations */
+.status-icon {
+  animation: bounce 2s infinite;
+  animation-delay: calc(var(--delay) * 0.1s);
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(1); }
+  40% { transform: scale(1.1); }
+}
+
+/* Color-coded borders for better visual distinction */
+.status-available { border-top: 3px solid #4caf50; }
+.status-medium { border-top: 3px solid #ff9800; }
+.status-high { border-top: 3px solid #ffeb3b; }
+.status-critical { border-top: 3px solid #ff5722; }
+.status-full { border-top: 3px solid #f44336; }
+
+/* Enhanced typography */
+.availability-table {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.room-type-name {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+}
+
+/* Tooltip enhancement (for future implementation) */
+.status-cell[data-tooltip] {
+  position: relative;
+}
+
+.status-cell[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}

@@ -1,0 +1,70 @@
+เรื่อง Revenue Management System หรือ Dynamic Pricing ของโรงแรม ผมจะอธิบายให้ฟังแบบละเอียดครับ
+Database Design
+sql-- Base room rates (ราคาพื้นฐาน)
+CREATE TABLE room_types (
+  id INT PRIMARY KEY,
+  name VARCHAR(100),
+  base_price DECIMAL(10,2),
+  description TEXT
+);
+
+-- Rate calendar (ราคาตามวันที่)
+CREATE TABLE rate_calendar (
+  id INT PRIMARY KEY,
+  room_type_id INT,
+  date DATE,
+  base_rate DECIMAL(10,2),
+  availability INT,
+  created_at TIMESTAMP,
+  FOREIGN KEY (room_type_id) REFERENCES room_types(id)
+);
+
+-- Pricing rules (กฎการตั้งราคา)
+CREATE TABLE pricing_rules (
+  id INT PRIMARY KEY,
+  name VARCHAR(100),
+  rule_type ENUM('weekend', 'holiday', 'season', 'demand'),
+  multiplier DECIMAL(3,2), -- เช่น 1.5 = เพิ่ม 50%
+  adjustment_amount DECIMAL(10,2), -- หรือเพิ่มเป็นจำนวนเงิน
+  start_date DATE,
+  end_date DATE,
+  days_of_week SET('mon','tue','wed','thu','fri','sat','sun'),
+  priority INT,
+  is_active BOOLEAN
+);
+
+-- Special dates (วันหยุดพิเศษ)
+CREATE TABLE special_dates (
+  id INT PRIMARY KEY,
+  date DATE,
+  name VARCHAR(100),
+  pricing_rule_id INT,
+  FOREIGN KEY (pricing_rule_id) REFERENCES pricing_rules(id)
+);
+
+**** ปล. เป็นแค่ตัวอย่าง ****
+ เราจะปรับสร้างระบบให้เป็นไปตามระบบของเรา
+
+ ใช้ Base Price + Pricing Rules แทน
+เก็บเฉพาะวันพิเศษใน rate_calendar
+วันธรรมดาใช้ base price + rules
+
+5. Logic การทำงาน:
+
+Frontend เลือกวันที่ → ส่ง API call
+API ดึง base price จาก database
+หา pricing rules ที่เข้าเงื่อนไข (วันหยุด, weekend, season)
+คำนวณราคาขั้นสุดท้าย = base price × rules
+ส่งราคาขั้นสุดท้ายกลับไป Frontend
+
+room_types (base price) 
+    ↓
+rate_calendar (specific dates)
+    ↓  
+pricing_rules (weekend, holiday, season)
+    ↓
+special_dates (วันหยุดพิเศษ)
+
+Frontend → API → Database 
+    ↓
+Get Base Price → Apply Rules → Calculate Final Price

@@ -1,0 +1,201 @@
+การขอ Refun
+
+ภาพรวม: แยก "นโยบาย" ออกจาก "กฎ"
+หัวใจของการออกแบบที่ยืดหยุ่นคือการแยกส่วนประกอบออกจากกัน เราจะสร้าง 2 ตารางหลักเพื่อจัดการเรื่องนี้:
+CancellationPolicies: ตารางสำหรับเก็บ "ชื่อ" ของนโยบาย (เช่น "ยืดหยุ่น", "คืนเงินไม่ได้", "โปรโมชันพิเศษ")
+CancellationPolicyRules: ตารางสำหรับเก็บ "กฎ" หรือเงื่อนไขของแต่ละนโยบาย ซึ่งเป็นส่วนที่ทำให้ระบบยืดหยุ่นอย่างแท้จริง
+จากนั้นเราจะนำนโยบายเหล่านี้ไปผูกกับการจองแต่ละครั้ง
+ส่วนที่ 1: การออกแบบตาราง (Database Schema)
+ตารางที่ 1: CancellationPolicies
+ตารางนี้ทำหน้าที่เหมือน "ป้ายชื่อ" ของนโยบายแต่ละชุด
+CREATE TABLE CancellationPolicies (
+    policy_id VARCHAR(36) PRIMARY KEY,      -- UUID
+    name VARCHAR(255) NOT NULL UNIQUE,      -- เช่น "Flexible 7 Days", "Non-Refundable"
+    description TEXT,                       -- คำอธิบายสำหรับให้แอดมินเข้าใจ
+    is_default BOOLEAN DEFAULT FALSE,       -- นโยบายนี้เป็นค่าเริ่มต้นสำหรับห้องพักทั่วไปหรือไม่
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ตารางที่ 2: CancellationPolicyRules
+นี่คือตารางที่สำคัญที่สุด เป็นที่เก็บเงื่อนไขของแต่ละนโยบาย
+CREATE TABLE CancellationPolicyRules (
+    rule_id VARCHAR(36) PRIMARY KEY,                        -- UUID
+    policy_id VARCHAR(36) NOT NULL,
+    
+    -- เงื่อนไข: จำนวนวัน "ก่อน" วันเช็คอิน
+    days_before_checkin INT NOT NULL,
+
+    -- ผลลัพธ์: เปอร์เซ็นต์การคืนเงิน
+    refund_percentage DECIMAL(5, 2) NOT NULL, -- เช่น 100.00, 50.00, 0.00
+
+    FOREIGN KEY (policy_id) REFERENCES CancellationPolicies(policy_id) ON DELETE CASCADE
+);
+
+-- สร้าง Index เพื่อเร่งความเร็วในการค้นหากฎ
+CREATE INDEX idx_policyrules_policy_days ON CancellationPolicyRules(policy_id, days_before_checkin DESC);
+
+ตัวอย่างข้อมูลใน 2 ตารางนี้:
+สมมติเรามีนโยบายชื่อ "Flexible 7 Days":
+ในตาราง CancellationPolicies จะมี 1 แถว:
+policy_id: "policy_flex_7d_uuid"
+name: "Flexible 7 Days"
+ในตาราง CancellationPolicyRules จะมี 3 แถวที่เชื่อมกับ policy_id นี้:
+days_before_checkin: 7, refund_percentage: 100.00 (หมายถึง: ถ้ายกเลิกตั้งแต่ 7 วันขึ้นไปก่อนเช็คอิน คืนเงิน 100%)
+days_before_checkin: 3, refund_percentage: 50.00 (หมายถึง: ถ้ายกเลิกตั้งแต่ 3-6 วันก่อนเช็คอิน คืนเงิน 50%)
+days_before_checkin: 0, refund_percentage: 0.00 (หมายถึง: ถ้ายกเลิกน้อยกว่า 3 วันก่อนเช็คอิน ไม่คืนเงิน)
+ส่วนที่ 2: การนำนโยบายไปใช้กับการจอง
+เราต้องแก้ไขตาราง Bookings ที่มีอยู่เดิมเล็กน้อย เพื่อให้รู้ว่าการจองแต่ละครั้งใช้นโยบายไหน
+แก้ไขตาราง Bookings:
+ALTER TABLE Bookings
+ADD COLUMN cancellation_policy_id VARCHAR(36);
+
+ALTER TABLE Bookings
+ADD CONSTRAINT fk_cancellation_policy
+FOREIGN KEY (cancellation_policy_id) REFERENCES CancellationPolicies(policy_id);
+
+เมื่อมีการสร้างการจองใหม่ ระบบจะต้องกำหนด cancellation_policy_id ให้กับการจองนั้นๆ (อาจจะดึงมาจากนโยบาย is_default หรือนโยบายที่ผูกกับประเภทห้อง/โปรโมชันนั้นๆ)
+ส่วนที่ 3: ตรรกะการทำงานเมื่อลูกค้ายกเลิก (Cancellation Logic)
+เมื่อลูกค้ากดปุ่ม "ยกเลิกการจอง" Backend จะทำงานตาม Logic นี้:
+ดึงข้อมูลที่จำเป็น:
+SELECT checkin_date, total_price, cancellation_policy_id FROM Bookings WHERE booking_id = {bookingId}
+คำนวณจำนวนวัน:
+days_until_checkin = booking.checkin_date - today()
+ค้นหากฎที่เกี่ยวข้อง:
+Backend จะทำการ Query ไปยังตาราง CancellationPolicyRules เพื่อค้นหากฎที่เหมาะสมที่สุด
+SQL Query:
+SELECT refund_percentage
+FROM CancellationPolicyRules
+WHERE policy_id = {booking.cancellation_policy_id}
+  AND days_before_checkin <= {days_until_checkin}
+ORDER BY days_before_checkin DESC
+LIMIT 1;
+
+
+คำอธิบาย Query:
+WHERE policy_id = ...: ค้นหาเฉพาะกฎของนโยบายที่การจองนี้ใช้
+AND days_before_checkin <= ...: ค้นหาเฉพาะกฎที่เป็นไปได้ทั้งหมด (เช่น ถ้ายกเลิก 4 วันก่อน จะตรงกับกฎ 3 วัน และ 0 วัน)
+ORDER BY days_before_checkin DESC: (สำคัญที่สุด) เรียงลำดับกฎจากเงื่อนไขวันที่มากที่สุดไปน้อยที่สุด (7 -> 3 -> 0)
+LIMIT 1: เลือกมาแค่แถวบนสุด ซึ่งก็คือกฎที่ "ตรงเงื่อนไขและดีที่สุด" สำหรับลูกค้านั่นเอง
+คำนวณยอดคืนเงิน:
+refund_amount = booking.total_price * (result.refund_percentage / 100)
+ดำเนินการต่อ:
+แสดง refund_amount ให้ลูกค้ายืนยัน
+ดำเนินการคืนเงินผ่าน Payment Gateway และอัปเดตสถานะการจอง
+ด้วยโครงสร้างนี้ คุณสามารถสร้าง, แก้ไข, และเพิ่มนโยบายการยกเลิกใหม่ๆ ได้อย่างอิสระในอนาคต โดยไม่ต้องเข้าไปยุ่งกับโค้ด Logic การคำนวณหลักเลยแม้แต่น้อยครับ
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. ภาพรวมและหลักการออกแบบ
+เอกสารนี้จะอธิบายสถาปัตยกรรมฐานข้อมูลและตรรกะการทำงานสำหรับระบบนโยบายการยกเลิกที่ยืดหยุ่นและรัดกุม เป้าหมายหลักคือการสร้างระบบที่สามารถรองรับเงื่อนไขทางธุรกิจที่หลากหลายได้โดยไม่ต้องแก้ไขโค้ดโปรแกรม และยังคงได้เปรียบในทางกฎหมาย
+หลักการสำคัญ:
+แยกนโยบายออกจากกฎ (Decoupling Policies from Rules): เราจะแยก "ชื่อนโยบาย" (สิ่งที่คุณนำเสนอให้ลูกค้า) ออกจาก "เงื่อนไข" (ตรรกะเบื้องหลัง) เพื่อความยืดหยุ่นสูงสุด
+ขับเคลื่อนด้วยข้อมูล (Data-Driven): การเปลี่ยนแปลงนโยบายทั้งหมดจะทำผ่านการแก้ไขข้อมูลในฐานข้อมูล ไม่ใช่การแก้ไขโค้ด
+ความชัดเจนต่อผู้บริโภค (Consumer Clarity): ระบบต้องถูกออกแบบมาเพื่อนำเสนอนโยบายให้ลูกค้าเข้าใจและยอมรับได้ง่าย ก่อน การชำระเงิน
+2. การออกแบบโครงสร้างฐานข้อมูล (Database Schema)
+เราจะใช้ 2 ตารางหลักในการสร้างระบบนี้
+ตารางที่ 1: CancellationPolicies
+ตารางนี้ทำหน้าที่เป็น "ป้ายชื่อ" หรือกลุ่มของนโยบายแต่ละชุด
+CREATE TABLE CancellationPolicies (
+    policy_id VARCHAR(36) PRIMARY KEY,      -- UUID
+    name VARCHAR(255) NOT NULL UNIQUE,      -- เช่น "Standard Rate (Strict)", "Non-Refundable"
+    description TEXT,                       -- คำอธิบายสำหรับให้แอดมินเข้าใจ
+    is_default BOOLEAN DEFAULT FALSE,       -- นโยบายนี้เป็นค่าเริ่มต้นสำหรับห้องพักทั่วไปหรือไม่
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ตารางที่ 2: CancellationPolicyRules
+นี่คือหัวใจของระบบ เป็นที่เก็บเงื่อนไขหรือ "กฎ" ของแต่ละนโยบาย
+CREATE TABLE CancellationPolicyRules (
+    rule_id VARCHAR(36) PRIMARY KEY,                        -- UUID
+    policy_id VARCHAR(36) NOT NULL,
+    
+    -- เงื่อนไข: จำนวนวัน "ก่อน" วันเช็คอิน
+    days_before_checkin INT NOT NULL,
+
+    -- ผลลัพธ์: เปอร์เซ็นต์การคืนเงิน
+    refund_percentage DECIMAL(5, 2) NOT NULL, -- เช่น 100.00, 50.00, 0.00
+
+    FOREIGN KEY (policy_id) REFERENCES CancellationPolicies(policy_id) ON DELETE CASCADE
+);
+
+-- สร้าง Index เพื่อเร่งความเร็วในการค้นหากฎ
+CREATE INDEX idx_policyrules_policy_days ON CancellationPolicyRules(policy_id, days_before_checkin DESC);
+
+3. กลยุทธ์และตัวอย่างนโยบาย
+หลักการทางกฎหมายและการนำเสนอ
+เพื่อให้ได้เปรียบทางกฎหมาย สิ่งสำคัญคือการ สร้างทางเลือกที่ชัดเจน ให้กับลูกค้า เราจะนำเสนอนโยบายควบคู่ไปกับราคาที่แตกต่างกัน
+การนำเสนอต่อลูกค้า: บนหน้าแสดงผลการค้นหาห้องพัก ควรแสดงตัวเลือกราคา 2 แบบสำหรับห้องเดียวกัน:
+"Super Saver (Non-Refundable)" ราคา 3,000 บาท
+"Standard Rate (ยกเลิกได้ตามเงื่อนไข)" ราคา 3,500 บาท ลูกค้าต้องคลิกเพื่ออ่านและติ๊กช่องยอมรับเงื่อนไขก่อนทำการจอง
+ตัวอย่างนโยบายที่ 1: แบบไม่คืนเงิน (Non-Refundable)
+ในตาราง CancellationPolicies:
+policy_id: "policy_nonrefund_uuid"
+name: "Super Saver (Non-Refundable)"
+ในตาราง CancellationPolicyRules:
+จะมีแค่ 1 แถว: days_before_checkin: 0, refund_percentage: 0.00
+ตัวอย่างนโยบายที่ 2: แบบรัดกุม (Strict Policy)
+เป็นนโยบายมาตรฐานที่ปกป้องรายได้ของโรงแรม
+ในตาราง CancellationPolicies:
+policy_id: "policy_strict_14d_uuid"
+name: "Standard Rate (Strict 14 Days)"
+is_default: TRUE
+ในตาราง CancellationPolicyRules:
+แถวที่ 1: days_before_checkin: 14, refund_percentage: 100.00
+แถวที่ 2: days_before_checkin: 7, refund_percentage: 50.00
+แถวที่ 3: days_before_checkin: 0, refund_percentage: 0.00
+4. การเชื่อมโยงนโยบายกับการจอง
+การแก้ไขตาราง Bookings
+เราต้องเพิ่มคอลัมน์เพื่อเก็บ policy_id ที่ลูกค้าเลือก ณ เวลาที่จอง
+ALTER TABLE Bookings
+ADD COLUMN cancellation_policy_id VARCHAR(36);
+
+ALTER TABLE Bookings
+ADD CONSTRAINT fk_cancellation_policy
+FOREIGN KEY (cancellation_policy_id) REFERENCES CancellationPolicies(policy_id);
+
+ตรรกะการกำหนดนโยบายให้การจอง
+เมื่อลูกค้าทำการจอง ระบบจะบันทึก cancellation_policy_id ลงไปในการจองนั้นๆ โดยอิงจาก "Rate Plan" ที่ลูกค้าเลือก (เช่น เลือราคาแบบ Super Saver หรือ Standard Rate) ทำให้การจองแต่ละครั้งมีนโยบายการยกเลิกเป็นของตัวเองอย่างชัดเจน
+5. ตรรกะการทำงานเมื่อลูกค้ายกเลิก
+เมื่อลูกค้ากดปุ่ม "ยกเลิกการจอง" Backend จะทำงานตาม Logic นี้:
+ดึงข้อมูลที่จำเป็น:
+SELECT checkin_date, total_price, cancellation_policy_id FROM Bookings WHERE booking_id = {bookingId}
+คำนวณจำนวนวัน:
+days_until_checkin = booking.checkin_date - today()
+ค้นหากฎที่เกี่ยวข้อง:
+Backend จะทำการ Query ไปยังตาราง CancellationPolicyRules เพื่อค้นหากฎที่เหมาะสมที่สุด
+SQL Query:
+SELECT refund_percentage
+FROM CancellationPolicyRules
+WHERE policy_id = {booking.cancellation_policy_id}
+  AND days_before_checkin <= {days_until_checkin}
+ORDER BY days_before_checkin DESC
+LIMIT 1;
+
+
+คำอธิบาย Query:
+WHERE policy_id = ...: ค้นหาเฉพาะกฎของนโยบายที่การจองนี้ใช้
+AND days_before_checkin <= ...: ค้นหาเฉพาะกฎที่เป็นไปได้ทั้งหมด
+ORDER BY days_before_checkin DESC: (สำคัญที่สุด) เรียงลำดับกฎจากเงื่อนไขวันที่มากที่สุดไปน้อยที่สุด
+LIMIT 1: เลือกมาแค่แถวบนสุด ซึ่งก็คือกฎที่ "ตรงเงื่อนไขและดีที่สุด" สำหรับลูกค้า
+คำนวณยอดคืนเงิน:
+refund_amount = booking.total_price * (result.refund_percentage / 100)
+ดำเนินการต่อ:
+แสดง refund_amount ให้ลูกค้ายืนยัน
+ดำเนินการคืนเงินผ่าน Payment Gateway และอัปเดตสถานะการจอง
+6. ข้อควรพิจารณาเพิ่มเติม
+กรณีไม่มาเข้าพัก (No-Show): ควรมีกระบวนการที่แอดมินสามารถเปลี่ยนสถานะการจองเป็น "No-Show" ได้ ซึ่งโดยทั่วไปจะถูกปฏิบัติเหมือนการยกเลิกในวันเข้าพัก (คืนเงิน 0%) ตามนโยบายส่วนใหญ่
+การแสดงผลนโยบาย: ข้อความอธิบายนโยบายที่ชัดเจนจะต้องถูกแสดงให้ลูกค้าเห็นในทุกขั้นตอนสำคัญ: หน้าแสดงผลห้องพัก, หน้าสรุปการจอง, และในอีเมลยืนยันการจอง
+

@@ -1,0 +1,122 @@
+// ============================================
+// PRISMA SCHEMA EXTENSIONS FOR ROOM BOOKING
+// เพิ่มใน schema.prisma หลัง Guest model
+// ============================================
+
+// Extended Guest model (add these fields to existing Guest model)
+// Add these fields to the existing Guest model:
+/*
+  title           String?         // Mr, Ms, Mrs, Dr, Engineer
+  fatherName      String?         @map("father_name")
+  occupation      String?
+  anniversary     DateTime?       @db.Date
+  nationality     String?
+  isVip           Boolean         @default(false) @map("is_vip")
+  customerImageUrl String?        @map("customer_image_url")
+  
+  // New relations
+  contacts        GuestContact[]
+  identities      GuestIdentity[]
+*/
+
+model GuestContact {
+  id          String   @id @default(uuid()) @map("contact_id")
+  guestId     String   @map("guest_id")
+  contactType String?  @map("contact_type") // 'Home', 'Personal', 'Official', 'Business'
+  email       String?
+  country     String?
+  state       String?
+  city        String?
+  zipcode     String?
+  address     String?
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  
+  @@map("guest_contacts")
+}
+
+model GuestIdentity {
+  id                    String   @id @default(uuid()) @map("identity_id")
+  guestId               String   @map("guest_id")
+  identityType          String?  @map("identity_type")
+  identityNumber        String?  @map("identity_number")
+  frontSideDocumentUrl  String?  @map("front_side_document_url")
+  backSideDocumentUrl   String?  @map("back_side_document_url")
+  comments              String?
+  isVerified            Boolean  @default(false) @map("is_verified")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  
+  @@map("guest_identities")
+}
+
+// Extended Booking model (add these fields to existing Booking model)
+// Add these fields to the existing Booking model:
+/*
+  arrivalFrom      String?         @map("arrival_from")
+  purposeOfVisit   String?         @map("purpose_of_visit")
+  bookingRemarks   String?         @map("booking_remarks")
+  
+  // New relation
+  payment          BookingPayment?
+*/
+
+model BookingPayment {
+  id                    String   @id @default(uuid()) @map("payment_id")
+  bookingId             String   @unique @map("booking_id")
+  discountReason        String?  @map("discount_reason")
+  discountPercentage    Decimal  @default(0.00) @map("discount_percentage") @db.Decimal(5, 2)
+  commissionPercentage  Decimal  @default(0.00) @map("commission_percentage") @db.Decimal(5, 2)
+  commissionAmount      Decimal  @default(0.00) @map("commission_amount") @db.Decimal(10, 2)
+  paymentMode           String?  @map("payment_mode") // 'Card Payment', 'Paypal', 'Cash Payment', 'Bank Payment'
+  totalAmount           Decimal  @map("total_amount") @db.Decimal(10, 2)
+  advanceAmount         Decimal  @default(0.00) @map("advance_amount") @db.Decimal(10, 2)
+  advanceRemarks        String?  @map("advance_remarks")
+  bookingCharge         Decimal  @default(0.00) @map("booking_charge") @db.Decimal(10, 2)
+  taxAmount             Decimal  @default(0.00) @map("tax_amount") @db.Decimal(10, 2)
+  serviceCharge         Decimal  @default(0.00) @map("service_charge") @db.Decimal(10, 2)
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@map("booking_payments")
+}
+
+// Reference Data Models
+model GuestTitle {
+  id        String   @id @default(uuid()) @map("title_id")
+  titleName String   @map("title_name")
+  isActive  Boolean  @default(true) @map("is_active")
+  
+  @@map("guest_titles")
+}
+
+model ContactType {
+  id        String   @id @default(uuid()) @map("contact_type_id")
+  typeName  String   @map("type_name")
+  isActive  Boolean  @default(true) @map("is_active")
+  
+  @@map("contact_types")
+}
+
+model IdentityType {
+  id        String   @id @default(uuid()) @map("identity_type_id")
+  typeName  String   @map("type_name")
+  isActive  Boolean  @default(true) @map("is_active")
+  
+  @@map("identity_types")
+}
+
+model PaymentMode {
+  id        String   @id @default(uuid()) @map("payment_mode_id")
+  modeName  String   @map("mode_name")
+  isActive  Boolean  @default(true) @map("is_active")
+  
+  @@map("payment_modes")
+}

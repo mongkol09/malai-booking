@@ -1,0 +1,192 @@
+/* PIN Verification Modal Styles */
+.pin-verification-modal .modal-dialog {
+  max-width: 450px;
+}
+
+.pin-verification-modal .modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 0;
+}
+
+.pin-verification-modal .modal-content {
+  border: none;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.pin-inputs-container {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.pin-verification-modal .pin-inputs {
+  margin: 0;
+}
+
+.pin-verification-modal .pin-input {
+  height: 55px;
+  font-size: 20px;
+  font-weight: bold;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.pin-verification-modal .pin-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.15rem rgba(102, 126, 234, 0.25);
+  background: white;
+  transform: scale(1.05);
+}
+
+.pin-verification-modal .pin-input:valid {
+  border-color: #28a745;
+  background: #f8fff9;
+}
+
+.pin-verification-modal .pin-input.error {
+  border-color: #dc3545;
+  background: #fff5f5;
+  animation: pinShake 0.5s ease;
+}
+
+.pin-verification-modal .pin-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #e9ecef;
+}
+
+.pin-verification-modal .pin-input::placeholder {
+  color: #6c757d;
+  opacity: 0.6;
+}
+
+.booking-info {
+  border-left: 4px solid #667eea;
+}
+
+/* Touch-friendly for mobile/tablet */
+@media (max-width: 576px) {
+  .pin-verification-modal .modal-dialog {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+  
+  .pin-verification-modal .pin-input {
+    height: 50px;
+    font-size: 18px;
+  }
+  
+  .pin-inputs-container {
+    max-width: 280px;
+  }
+}
+
+/* iPad specific */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .pin-verification-modal .pin-input {
+    height: 60px;
+    font-size: 22px;
+  }
+}
+
+/* Animations */
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.pin-verification-modal .pin-input {
+  animation: pinSlideIn 0.3s ease forwards;
+}
+
+.pin-verification-modal .pin-input:nth-child(1) { animation-delay: 0.1s; }
+.pin-verification-modal .pin-input:nth-child(2) { animation-delay: 0.15s; }
+.pin-verification-modal .pin-input:nth-child(3) { animation-delay: 0.2s; }
+.pin-verification-modal .pin-input:nth-child(4) { animation-delay: 0.25s; }
+.pin-verification-modal .pin-input:nth-child(5) { animation-delay: 0.3s; }
+.pin-verification-modal .pin-input:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes pinSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Touch feedback */
+.pin-verification-modal .pin-input:active {
+  transform: scale(0.98);
+}
+
+/* Loading state */
+.pin-verification-modal .pin-input:disabled {
+  animation: none;
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+  .pin-verification-modal .pin-input {
+    border-width: 3px;
+    border-color: #000;
+  }
+  
+  .pin-verification-modal .pin-input:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px #0066cc;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .pin-verification-modal .modal-content {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .pin-verification-modal .pin-input {
+    background: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+  }
+  
+  .pin-verification-modal .pin-input:focus {
+    background: #2d3748;
+    border-color: #667eea;
+  }
+  
+  .booking-info {
+    background: #4a5568 !important;
+    color: #e2e8f0;
+  }
+}
+
+/* Accessibility improvements */
+.pin-verification-modal .pin-input:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .pin-verification-modal .pin-input {
+    animation: none;
+    transition: none;
+  }
+  
+  .pin-verification-modal .pin-input:focus {
+    transform: none;
+  }
+  
+  .pin-verification-modal .pin-input.error {
+    animation: none;
+  }
+}

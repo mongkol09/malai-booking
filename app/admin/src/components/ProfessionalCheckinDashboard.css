@@ -1,0 +1,215 @@
+/* Professional Check-in Dashboard Styles */
+
+.professional-checkin-dashboard {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.professional-checkin-dashboard .page-body {
+  background-color: #f8f9fa;
+}
+
+/* Quick Stats Cards */
+.professional-checkin-dashboard .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  transition: all 0.15s ease-in-out;
+}
+
+.professional-checkin-dashboard .card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Search Panel */
+.professional-checkin-dashboard .search-panel .input-group {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Table Styles */
+.professional-checkin-dashboard .table {
+  font-size: 0.875rem;
+}
+
+.professional-checkin-dashboard .table th {
+  background-color: #f8f9fa;
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+  padding: 1rem 0.75rem;
+}
+
+.professional-checkin-dashboard .table td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+/* Prevent table row from intercepting clicks */
+.professional-checkin-dashboard .table tbody tr {
+  pointer-events: none;
+}
+
+.professional-checkin-dashboard .table tbody tr td {
+  pointer-events: auto;
+}
+
+.professional-checkin-dashboard .table-hover tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.professional-checkin-dashboard .table-primary {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* Status Badges */
+.professional-checkin-dashboard .badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Button Groups */
+.professional-checkin-dashboard .btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Ensure buttons are clickable */
+.professional-checkin-dashboard .btn-group {
+  position: relative;
+  z-index: 10;
+}
+
+.professional-checkin-dashboard .btn {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+}
+
+/* Stats Cards Animation */
+.professional-checkin-dashboard .card-body .display-6 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Quick Search Buttons */
+.professional-checkin-dashboard .d-flex.gap-2 .btn {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .professional-checkin-dashboard .card-body {
+    padding: 1rem;
+  }
+  
+  .professional-checkin-dashboard .table-responsive {
+    font-size: 0.8rem;
+  }
+  
+  .professional-checkin-dashboard .btn-group {
+    flex-direction: column;
+  }
+}
+
+/* Loading Spinner */
+.professional-checkin-dashboard .spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* VIP Badge */
+.professional-checkin-dashboard .badge.bg-warning {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Status Colors */
+.professional-checkin-dashboard .text-success {
+  color: #198754 !important;
+}
+
+.professional-checkin-dashboard .text-warning {
+  color: #ffc107 !important;
+}
+
+.professional-checkin-dashboard .text-danger {
+  color: #dc3545 !important;
+}
+
+.professional-checkin-dashboard .text-info {
+  color: #0dcaf0 !important;
+}
+
+/* Card Borders */
+.professional-checkin-dashboard .border-primary {
+  border-color: #0d6efd !important;
+}
+
+.professional-checkin-dashboard .border-success {
+  border-color: #198754 !important;
+}
+
+.professional-checkin-dashboard .border-warning {
+  border-color: #ffc107 !important;
+}
+
+.professional-checkin-dashboard .border-danger {
+  border-color: #dc3545 !important;
+}
+
+/* Header Styling */
+.professional-checkin-dashboard h4 {
+  font-weight: 600;
+  color: #212529;
+}
+
+.professional-checkin-dashboard .card-header {
+  background-color: #fff;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem 1.25rem;
+}
+
+.professional-checkin-dashboard .card-header.bg-primary {
+  background-color: #0d6efd !important;
+  border-bottom: 1px solid #0d6efd;
+}
+
+/* Alert Styling */
+.professional-checkin-dashboard .alert {
+  border: none;
+  border-left: 4px solid;
+}
+
+.professional-checkin-dashboard .alert-info {
+  border-left-color: #0dcaf0;
+  background-color: rgba(13, 202, 240, 0.1);
+}
+
+/* Animation for new arrivals */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.professional-checkin-dashboard .new-arrival {
+  animation: pulse 2s infinite;
+}
+
+/* Print Styles */
+@media print {
+  .professional-checkin-dashboard .btn,
+  .professional-checkin-dashboard .card-header,
+  .professional-checkin-dashboard .search-panel {
+    display: none !important;
+  }
+  
+  .professional-checkin-dashboard .card {
+    border: 1px solid #000;
+    box-shadow: none;
+  }
+}

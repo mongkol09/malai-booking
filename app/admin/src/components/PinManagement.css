@@ -1,0 +1,215 @@
+/* PIN Management Dashboard Styles */
+.pin-management-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pin-management-container .card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.pin-management-container .card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 20px;
+}
+
+.pin-management-container .table {
+  margin-bottom: 0;
+}
+
+.pin-management-container .table th {
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+  background-color: #f8f9fa;
+  padding: 15px 12px;
+}
+
+.pin-management-container .table td {
+  padding: 12px;
+  vertical-align: middle;
+  border-top: 1px solid #e9ecef;
+}
+
+.pin-management-container .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.pin-management-container .btn-group-sm .btn {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.pin-management-container .btn-group-sm .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pin-management-container .badge {
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+.pin-management-container .alert {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pin-management-container .alert-danger {
+  background-color: #fff5f5;
+  color: #c53030;
+  border-left: 4px solid #f56565;
+}
+
+.pin-management-container .alert-success {
+  background-color: #f0fff4;
+  color: #2d7d32;
+  border-left: 4px solid #48bb78;
+}
+
+.pin-management-container .alert-warning {
+  background-color: #fffbf0;
+  color: #b7791f;
+  border-left: 4px solid #ed8936;
+}
+
+/* Modal Styles */
+.pin-management-container .modal-content {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.pin-management-container .modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.pin-management-container .modal-header .btn-close {
+  filter: invert(1);
+}
+
+.pin-management-container .modal-body {
+  padding: 25px;
+}
+
+.pin-management-container .modal-footer {
+  border-top: 1px solid #e9ecef;
+  padding: 15px 25px;
+}
+
+/* Status Badge Styles */
+.badge.bg-success {
+  background-color: #48bb78 !important;
+}
+
+.badge.bg-danger {
+  background-color: #f56565 !important;
+}
+
+.badge.bg-warning {
+  background-color: #ed8936 !important;
+  color: white !important;
+}
+
+.badge.bg-secondary {
+  background-color: #a0aec0 !important;
+}
+
+.badge.bg-info {
+  background-color: #4299e1 !important;
+}
+
+/* Loading States */
+.pin-management-container .spinner-border {
+  color: #667eea;
+}
+
+/* Empty State */
+.pin-management-container .bi-inbox {
+  color: #a0aec0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pin-management-container {
+    padding: 10px;
+  }
+  
+  .pin-management-container .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .pin-management-container .btn-group-sm .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .pin-management-container .modal-body {
+    padding: 20px 15px;
+  }
+}
+
+/* Form Controls */
+.pin-management-container .form-control {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 10px 15px;
+  transition: all 0.2s ease;
+}
+
+.pin-management-container .form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Activity Log Table */
+.pin-management-container .table.table-sm th,
+.pin-management-container .table.table-sm td {
+  padding: 8px;
+}
+
+/* Hover Effects */
+.pin-management-container .card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Button Styles */
+.pin-management-container .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pin-management-container .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pin-management-container .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.pin-management-container .btn-outline-primary {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.pin-management-container .btn-outline-primary:hover {
+  background: #667eea;
+  border-color: #667eea;
+}

@@ -1,0 +1,330 @@
+/* PIN Analytics Dashboard Styles */
+.pin-analytics-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.summary-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card .card-body {
+  padding: 20px;
+}
+
+.summary-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.summary-icon.bg-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.summary-icon.bg-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+}
+
+.summary-icon.bg-danger {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%) !important;
+}
+
+.summary-icon.bg-info {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+}
+
+/* Chart Cards */
+.pin-analytics-container .card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.pin-analytics-container .card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: none;
+  border-radius: 12px 12px 0 0;
+  padding: 15px 20px;
+}
+
+.pin-analytics-container .card-header h6 {
+  color: #495057;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pin-analytics-container .card-body {
+  padding: 20px;
+}
+
+/* Table Styles */
+.pin-analytics-container .table {
+  margin-bottom: 0;
+}
+
+.pin-analytics-container .table th {
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+  background-color: #f8f9fa;
+  font-size: 0.875rem;
+}
+
+.pin-analytics-container .table td {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.pin-analytics-container .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Badges */
+.pin-analytics-container .badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Real-time Monitor */
+.realtime-data {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.realtime-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.realtime-item:last-child {
+  border-bottom: none;
+}
+
+.realtime-item:first-child {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Chart Tooltips */
+.recharts-tooltip-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.recharts-default-tooltip {
+  border-radius: 8px !important;
+  border: none !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Form Controls */
+.pin-analytics-container .form-select {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+.pin-analytics-container .form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Buttons */
+.pin-analytics-container .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pin-analytics-container .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pin-analytics-container .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.pin-analytics-container .btn-outline-primary {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.pin-analytics-container .btn-outline-primary:hover {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+/* Alerts */
+.pin-analytics-container .alert {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pin-analytics-container .alert-warning {
+  background-color: #fffbf0;
+  color: #b7791f;
+  border-left: 4px solid #ed8936;
+}
+
+.pin-analytics-container .alert-danger {
+  background-color: #fff5f5;
+  color: #c53030;
+  border-left: 4px solid #f56565;
+}
+
+.pin-analytics-container .alert-heading {
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Loading State */
+.pin-analytics-container .spinner-border {
+  color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pin-analytics-container {
+    padding: 10px;
+  }
+  
+  .pin-analytics-container .card-body {
+    padding: 15px;
+  }
+  
+  .summary-card .card-body {
+    padding: 15px;
+  }
+  
+  .summary-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .pin-analytics-container h3 {
+    font-size: 1.5rem;
+  }
+  
+  .pin-analytics-container .table-responsive {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .pin-analytics-container h4 {
+    font-size: 1.25rem;
+  }
+  
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  
+  .d-flex.gap-2 .form-select,
+  .d-flex.gap-2 .btn {
+    width: 100%;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .pin-analytics-container .card {
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .pin-analytics-container .card-header {
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    color: #e2e8f0;
+  }
+  
+  .pin-analytics-container .table th {
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+  }
+  
+  .pin-analytics-container .table td {
+    border-color: #718096;
+    color: #e2e8f0;
+  }
+  
+  .pin-analytics-container .table tbody tr:hover {
+    background-color: #4a5568;
+  }
+  
+  .realtime-item {
+    border-color: #718096;
+  }
+}
+
+/* Animation for real-time updates */
+.pin-analytics-container .realtime-item.new {
+  animation: highlight 1s ease;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: rgba(102, 126, 234, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Chart container responsive */
+.pin-analytics-container .recharts-responsive-container {
+  min-height: 250px;
+}
+
+/* Custom scrollbar for real-time data */
+.realtime-data::-webkit-scrollbar {
+  width: 6px;
+}
+
+.realtime-data::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.realtime-data::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.realtime-data::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -1,0 +1,247 @@
+/* Enhanced Room Availability Calendar Styles */
+.enhanced-room-availability-calendar {
+  margin: 0;
+  padding: 0;
+}
+
+.enhanced-calendar-container {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Calendar Header Improvements */
+.enhanced-calendar-container .tui-full-calendar-monthview {
+  background: #fff;
+}
+
+.enhanced-calendar-container .tui-full-calendar-monthview-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.enhanced-calendar-container .tui-full-calendar-weekday {
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  text-align: center;
+  padding: 12px 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* Calendar Date Cells */
+.enhanced-calendar-container .tui-full-calendar-month-date {
+  border: 1px solid #e9ecef;
+  background: #fff;
+  min-height: 120px;
+  position: relative;
+}
+
+.enhanced-calendar-container .tui-full-calendar-month-date:hover {
+  background: #f8f9fa;
+}
+
+/* Today highlight */
+.enhanced-calendar-container .tui-full-calendar-month-date.tui-full-calendar-month-date-today {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+
+/* Weekend styling */
+.enhanced-calendar-container .tui-full-calendar-month-date.tui-full-calendar-month-date-weekend {
+  background: #fafafa;
+}
+
+/* Date number styling */
+.enhanced-calendar-container .tui-full-calendar-month-date-number {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-weight: 600;
+  color: #333;
+  z-index: 2;
+}
+
+.enhanced-calendar-container .tui-full-calendar-month-date-today .tui-full-calendar-month-date-number {
+  color: #1976d2;
+  font-weight: 700;
+}
+
+/* Schedule/Event styling */
+.enhanced-calendar-container .tui-full-calendar-schedule {
+  margin: 30px 8px 8px 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.enhanced-calendar-container .tui-full-calendar-schedule:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Availability Status Colors */
+.enhanced-calendar-container .tui-full-calendar-schedule.availability-high {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c8);
+  border: 2px solid #4caf50;
+  color: #2e7d32;
+}
+
+.enhanced-calendar-container .tui-full-calendar-schedule.availability-medium {
+  background: linear-gradient(135deg, #fffde7, #f4f19c);
+  border: 2px solid #ffeb3b;
+  color: #f57f17;
+}
+
+.enhanced-calendar-container .tui-full-calendar-schedule.availability-low {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+  border: 2px solid #ff9800;
+  color: #ef6c00;
+}
+
+.enhanced-calendar-container .tui-full-calendar-schedule.availability-full {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border: 2px solid #f44336;
+  color: #c62828;
+}
+
+/* Quick Search Panel */
+.enhanced-room-availability-calendar .card-header.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Calendar Navigation */
+.enhanced-room-availability-calendar .btn-group .btn {
+  border-color: #dee2e6;
+}
+
+.enhanced-room-availability-calendar .btn-group .btn:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Legend indicators */
+.enhanced-room-availability-calendar .bg-success {
+  background: linear-gradient(135deg, #4caf50, #66bb6a) !important;
+}
+
+.enhanced-room-availability-calendar .bg-warning {
+  background: linear-gradient(135deg, #ff9800, #ffb74d) !important;
+}
+
+.enhanced-room-availability-calendar .bg-danger {
+  background: linear-gradient(135deg, #f44336, #ef5350) !important;
+}
+
+/* Calendar responsive adjustments */
+@media (max-width: 768px) {
+  .enhanced-calendar-container .tui-full-calendar-month-date {
+    min-height: 80px;
+  }
+  
+  .enhanced-calendar-container .tui-full-calendar-schedule {
+    margin: 20px 4px 4px 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .enhanced-calendar-container .tui-full-calendar-month-date-number {
+    top: 4px;
+    left: 8px;
+    font-size: 12px;
+  }
+}
+
+/* Loading state */
+.enhanced-room-availability-calendar .spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Stats cards */
+.enhanced-room-availability-calendar .card:last-child .card-body {
+  padding: 1.5rem;
+}
+
+.enhanced-room-availability-calendar .h4 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Calendar popup styling */
+.tui-full-calendar-popup {
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border: none;
+}
+
+.tui-full-calendar-popup-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Custom form styling */
+.enhanced-room-availability-calendar .form-select:focus,
+.enhanced-room-availability-calendar .form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.enhanced-room-availability-calendar .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.enhanced-room-availability-calendar .btn-primary:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-1px);
+}
+
+/* Badge styling */
+.enhanced-room-availability-calendar .badge.bg-primary-soft {
+  background-color: rgba(102, 126, 234, 0.1) !important;
+  color: #667eea !important;
+}
+
+/* Animation for calendar events */
+.enhanced-calendar-container .tui-full-calendar-schedule {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Improved hover effects */
+.enhanced-room-availability-calendar .card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Print styles */
+@media print {
+  .enhanced-room-availability-calendar .card-header,
+  .enhanced-room-availability-calendar .btn-group,
+  .enhanced-room-availability-calendar .form-control,
+  .enhanced-room-availability-calendar .form-select {
+    display: none !important;
+  }
+  
+  .enhanced-calendar-container {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

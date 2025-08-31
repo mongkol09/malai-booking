@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Bootstrap 5 admin dashboard template & web App ui kit.">
+	<meta name="keyword" content="bootstrap admin template">
+	<link rel="icon" href="images/favicon.ico" type="image/x-icon"> <!--[ Favicon]-->
+    <title>: HotelAir : Admin Dashboard Template</title>
+	
+    <!--[ Favicon]-->
+	<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+	<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+
+	<link rel="stylesheet" href="css/prism.min.css">
+	
+	<!--[ Template main css file ]-->
+	<link rel="stylesheet" href="css/style.min.css">
+
+</head>
+
+<body data-ha="theme-PurpleHeart" class="svgstroke-a docs">
+
+    <header class="border-bottom">
+        <div class="container-xl">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex align-items-start d-xl-inline-flex py-3">
+                        <a href="index.html" class="brand-icon text-decoration-none d-flex align-items-center" title="HotelAir Admin Template">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
+                                <path d="M9 8l0 8"></path>
+                                <path d="M9 12l6 0"></path>
+                                <path d="M15 8l0 8"></path>
+                            </svg>
+                            <span class="fw-bold ps-2 fs-5 text-gradient">HotelAir</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+	<main class="container-xl px-0">
+		<div class="content px-xl-5 px-lg-4 px-3 py-3 page-body bg-card">
+			<div class="row g-3">
+                <div class="col-12">
+                    <div class="card"><div class="card-header"><h4 id="GettingStarted">Getting Started</h4></div><div class="card-body"><p class="lead">HotelAir is carefully well thought UI frame work that is built on top of React &amp; Bootstrap5, This part of the doc will help you to quickly start your project and will you a basic idea about how HotelAir work.</p></div></div>
+                </div>
+                <div class="col-12">
+                    <div class="border-top pt-4 mt-4"></div><div class="card"><div class="card-header"><h4 id="Installation">Installation</h4></div><div class="card-body"><p>To set up a project with React</p><ol><li><p>Create a project folder and setup npm. We’ll create the my-project folder and initialize npm with the -y argument to avoid it asking us all the interactive questions.</p></li><li><p><strong>Install NPM </strong> Unlike our Webpack guide, there’s only a single build tool dependency here. We use --save-dev to signal that this dependency is only for development use and not for production.</p><pre class="h6 language-html text-primary"><code class="language-sh" data-lang="sh">npm i </code></pre></li><li><p><strong>Npm Run Start</strong> Project Run In Local Apply command</p><pre class="h6 language-html text-primary"><code class="language-sh" data-lang="sh">npm run Start</code></pre></li><li><p><strong>Npm Run Build</strong> Project Code Build Apply this command and upload in to server to build folder code</p><pre class="h6 language-html text-primary"><code class="language-sh" data-lang="sh">npm run build</code></pre></li></ol></div></div>
+                </div>
+                <div class="col-12">
+                    <div class="border-top pt-4 mt-4"></div><div class="card"><div class="card-header"><h4 id="FolderStructure">Project structure</h4></div><div class="card-body"><ul class="list-unstyled"><li class="text-danger"><span style="min-width: 120px;">node_modules</span> <small class="text-muted d-none d-lg-inline-block">( NPM dependencies (by default the folder is not included) <code>npm</code> installs dependencies. )</small></li><li>src<ul class="border-start"><li>assets<ul class="border-start"><li>fonts</li><li>images</li><li>scss</li></ul></li><li>Common</li><li>Layout<ul class="border-start"><li>AdminLayout</li><li>AuthLayout</li></ul></li><li class="text-danger">Partials<ul class="border-start"><li class="text-primary">MyProfile</li><li class="text-primary">Reports</li><li class="text-primary">RoomsSettings</li><li class="text-primary">Universal</li></ul></li><li class="text-danger">Hrms<ul class="border-start"><li class="text-primary">Employees</li><li class="text-primary">PayRoll</li><li class="text-primary">Usual</li></ul></li><li class="text-danger">Tuning<ul class="border-start"><li class="text-primary">Application</li><li class="text-primary">Configuration</li><li class="text-primary">FrontPages</li><li class="text-primary">Pages</li><li class="text-primary">RoleManagement</li></ul></li><li>Redux</li><li>App.jsx</li><li class="text-primary"><a href="../index" target="_blank">index.js</a></li><li>Routes.jsx</li></ul></li><li>.gitignore</li><li>package.json</li></ul></div></div>
+                </div>
+                <div class="col-12">
+                    <div class="border-top pt-4 mt-4"></div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Theme Configurations</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="py-3">
+                                <p>Theme color scss file path: <code>hotelair/src/assets/global/_themes.scss</code> you can change as per your project/client requirements.</p>
+                                <p>Theme light/dark version you can changes in HTML tage <code>data-bs-theme="light"</code>, <code>data-bs-theme="dark"</code></p>
+                                <ul class="list-unstyled d-flex flex-wrap">
+                                    <li class="bg-primary p-4 flex-grow-1 text-white">
+                                        .bg-primary
+                                    </li>
+                                    <li class="bg-accent p-4 flex-grow-1 text-white">
+                                        .bg-accent
+                                    </li>
+                                </ul>
+                                <ul class="list-unstyled d-flex flex-wrap">
+                                    <li class="theme-color1 p-4 text-white flex-fill">
+                                        .theme-color1
+                                    </li>
+                                    <li class="theme-color2 p-4 text-white flex-fill">
+                                        .theme-color2
+                                    </li>
+                                    <li class="theme-color3 p-4 text-white flex-fill">
+                                        .theme-color3
+                                    </li>
+                                    <li class="theme-color4 p-4 text-white flex-fill">
+                                        .theme-color4
+                                    </li>
+                                    <li class="theme-color5 p-4 text-white flex-fill">
+                                        .theme-color5
+                                    </li>
+                                    <li class="theme-color6 p-4 text-white flex-fill">
+                                        .theme-color6
+                                    </li>
+                                </ul>
+                                <pre class=" language-html m-0" data-lang="html"><code class=" language-html">// Theme color variable
+        [data-theme="theme-ValenciaRed"] {
+
+            --primary-color: 		#D63B38;
+            --accent-color: 		#8467cb;
+            
+            --primary-rgb: 			214, 59, 56;
+            --accent-rgb: 			132, 103, 203;
+
+            --theme-color1:	 		#da3164;
+            --theme-color2: 		#ce3c8d;
+            --theme-color3: 		#b152b1;
+            --theme-color4: 		#8467cb;
+            --theme-color5: 		#9aa9e0;
+            --theme-color6: 		#314674;
+
+            --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--secondary-color));
+        }
+        [data-theme="theme-SunOrange"] {
+
+            --primary-color: 		#F7A614;
+            --accent-color: 		#006b60;
+
+            --primary-rgb: 			247, 166, 20;
+            --accent-rgb: 			0, 107, 96;
+
+            --theme-color1:	 		#F7A614;
+            --theme-color2: 		#c25450;
+            --theme-color3: 		#ff8982;
+            --theme-color4: 		#9e7c50;
+            --theme-color5: 		#ffc0b7;
+            --theme-color6: 		#2f4858;
+
+            --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--secondary-color));
+        }
+        [data-theme="theme-AppleGreen"] {
+            
+            --primary-color: 		#5BC43A;
+            --accent-color: 		#006b5f;
+
+            --primary-rgb: 			91, 196, 58;
+            --accent-rgb: 			0, 107, 95;
+
+            --theme-color1:	 		#00b864;
+            --theme-color2: 		#0097aa;
+            --theme-color3: 		#0084bd;
+            --theme-color4: 		#004e72;
+            --theme-color5: 		#96b0b7;
+            --theme-color6: 		#2f4858;
+
+            --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--secondary-color));
+        }
+        [data-theme="theme-CeruleanBlue"] {
+
+            --primary-color: 		#00B8D6;
+            --accent-color: 		#00a686;
+
+            --primary-rgb: 			0, 184, 214;
+            --accent-rgb: 			0, 166, 134;
+
+            --theme-color1:	 		#00b8d6;
+            --theme-color2: 		#8966a4;
+            --theme-color3: 		#bf9adb;
+            --theme-color4: 		#b2a8b8;
+            --theme-color5: 		#96b0b7;
+            --theme-color6: 		#00a686;
+
+            --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--secondary-color));
+        }
+        [data-theme="theme-Mariner"] {
+
+            --primary-color: 		#0066FE;
+            --accent-color: 		#DEAD00;
+
+            --primary-rgb: 			0, 102, 254;
+            --accent-rgb: 			222, 173, 0;
+
+            --theme-color1:	 		#2561BE;
+            --theme-color2: 		#d3a518;
+            --theme-color3: 		#f26a7f;
+            --theme-color4: 		#002878;
+            --theme-color5: 		#858fbb;
+            --theme-color6: 		#5b9591;
+
+            --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--secondary-color));
+        }
+        [data-theme="theme-PurpleHeart"] {
+            --primary-color: 	#4C3575;
+            --accent-color: 	#e05170;
+
+            --primary-rgb: 		76, 53, 117;
+            --accent-rgb: 		224, 81, 112;
+
+            --theme-color1:	 	#4C3575;
+            --theme-color2: 	#354175;
+            --theme-color3: 	#98427e;
+            --theme-color4: 	#d55a75;
+            --theme-color5: 	#fb8665;
+            --theme-color6: 	#d19a8b;
+
+            --primary-gradient: linear-gradient(145deg, var(--primary-color), var(--accent-color));
+
+            .page-header .header-right>li > a,
+            .page-header .header-right>li > div > a{
+                color: var(--white-color) !important;
+            }
+        }
+        [data-theme="theme-FrenchRose"] {
+
+            --primary-color: 		#EB5393;
+            --accent-color: 		#4d74c9;
+
+            --primary-rgb: 			235, 83, 147;
+            --accent-rgb: 			77, 116, 201;
+
+            --theme-color1:	 		#c82f75;
+            --theme-color2: 		#4d74c9;
+            --theme-color3: 		#5bbab5;
+            --theme-color4: 		#b861c2;
+            --theme-color5: 		#ddd7c6;
+            --theme-color6: 		#765a76;
+
+            --primary-gradient: linear-gradient(-45deg, var(--primary-color), var(--secondary-color));
+        }</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="border-top pt-4 mt-4"></div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>HotelAir Template References</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <tbody>
+                                        <tr>
+                                            <td>Google font</td>
+                                            <td><a href="https://fonts.google.com/">https://fonts.google.com/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bootstrap</td>
+                                            <td><a href="https://v5.getbootstrap.com/">https://v5.getbootstrap.com/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>SASS</td>
+                                            <td><a href="https://sass-lang.com/">https://sass-lang.com/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>NPM</td>
+                                            <td><a href="https://www.npmjs.com/">https://www.npmjs.com/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tabler Icon</td>
+                                            <td><a href="https://tabler.io/">https://tabler.io/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Datatables</td>
+                                            <td><a href="https://datatables.net/">https://datatables.net/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Apex Charts</td>
+                                            <td><a href="https://apexcharts.com/">https://apexcharts.com/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Peity Chart</td>
+                                            <td><a href="https://benpickles.github.io/peity/">https://benpickles.github.io/peity/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fullcalendar</td>
+                                            <td><a href="https://fullcalendar.io/">https://fullcalendar.io/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Pexels</td>
+                                            <td><a href="https://www.pexels.com/">https://www.pexels.com/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Flatpickr</td>
+                                            <td><a href="https://flatpickr.js.org/">https://flatpickr.js.org/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tagify</td>
+                                            <td><a href="https://yaireo.github.io/tagify/">https://yaireo.github.io/tagify/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Quill Editer</td>
+                                            <td><a href="https://www.npmjs.com/package/quill">https://www.npmjs.com/package/quill</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="border-top pt-4 mt-4"></div>
+                    <h4 id="Thankyou">Thank you!</h4>
+                    <div class="py-3">
+                        <p class="lead">All the important stuff –&nbsp;compiling the source, file structure, build tools, file includes –&nbsp;is documented here, but should you have any questions, always feel free to reach out to <span class="text-primary fw-bold">pixelwibes@gmail.com</span></p>
+                        <p class="lead">If you really like our work, design, performance and support then <a href="https://themeforest.net/downloads"> please don't forgot to rate us</a> on Themeforest, it really motivate us to provide something better. </p>
+                    </div>
+                </div>
+            </div>
+		</div>
+	</main>
+
+	<!--[ hotelair template vender js ]-->
+	<script src="bundles/libscripts.bundle.js"></script>
+	<script src="bundles/prism.bundle.js"></script>
+
+</body>
+</html>

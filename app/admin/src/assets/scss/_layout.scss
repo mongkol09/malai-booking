@@ -1,0 +1,270 @@
+// sidebar toggle hide/show css
+.Hotel_Head {
+    height: 100vh;
+
+    &.bg-gradient {
+        &::after {
+            background: linear-gradient(180deg, var(--g1-color) 8%, var(--g2-color) 100%);
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            z-index: -1;
+        }
+
+        header {
+            background-color: var(--g1-color);
+        }
+    }
+
+    .auth {
+        &.bg-gradient {
+            &::after {
+                background: linear-gradient(180deg, var(--g1-color) 8%, var(--g2-color) 100%);
+                content: '';
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                z-index: -1;
+            }
+        }
+    }
+
+    &.sidebar-hide {
+        &:focus {
+            border: 0;
+        }
+
+        main {
+            .sidebar {
+                position: absolute;
+                left: -400px;
+                top: 0;
+            }
+
+            .content {
+                width: 100%;
+            }
+        }
+
+        &.box-layout {
+            main {
+                .sidebar {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                }
+            }
+        }
+    }
+
+    &.box-layout {
+        main {
+            .sidebar {
+                position: absolute;
+                left: -400px;
+                top: 0;
+            }
+
+            .content {
+                width: 100%;
+            }
+        }
+    }
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+
+    header {
+        &[data-bs-theme="dark"] {
+            background-color: var(--body-color);
+        }
+
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar {
+
+        @include media-breakpoint-down(xl) {
+            margin-left: -32px
+        }
+
+        @include media-breakpoint-down(lg) {
+            margin-left: -24px
+        }
+
+        @include media-breakpoint-up(xl) {
+            @include c_overflow(scroll);
+            width: 300px;
+            min-width: 300px;
+            height: 100vh;
+        }
+
+        &[data-bs-theme="dark"] {
+            background: var(--bs-body-bg);
+        }
+
+        &[data-bs-theme="none"] {
+            background: transparent;
+        }
+    }
+
+    .content {
+        flex-grow: 1;
+        width: 100%;
+
+        @include media-breakpoint-up(xl) {
+            width: calc(100% - 320px);
+        }
+    }
+}
+
+.body-layout {
+    .body-sidebar {
+        @include media-breakpoint-up(lg) {
+            min-width: 320px;
+        }
+    }
+
+    .body-content {
+        width: 100%;
+    }
+}
+
+// sub layout css
+.sub-layout {
+    flex-wrap: nowrap;
+
+    .order-1 {
+        min-width: 360px;
+        max-width: 360px;
+
+        @include media-breakpoint-down(lg) {
+            max-width: 100%;
+            width: 100%;
+        }
+    }
+
+    .order-2 {
+        @include transition(ease .2s);
+        display: flex;
+        flex-direction: column;
+
+        .close-toggle {
+            display: none;
+        }
+
+        @include media-breakpoint-down(lg) {
+            position: fixed;
+            right: -1600px;
+            width: 700px;
+            z-index: 99999;
+
+            &.open {
+                background: var(--bs-body-bg);
+                //box-shadow: 0 .5rem 1rem rgba(var(--bs-dropdown-box-shadow),);
+                right: 0;
+                top: 0;
+                height: 100vh;
+
+                .close-toggle {
+                    display: inline-flex;
+                }
+            }
+        }
+
+        @include media-breakpoint-down(lg) {
+            width: 100%;
+        }
+    }
+
+    .action-header,
+    .action-body,
+    .action-footer {
+        padding: 1rem;
+    }
+
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+/* grid wrapper css layout */
+.grid-wrapper {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-auto-rows: 200px;
+    grid-auto-flow: dense;
+
+    >li,
+    >div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        >img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+    }
+
+    .wide {
+        grid-column: span 2;
+    }
+
+    .tall {
+        grid-row: span 2;
+    }
+
+    .big {
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        vertical-align: middle;
+        display: inline-block;
+    }
+}
+
+.auth main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: calc(100vh - 30px);
+    align-items: center;
+    justify-content: center;
+
+    @include media-breakpoint-up(lg) {
+        height: calc(100vh - 60px);
+        display: flex;
+        align-items: center;
+    }
+
+    .auth-header {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    .auth-body {
+        @include media-breakpoint-up(xxl) {
+            >form {
+                max-width: 500px;
+            }
+        }
+    }
+}

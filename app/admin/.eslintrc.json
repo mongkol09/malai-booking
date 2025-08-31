@@ -1,0 +1,20 @@
+{
+  "extends": ["react-app"],
+  "rules": {
+    "jsx-a11y/img-redundant-alt": "warn",
+    "jsx-a11y/alt-text": "warn", 
+    "jsx-a11y/heading-has-content": "warn",
+    "no-unused-vars": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "eqeqeq": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["src/Tuning/**/*.jsx"],
+      "rules": {
+        "jsx-a11y/alt-text": "off",
+        "jsx-a11y/img-redundant-alt": "off"
+      }
+    }
+  ]
+}

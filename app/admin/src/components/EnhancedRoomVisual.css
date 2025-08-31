@@ -1,0 +1,439 @@
+/* Enhanced Room Visual Calendar Styles */
+.enhanced-room-visual {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Gradient backgrounds for status */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-available {
+  background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
+}
+
+.bg-gradient-medium {
+  background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+}
+
+.bg-gradient-high {
+  background: linear-gradient(135deg, #ffeb3b 0%, #fff176 100%);
+}
+
+.bg-gradient-critical {
+  background: linear-gradient(135deg, #ff5722 0%, #ff8a65 100%);
+}
+
+.bg-gradient-full {
+  background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+}
+
+/* Enhanced Calendar */
+.enhanced-calendar {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.calendar-day-header {
+  padding: 16px 8px;
+  text-align: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.calendar-day-header:last-child {
+  border-right: none;
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #e9ecef;
+}
+
+/* Enhanced Calendar Day */
+.enhanced-calendar-day {
+  background: #fff;
+  min-height: 120px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border: 2px solid transparent;
+}
+
+.enhanced-calendar-day:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  z-index: 2;
+}
+
+.enhanced-calendar-day.hovered {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.enhanced-calendar-day.selected {
+  border-color: #28a745;
+  background: #f8fff8;
+  box-shadow: 0 0 0 3px rgba(40,167,69,0.25);
+}
+
+.enhanced-calendar-day.other-month {
+  background-color: #f8f9fa;
+  color: #adb5bd;
+  cursor: default;
+}
+
+.enhanced-calendar-day.other-month:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.enhanced-calendar-day.today {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border-color: #2196f3;
+  font-weight: bold;
+}
+
+/* Day Elements */
+.day-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  align-self: flex-start;
+}
+
+.room-status-icon {
+  font-size: 1.5rem;
+  margin: 4px 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.room-count {
+  font-weight: 600;
+  margin: 4px 0;
+  text-align: center;
+}
+
+.room-count .available {
+  color: #28a745;
+  font-size: 1.1rem;
+}
+
+.room-count .separator {
+  color: #6c757d;
+  margin: 0 2px;
+}
+
+.room-count .total {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Occupancy Bar */
+.occupancy-bar {
+  width: 100%;
+  height: 4px;
+  background: #e9ecef;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.occupancy-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.occupancy-available {
+  background: linear-gradient(90deg, #4caf50, #81c784);
+}
+
+.occupancy-medium {
+  background: linear-gradient(90deg, #ff9800, #ffb74d);
+}
+
+.occupancy-high {
+  background: linear-gradient(90deg, #ffeb3b, #fff176);
+}
+
+.occupancy-critical {
+  background: linear-gradient(90deg, #ff5722, #ff8a65);
+}
+
+.occupancy-full {
+  background: linear-gradient(90deg, #f44336, #e57373);
+}
+
+/* Status Colors */
+.status-available {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  border-left: 4px solid #4caf50;
+}
+
+.status-medium {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  border-left: 4px solid #ff9800;
+}
+
+.status-high {
+  background: linear-gradient(135deg, #fffde7, #fff9c4);
+  border-left: 4px solid #ffeb3b;
+}
+
+.status-critical {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+  border-left: 4px solid #ff5722;
+}
+
+.status-full {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border-left: 4px solid #f44336;
+}
+
+/* Status Legend */
+.status-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.legend-item:hover {
+  background: #e9ecef;
+}
+
+.legend-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.legend-label {
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Day Details Panel */
+.status-icon-large {
+  font-size: 3rem;
+  margin: 16px 0;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+.status-text {
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+.text-available { color: #28a745; }
+.text-medium { color: #fd7e14; }
+.text-high { color: #ffc107; }
+.text-critical { color: #fd7e14; }
+.text-full { color: #dc3545; }
+
+/* Room Breakdown */
+.room-breakdown {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.room-type-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.room-type-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Progress bars with gradients */
+.progress {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  transition: width 0.6s ease;
+}
+
+.bg-success {
+  background: linear-gradient(90deg, #28a745, #20c997) !important;
+}
+
+.bg-warning {
+  background: linear-gradient(90deg, #ffc107, #fd7e14) !important;
+}
+
+.bg-danger {
+  background: linear-gradient(90deg, #dc3545, #e83e8c) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .enhanced-calendar-day {
+    min-height: 80px;
+    padding: 8px;
+  }
+  
+  .day-number {
+    font-size: 1rem;
+  }
+  
+  .room-status-icon {
+    font-size: 1.2rem;
+  }
+  
+  .room-count {
+    font-size: 0.8rem;
+  }
+  
+  .calendar-day-header {
+    padding: 12px 4px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .enhanced-calendar-day {
+    min-height: 60px;
+    padding: 4px;
+  }
+  
+  .room-status-icon {
+    font-size: 1rem;
+  }
+  
+  .room-count {
+    font-size: 0.7rem;
+  }
+  
+  .occupancy-bar {
+    height: 3px;
+  }
+}
+
+/* Hover effects for better UX */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* Loading state */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Custom scrollbar */
+.room-breakdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.room-breakdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.room-breakdown::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.room-breakdown::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Animation for state changes */
+.enhanced-calendar-day {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced tooltips (for future implementation) */
+.tooltip-enhanced {
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Print styles */
+@media print {
+  .enhanced-room-visual {
+    background: white;
+  }
+  
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+  
+  .btn, .form-select {
+    display: none;
+  }
+  
+  .enhanced-calendar-day:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

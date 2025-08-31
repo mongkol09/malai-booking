@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limit Recovery Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background: #f0f8ff;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button { 
+            padding: 15px 30px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover { background: #0056b3; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+        .status {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        .countdown {
+            font-size: 24px;
+            color: #007bff;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Rate Limit Recovery Test</h1>
+        <p class="info">Backend กลับมาทำงานแล้ว - ทดสอบ login</p>
+        
+        <div class="status" id="status">
+            <div class="info">✅ Backend Status: Running</div>
+            <div class="info">🔗 URL: http://localhost:3001</div>
+            <div class="countdown" id="countdown">Ready to test!</div>
+        </div>
+        
+        <div>
+            <button onclick="testLogin()" class="success">🔑 Test Login Now</button>
+            <button onclick="checkBackend()">🔍 Check Backend</button>
+        </div>
+        
+        <div id="result" style="margin-top: 20px;"></div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
+            <h3>📋 Next Steps:</h3>
+            <p>1. คลิก "Test Login Now" เพื่อทดสอบ</p>
+            <p>2. ถ้าสำเร็จ ลองเข้า frontend ใหม่</p>
+            <p>3. ไป User Management และทดสอบ</p>
+        </div>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost:3001/api/v1';
+        
+        async function checkBackend() {
+            const resultEl = document.getElementById('result');
+            
+            try {
+                resultEl.innerHTML = '<div class="info">🔄 Checking backend...</div>';
+                
+                const response = await fetch(`${baseURL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div class="success">✅ Backend is healthy!</div>
+                        <div>Status: ${data.status}</div>
+                        <div>Timestamp: ${data.timestamp}</div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `<div class="error">❌ Backend check failed</div>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ Cannot connect to backend: ${error.message}</div>`;
+            }
+        }
+        
+        async function testLogin() {
+            const resultEl = document.getElementById('result');
+            
+            try {
+                resultEl.innerHTML = '<div class="info">🔄 Testing login...</div>';
+                
+                // Clear any existing tokens first
+                localStorage.removeItem('hotel_admin_token');
+                localStorage.removeItem('hotel_admin_user');
+                localStorage.removeItem('hotel_admin_refresh_token');
+                
+                const response = await fetch(`${baseURL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@hotel.com',
+                        password: 'SecureAdmin123!'
+                    })
+                });
+                
+                if (response.status === 429) {
+                    resultEl.innerHTML = `
+                        <div class="error">🚫 Still rate limited (429)</div>
+                        <div>Please wait a few more minutes and try again</div>
+                        <div>Or restart the backend server</div>
+                    `;
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Save tokens
+                    const { user, tokens } = data.data;
+                    localStorage.setItem('hotel_admin_token', tokens.accessToken);
+                    localStorage.setItem('hotel_admin_user', JSON.stringify(user));
+                    localStorage.setItem('hotel_admin_refresh_token', tokens.refreshToken);
+                    
+                    resultEl.innerHTML = `
+                        <div class="success">🎉 Login successful!</div>
+                        <div class="success">✅ Rate limiting cleared</div>
+                        <div>User: ${user.email}</div>
+                        <div>Token saved to localStorage</div>
+                        <div style="margin-top: 15px;">
+                            <button onclick="goToApp()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                                🚀 Go to Main App
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `
+                        <div class="error">❌ Login failed: ${data.message}</div>
+                        <div>Status: ${response.status}</div>
+                    `;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ Login error: ${error.message}</div>`;
+            }
+        }
+        
+        function goToApp() {
+            window.location.href = '/signin';
+        }
+        
+        // Auto-check backend on load
+        window.onload = function() {
+            checkBackend();
+            
+            // Start countdown
+            let count = 3;
+            const countdownEl = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+                if (count > 0) {
+                    countdownEl.textContent = `Ready in ${count}...`;
+                    count--;
+                } else {
+                    countdownEl.textContent = 'Ready to test!';
+                    clearInterval(timer);
+                }
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

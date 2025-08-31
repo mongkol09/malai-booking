@@ -1,0 +1,146 @@
+
+เราจะใช้ PostgreSQL
+
+1. ภาพรวม
+เอกสารนี้จะอธิบายโครงสร้างฐานข้อมูลทั้งหมดที่จำเป็นในการรองรับฟังก์ชันการทำงานของ Admin Dashboard Template "HotelAir" โดยจะแบ่งกลุ่มของตารางตามโมดูลหลักที่ปรากฏในเมนูด้านข้างของ UI เพื่อให้ง่ายต่อการทำความเข้าใจและพัฒนา
+2. โมดูลหลัก: การจัดการโรงแรม (Hotel Core)
+2.1 Rooms & Room Types (การจัดการห้องพัก)
+RoomTypes: เก็บข้อมูลประเภทห้องหลัก (เช่น Standard, Deluxe, Onsen, Private House)
+room_type_id (PK)
+name (e.g., "Standard Double Bed")
+description
+base_rate
+capacity_adults, capacity_children
+image_url
+Rooms: เก็บข้อมูลห้องพักแต่ละห้อง
+room_id (PK)
+room_number (e.g., "101", "102")
+room_type_id (FK to RoomTypes)
+status (e.g., 'Available', 'In-House', 'Dirty', 'Cleaning', 'Maintenance')
+2.2 Bookings (การจัดการการจอง)
+Guests: เก็บข้อมูลโปรไฟล์ของลูกค้า
+guest_id (PK)
+first_name, last_name
+email, phone_number
+country
+notes
+Bookings: ตารางหลักสำหรับเก็บข้อมูลการจอง
+booking_id (PK)
+booking_reference_id (e.g., "B-12345")
+guest_id (FK to Guests)
+room_id (FK to Rooms)
+checkin_date, checkout_date
+num_adults, num_children
+total_price
+status (e.g., 'Confirmed', 'In-House', 'Completed', 'Cancelled', 'No-Show')
+cancellation_policy_id (FK to CancellationPolicies)
+created_at
+3. โมดูล: การจัดการทรัพยากรบุคคล (HRMS)
+3.1 Staff & Roles (พนักงานและบทบาท)
+Departments: เก็บข้อมูลแผนกต่างๆ
+department_id (PK)
+name (e.g., "Front Desk", "Housekeeping", "Restaurant")
+Roles: เก็บชื่อบทบาท
+role_id (PK)
+name (e.g., "Receptionist", "Housekeeper", "Manager")
+RolePermissions: เก็บสิทธิ์ของแต่ละบทบาท
+permission_id (PK)
+role_id (FK to Roles)
+resource_name
+can_read, can_write, can_create, can_delete
+Staffs: ข้อมูลพนักงานแต่ละคน
+staff_id (PK)
+first_name, last_name
+email (ใช้สำหรับ login)
+password_hash
+department_id (FK to Departments)
+role_id (FK to Roles)
+3.2 Leave & Attendance (การลาและการเข้างาน)
+LeaveRequests: เก็บข้อมูลการขอลางานของพนักงาน
+leave_request_id (PK)
+staff_id (FK to Staffs)
+leave_type (e.g., 'Sick', 'Annual', 'Personal')
+start_date, end_date
+reason
+status (e.g., 'Pending', 'Approved', 'Rejected')
+Attendance: บันทึกการเข้า-ออกงาน
+attendance_id (PK)
+staff_id (FK to Staffs)
+clock_in_time, clock_out_time
+date
+4. โมดูล: การเงินและบัญชี (Finance & Accounting)
+Folios: แฟ้มใบแจ้งหนี้ของการจองแต่ละครั้ง
+folio_id (PK)
+booking_id (FK to Bookings)
+status ('OPEN', 'CLOSED')
+current_balance
+Transactions: บันทึกทุกการเคลื่อนไหวทางการเงิน
+transaction_id (PK)
+folio_id (FK to Folios)
+transaction_type ('CHARGE', 'PAYMENT', 'REFUND', 'DEPOSIT_COLLECT', 'DEPOSIT_REFUND')
+description
+amount
+PaymentMethods: เก็บข้อมูลวิธีการชำระเงิน
+method_id (PK)
+name (e.g., "Credit Card", "QR PromptPay", "Cash")
+is_active
+5. โมดูล: การตั้งค่าและการจัดการราคา (Pricing & Configuration)
+5.1 Dynamic Pricing Core (หัวใจของระบบปรับราคา)
+DailyRoomRates: ตารางเก็บราคาขายจริงและข้อจำกัดของแต่ละห้องในแต่ละวัน
+daily_rate_id (PK)
+date
+room_type_id (FK to RoomTypes)
+current_rate (ราคาขายจริง)
+restrictions (JSON object, e.g., { "mlos": 2 })
+last_updated_by (e.g., 'User:ceo@hotel.com', 'RuleEngine:HighOccupancy')
+updated_at
+DynamicPricingRules: ตารางเก็บกฎ Dynamic Pricing
+rule_id (PK)
+name, priority, conditions, action
+RateAuditLog: ตารางเก็บประวัติการเปลี่ยนแปลงราคาทั้งหมด
+log_id (PK)
+daily_rate_id (FK to DailyRoomRates)
+changed_at, changed_by, change_reason
+old_values (JSON object), new_values (JSON object)
+5.2 General Management (การจัดการทั่วไป)
+Events: ตารางสำหรับปฏิทิน
+event_id (PK)
+title, start_time, end_time, description, event_type
+CancellationPolicies: เก็บชื่อนโยบายการยกเลิก
+policy_id (PK)
+name
+CancellationPolicyRules: เก็บกฎของแต่ละนโยบาย
+rule_id (PK)
+policy_id (FK to CancellationPolicies)
+days_before_checkin
+refund_percentage
+6. โมดูล: การปฏิบัติการและบริการเสริม (Operations & Ancillary Services) (เพิ่มใหม่)
+6.1 Housekeeping & Maintenance (แม่บ้านและซ่อมบำรุง)
+HousekeepingTasks: ตารางสำหรับมอบหมายและติดตามงานทำความสะอาด
+task_id (PK)
+room_id (FK to Rooms)
+assigned_staff_id (FK to Staffs)
+task_type (e.g., 'Check-out Clean', 'Daily Tidy-up')
+status (e.g., 'Pending', 'In Progress', 'Completed', 'Inspected')
+notes
+MaintenanceTickets: ตารางสำหรับติดตามงานแจ้งซ่อม
+ticket_id (PK)
+room_id (FK to Rooms)
+reported_by_staff_id (FK to Staffs)
+assigned_staff_id (FK to Staffs in Maintenance Dept)
+issue_description
+priority ('Low', 'Medium', 'High')
+status ('Open', 'In Progress', 'Resolved')
+6.2 Ancillary Services (บริการเสริม)
+Services: ตารางเก็บรายการบริการเสริมทั้งหมดที่โรงแรมมี
+service_id (PK)
+name (e.g., "Airport Transport", "Extra Bed", "Spa Package")
+price
+pricing_unit (e.g., 'Per Night', 'Per Person', 'One-time')
+BookingServices: ตารางเชื่อมระหว่างการจองและบริการเสริมที่ลูกค้าซื้อ
+booking_service_id (PK)
+booking_id (FK to Bookings)
+service_id (FK to Services)
+quantity
+total_price
+นี่คือโครงสร้างฐานข้อมูลฉบับปรับปรุงที่ครอบคลุมทุกโมดูลและฟังก์ชันที่เราได้พูดคุยกันมาทั้งหมดครับ

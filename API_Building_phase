@@ -1,0 +1,72 @@
+⚠️ ส่วนที่ยังต้องพัฒนาต่อ (Missing Features)
+1. Customer Booking Flow Logic ❌
+ขาดหาย:
+
+POST /api/v1/bookings/intent - สร้าง BookingIntent (ล็อคราคา 10-15 นาที)
+POST /api/v1/bookings/confirm - ยืนยันการจองพร้อมชำระเงิน
+Price Locking Logic: การป้องกันราคาเปลี่ยนขณะลูกค้ากรอกข้อมูล
+2. Email Notification System ❌
+มีโครงสร้างแล้ว แต่ขาด Logic:
+
+✅ MailerSend integration setup
+❌ Automatic confirmation email หลังจองสำเร็จ
+❌ Pre-arrival reminder emails
+❌ Post-stay thank you emails
+❌ QR Code generation สำหรับ check-in
+3. Check-in/Check-out Flow ❌
+ขาดหาย:
+
+POST /api/v1/bookings/{id}/checkin - Logic เช็คอินพร้อม deposit handling
+POST /api/v1/bookings/{id}/checkout - Logic เช็คเอาท์พร้อมคำนวณ final bill
+Room Status Management: AVAILABLE → BOOKED → IN_HOUSE → DIRTY → CLEANING → AVAILABLE
+4. Booking Management Flow ❌
+ขาดหาย:
+
+PUT /api/v1/bookings/{id}/modify - แก้ไขการจองพร้อมคำนวณส่วนต่างราคา
+POST /api/v1/bookings/{id}/cancel - ยกเลิกการจองตาม Cancellation Policy
+Modification Quote API: คำนวณราคาใหม่สำหรับการแก้ไข
+5. Housekeeping Management ❌
+ขาดหาย:
+
+GET /api/v1/housekeeping/rooms - รายการห้องที่ต้องทำความสะอาด
+PUT /api/v1/rooms/{id}/status - อัปเดตสถานะห้อง (DIRTY → CLEANING → AVAILABLE)
+Real-time Notifications: WebSocket สำหรับแจ้งเตือนแม่บ้าน
+6. Event Management System ❌
+ขาดหาย:
+
+การดึงข้อมูล Event จาก Google Calendar
+การจัดหมวดหมู่ Event อัตโนมัติ
+การเชื่อมโยง Event กับ Pricing Rules
+7. Admin Notification System ❌
+ขาดหาย:
+
+Real-time Dashboard notifications
+WebSocket implementation สำหรับการแจ้งเตือนทันที
+🎯 Endpoints ที่ต้องเพิ่ม (Priority สูง)
+🚀 แผนการพัฒนาต่อ (แนะนำ)
+Phase 1: Core Booking Logic (สำคัญที่สุด)
+Customer Booking Flow completion
+Check-in/Check-out endpoints
+Email notification integration
+Phase 2: Operational Management
+Housekeeping system
+Booking modification logic
+Admin notifications
+Phase 3: Advanced Features
+Event management system
+Real-time WebSocket implementation
+Advanced analytics
+📈 คะแนนความครบถ้วน:
+Dynamic Pricing: 100% ✅
+Financial System: 100% ✅
+Authentication: 100% ✅
+Database Schema: 100% ✅
+Security: 100% ✅
+Booking Logic: 30% ⚠️
+Email System: 20% ⚠️
+Housekeeping: 0% ❌
+Event Management: 0% ❌
+🎯 สรุป
+API มีความแข็งแกร่งในด้าน Infrastructure และ Core Systems แต่ยังขาด Business Logic สำหรับ Operational Flows ที่จำเป็นสำหรับการใช้งานจริง โดยเฉพาะ Customer Booking Journey และ Hotel Operations Management
+
+แนะนำ: ควรเริ่มพัฒนา Phase 1 เพื่อให้ระบบสามารถใช้งานได้จริงในเชิงพาณิชย์ครับ

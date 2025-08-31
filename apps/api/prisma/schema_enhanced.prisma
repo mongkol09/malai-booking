@@ -1,0 +1,551 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String               @id @default(uuid()) @map("user_id")
+  email          String               @unique
+  passwordHash   String               @map("password_hash")
+  userType       UserType             @map("user_type")
+  firstName      String               @map("first_name")
+  lastName       String               @map("last_name")
+  phoneNumber    String?              @map("phone_number")
+  country        String?
+  isActive       Boolean              @default(true) @map("is_active")
+  emailVerified  Boolean              @default(false) @map("email_verified")
+  lastLoginAt    DateTime?            @map("last_login_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  
+  // Existing relations
+  auditLogs      AuditLog[]
+  pricingRules   DynamicPricingRule[] @relation("DynamicPricingRuleCreator")
+  events         Event[]
+  guestProfile   Guest?
+  notifications  Notification[]
+  passwordResets PasswordResetToken[]
+  promocodes     Promocode[]
+  promocodeUsage PromocodeUsage[]     @relation("PromocodeUsageUser")
+  staffProfile   Staff?
+  systemSettings SystemSetting[]
+  transactions   Transaction[]        @relation("TransactionPoster")
+  sessions       UserSession[]
+  
+  // New relations for enhanced features
+  employeeProfile Employee?
+  sentChats      Chat[]               @relation("ChatSender")
+  receivedChats  Chat[]               @relation("ChatReceiver")
+  calendarEvents Calendar[]
+  uploadedFiles  FileManager[]
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @map("reset_token_id")
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+// === New Enhanced Models ===
+
+// HRMS Models
+model Employee {
+  id                String              @id @default(uuid()) @map("employee_id")
+  userId            String?             @unique @map("user_id")
+  employeeCode      String              @unique @map("employee_code")
+  firstName         String              @map("first_name")
+  lastName          String              @map("last_name")
+  email             String              @unique
+  phoneNumber       String?             @map("phone_number")
+  dateOfBirth       DateTime?           @map("date_of_birth")
+  gender            Gender?
+  address           String?
+  emergencyContact  String?             @map("emergency_contact")
+  nationalId        String?             @unique @map("national_id")
+  position          String
+  departmentId      String              @map("department_id")
+  hireDate          DateTime            @map("hire_date")
+  salary            Decimal             @db.Decimal(10, 2)
+  isActive          Boolean             @default(true) @map("is_active")
+  notes             String?
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  user                  User?               @relation(fields: [userId], references: [id])
+  department            Department          @relation("DepartmentStaffs", fields: [departmentId], references: [id])
+  attendanceRecords     AttendanceRecord[]
+  payrollRecords        PayrollRecord[]
+  leaveRequests         EmployeeLeaveRequest[]
+  shifts                ShiftAssignment[]
+  housekeepingTasks     HousekeepingTask[]
+  housekeepingSchedules HousekeepingSchedule[]
+
+  @@map("employees")
+}
+
+model AttendanceRecord {
+  id         String           @id @default(uuid()) @map("attendance_id")
+  employeeId String           @map("employee_id")
+  date       DateTime         @db.Date
+  clockIn    DateTime?        @map("clock_in")
+  clockOut   DateTime?        @map("clock_out")
+  breakStart DateTime?        @map("break_start")
+  breakEnd   DateTime?        @map("break_end")
+  totalHours Decimal?         @db.Decimal(4, 2) @map("total_hours")
+  overtime   Decimal?         @default(0) @db.Decimal(4, 2)
+  status     AttendanceStatus @default(Present)
+  notes      String?
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@map("attendance_records")
+}
+
+model PayrollRecord {
+  id             String        @id @default(uuid()) @map("payroll_id")
+  employeeId     String        @map("employee_id")
+  payPeriodStart DateTime      @map("pay_period_start") @db.Date
+  payPeriodEnd   DateTime      @map("pay_period_end") @db.Date
+  baseSalary     Decimal       @db.Decimal(10, 2) @map("base_salary")
+  overtimePay    Decimal       @default(0) @db.Decimal(10, 2) @map("overtime_pay")
+  bonuses        Decimal       @default(0) @db.Decimal(10, 2)
+  deductions     Decimal       @default(0) @db.Decimal(10, 2)
+  totalPay       Decimal       @db.Decimal(10, 2) @map("total_pay")
+  payDate        DateTime?     @map("pay_date")
+  status         PayrollStatus @default(Pending)
+  notes          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("payroll_records")
+}
+
+model EmployeeLeaveRequest {
+  id         String              @id @default(uuid()) @map("leave_id")
+  employeeId String              @map("employee_id")
+  leaveType  EmployeeLeaveType   @map("leave_type")
+  startDate  DateTime            @map("start_date") @db.Date
+  endDate    DateTime            @map("end_date") @db.Date
+  totalDays  Int                 @map("total_days")
+  reason     String
+  status     EmployeeLeaveStatus @default(Pending)
+  approvedBy String?             @map("approved_by")
+  approvedAt DateTime?           @map("approved_at")
+  rejectedAt DateTime?           @map("rejected_at")
+  notes      String?
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_leave_requests")
+}
+
+model ShiftAssignment {
+  id         String   @id @default(uuid()) @map("assignment_id")
+  employeeId String   @map("employee_id")
+  shiftId    String   @map("shift_id")
+  date       DateTime @db.Date
+  isActive   Boolean  @default(true) @map("is_active")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift    Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, shiftId, date])
+  @@map("shift_assignments")
+}
+
+// Inventory Management Models
+model InventoryItem {
+  id          String               @id @default(uuid()) @map("item_id")
+  name        String
+  description String?
+  category    InventoryCategory
+  unit        String               // เช่น "pieces", "kg", "liter"
+  minStock    Int                  @map("min_stock")
+  maxStock    Int                  @map("max_stock")
+  unitPrice   Decimal              @db.Decimal(10, 2) @map("unit_price")
+  isActive    Boolean              @default(true) @map("is_active")
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  stockRecords  StockRecord[]
+  purchaseItems PurchaseItem[]
+
+  @@map("inventory_items")
+}
+
+model InventorySupplier {
+  id            String     @id @default(uuid()) @map("supplier_id")
+  name          String
+  contactPerson String?    @map("contact_person")
+  email         String?
+  phoneNumber   String?    @map("phone_number")
+  address       String?
+  notes         String?
+  isActive      Boolean    @default(true) @map("is_active")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  purchases Purchase[]
+
+  @@map("inventory_suppliers")
+}
+
+model StockRecord {
+  id           String       @id @default(uuid()) @map("stock_id")
+  itemId       String       @map("item_id")
+  quantity     Int
+  movementType MovementType @map("movement_type")
+  reference    String?      // เช่น "Purchase Order #123", "Room Service"
+  notes        String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  item InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("stock_records")
+}
+
+model Purchase {
+  id               String        @id @default(uuid()) @map("purchase_id")
+  supplierId       String        @map("supplier_id")
+  orderNumber      String        @unique @map("order_number")
+  orderDate        DateTime      @map("order_date") @db.Date
+  expectedDelivery DateTime?     @map("expected_delivery") @db.Date
+  actualDelivery   DateTime?     @map("actual_delivery") @db.Date
+  totalAmount      Decimal       @db.Decimal(10, 2) @map("total_amount")
+  status           PurchaseStatus @default(Pending)
+  notes            String?
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  supplier      InventorySupplier @relation(fields: [supplierId], references: [id])
+  purchaseItems PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         String  @id @default(uuid()) @map("purchase_item_id")
+  purchaseId String  @map("purchase_id")
+  itemId     String  @map("item_id")
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(10, 2) @map("unit_price")
+  totalPrice Decimal @db.Decimal(10, 2) @map("total_price")
+
+  purchase Purchase     @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  item     InventoryItem @relation(fields: [itemId], references: [id])
+
+  @@map("purchase_items")
+}
+
+// Housekeeping Management
+model HousekeepingTask {
+  id          String                    @id @default(uuid()) @map("task_id")
+  roomId      String                    @map("room_id")
+  taskType    HousekeepingTaskType      @map("task_type")
+  description String?
+  priority    TaskPriority              @default(Medium)
+  assignedTo  String?                   @map("assigned_to")
+  status      TaskStatus                @default(Pending)
+  scheduledAt DateTime?                 @map("scheduled_at")
+  startedAt   DateTime?                 @map("started_at")
+  completedAt DateTime?                 @map("completed_at")
+  notes       String?
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  updatedAt   DateTime                  @updatedAt @map("updated_at")
+
+  room     Room      @relation(fields: [roomId], references: [id])
+  assignee Employee? @relation(fields: [assignedTo], references: [id])
+
+  @@map("housekeeping_tasks")
+}
+
+model HousekeepingSchedule {
+  id         String     @id @default(uuid()) @map("schedule_id")
+  roomId     String     @map("room_id")
+  employeeId String     @map("employee_id")
+  date       DateTime   @db.Date
+  startTime  DateTime   @db.Time @map("start_time")
+  endTime    DateTime   @db.Time @map("end_time")
+  taskTypes  String[]   @map("task_types") // Array of task types
+  status     TaskStatus @default(Pending)
+  notes      String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  room     Room     @relation(fields: [roomId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([roomId, date, startTime])
+  @@map("housekeeping_schedules")
+}
+
+// Communication & File Management
+model Chat {
+  id          String      @id @default(uuid()) @map("chat_id")
+  senderId    String      @map("sender_id")
+  receiverId  String?     @map("receiver_id")
+  roomId      String?     @map("room_id")
+  message     String
+  messageType MessageType @default(Text) @map("message_type")
+  isRead      Boolean     @default(false) @map("is_read")
+  readAt      DateTime?   @map("read_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  sender   User  @relation("ChatSender", fields: [senderId], references: [id])
+  receiver User? @relation("ChatReceiver", fields: [receiverId], references: [id])
+  room     Room? @relation(fields: [roomId], references: [id])
+
+  @@map("chats")
+}
+
+model Calendar {
+  id             String            @id @default(uuid()) @map("calendar_id")
+  title          String
+  description    String?
+  startDate      DateTime          @map("start_date")
+  endDate        DateTime          @map("end_date")
+  allDay         Boolean           @default(false) @map("all_day")
+  eventType      CalendarEventType @map("event_type")
+  userId         String            @map("user_id")
+  roomId         String?           @map("room_id")
+  isRecurring    Boolean           @default(false) @map("is_recurring")
+  recurrenceRule String?           @map("recurrence_rule")
+  reminder       DateTime?
+  color          String?           @default("#3788d8")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  user User  @relation(fields: [userId], references: [id])
+  room Room? @relation(fields: [roomId], references: [id])
+
+  @@map("calendar_events")
+}
+
+model FileManager {
+  id           String       @id @default(uuid()) @map("file_id")
+  fileName     String       @map("file_name")
+  originalName String       @map("original_name")
+  filePath     String       @map("file_path")
+  fileSize     Int          @map("file_size")
+  mimeType     String       @map("mime_type")
+  uploadedBy   String       @map("uploaded_by")
+  roomId       String?      @map("room_id")
+  bookingId    String?      @map("booking_id")
+  category     FileCategory @default(Other)
+  description  String?
+  isPublic     Boolean      @default(false) @map("is_public")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  uploader User     @relation(fields: [uploadedBy], references: [id])
+  room     Room?    @relation(fields: [roomId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id])
+
+  @@map("file_manager")
+}
+
+// Enhanced Room & Guest Information
+model RoomImage {
+  id           String   @id @default(uuid()) @map("image_id")
+  roomId       String   @map("room_id")
+  imageUrl     String   @map("image_url")
+  altText      String?  @map("alt_text")
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_images")
+}
+
+model ComplementaryItem {
+  id          String                @id @default(uuid()) @map("item_id")
+  name        String
+  description String?
+  category    ComplementaryCategory
+  isActive    Boolean               @default(true) @map("is_active")
+  cost        Decimal?              @db.Decimal(8, 2) // ต้นทุนของรายการ
+  createdAt   DateTime              @default(now()) @map("created_at")
+  updatedAt   DateTime              @updatedAt @map("updated_at")
+
+  roomItems RoomComplementaryItem[]
+
+  @@map("complementary_items")
+}
+
+model RoomComplementaryItem {
+  id       String @id @default(uuid()) @map("room_item_id")
+  roomId   String @map("room_id")
+  itemId   String @map("item_id")
+  quantity Int    @default(1)
+
+  room Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  item ComplementaryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, itemId])
+  @@map("room_complementary_items")
+}
+
+model ContactInfo {
+  id          String      @id @default(uuid()) @map("contact_id")
+  guestId     String      @map("guest_id")
+  contactType ContactType @map("contact_type")
+  value       String      // เบอร์โทร, อีเมล, หรือข้อมูลติดต่ออื่นๆ
+  isPrimary   Boolean     @default(false) @map("is_primary")
+  isVerified  Boolean     @default(false) @map("is_verified")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@map("contact_info")
+}
+
+// === New Enum Types ===
+
+enum AttendanceStatus {
+  Present
+  Absent
+  Late
+  HalfDay @map("half_day")
+}
+
+enum PayrollStatus {
+  Pending
+  Approved
+  Paid
+}
+
+enum EmployeeLeaveType {
+  Annual
+  Sick
+  Maternity
+  Paternity
+  Emergency
+  Unpaid
+}
+
+enum EmployeeLeaveStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum InventoryCategory {
+  CleaningSupplies @map("cleaning_supplies")
+  Linens           @map("linens")
+  Toiletries       @map("toiletries")
+  FoodBeverage     @map("food_beverage")
+  Maintenance      @map("maintenance")
+  OfficeSupplies   @map("office_supplies")
+  Furniture        @map("furniture")
+  Electronics      @map("electronics")
+  Other            @map("other")
+}
+
+enum MovementType {
+  In         @map("in")
+  Out        @map("out")
+  Adjustment @map("adjustment")
+}
+
+enum PurchaseStatus {
+  Pending           @map("pending")
+  Ordered           @map("ordered")
+  PartiallyReceived @map("partially_received")
+  Received          @map("received")
+  Cancelled         @map("cancelled")
+}
+
+enum HousekeepingTaskType {
+  Cleaning      @map("cleaning")
+  Maintenance   @map("maintenance")
+  Inspection    @map("inspection")
+  Laundry       @map("laundry")
+  Restocking    @map("restocking")
+  DeepCleaning  @map("deep_cleaning")
+}
+
+enum TaskPriority {
+  Low    @map("low")
+  Medium @map("medium")
+  High   @map("high")
+  Urgent @map("urgent")
+}
+
+enum TaskStatus {
+  Pending    @map("pending")
+  InProgress @map("in_progress")
+  Completed  @map("completed")
+  Cancelled  @map("cancelled")
+}
+
+enum MessageType {
+  Text  @map("text")
+  Image @map("image")
+  File  @map("file")
+  Voice @map("voice")
+}
+
+enum CalendarEventType {
+  Meeting     @map("meeting")
+  Reminder    @map("reminder")
+  Maintenance @map("maintenance")
+  Booking     @map("booking")
+  Personal    @map("personal")
+  Training    @map("training")
+}
+
+enum FileCategory {
+  Documents @map("documents")
+  Images    @map("images")
+  Contracts @map("contracts")
+  Invoices  @map("invoices")
+  Reports   @map("reports")
+  Other     @map("other")
+}
+
+enum ComplementaryCategory {
+  Bathroom     @map("bathroom")
+  Bedroom      @map("bedroom")
+  Refreshments @map("refreshments")
+  Electronics  @map("electronics")
+  Stationery   @map("stationery")
+  Comfort      @map("comfort")
+}
+
+enum ContactType {
+  Phone            @map("phone")
+  Email            @map("email")
+  EmergencyContact @map("emergency_contact")
+  WorkPhone        @map("work_phone")
+  HomePhone        @map("home_phone")
+  SocialMedia      @map("social_media")
+}
+
+// === Include existing models here (need to be copied from original schema) ===
+// This file needs to include all existing models to be complete
+// I'll need to copy the rest of the original schema below...

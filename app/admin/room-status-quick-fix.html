@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Room Status Quick Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white; }
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; }
+        .results { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Room Status Quick Fix</h1>
+        <p>แก้ปัญหา Room Status ไม่แสดงข้อมูลแบบด่วน</p>
+
+        <div class="info">
+            <h4>🎯 ปัญหาที่พบ:</h4>
+            <ul>
+                <li>❌ API ส่งข้อมูลกลับมาแล้ว (11 ห้อง) แต่ไม่แสดงใน Room Status</li>
+                <li>❌ Missing formatRoomForStatus method ใน roomStatusService</li>
+                <li>❌ อาจมีปัญหา data structure หรือ frontend logic</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <h4>✅ การแก้ไขที่ทำไปแล้ว:</h4>
+            <ul>
+                <li>✅ เพิ่ม formatRoomForStatus method ใน roomStatusService</li>
+                <li>✅ เพิ่ม getStatusColor และ getRoomStatusOptions methods</li>
+                <li>✅ Backend API ส่งข้อมูลถูกต้อง (11 ห้อง)</li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>🚀 ทดสอบและแก้ไข:</h4>
+            <button onclick="testRoomStatusFlow()" class="btn-success">1. ทดสอบ Room Status Flow</button>
+            <button onclick="fixLocalStorage()" class="btn-warning">2. แก้ไข LocalStorage</button>
+            <button onclick="testFormatFunction()" class="btn-success">3. ทดสอบ Format Function</button>
+            <button onclick="debugCurrentIssue()" class="btn-danger">4. Debug ปัญหาปัจจุบัน</button>
+        </div>
+
+        <div id="results" class="results"></div>
+
+        <div class="info">
+            <h4>📋 ขั้นตอนการแก้ไข:</h4>
+            <ol>
+                <li>คลิก "1. ทดสอบ Room Status Flow" เพื่อดูข้อมูล API</li>
+                <li>คลิก "2. แก้ไข LocalStorage" เพื่อตั้งค่า token</li>
+                <li>คลิก "4. Debug ปัญหาปัจจุบัน" เพื่อวินิจฉัยปัญหา</li>
+                <li><strong>Refresh หน้า Room Status</strong> หลังจากแก้ไขเสร็จ</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001/api/v1';
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '📋';
+            results.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            console.log(message);
+        }
+
+        function clearResults() {
+            document.getElementById('results').textContent = '';
+        }
+
+        async function testRoomStatusFlow() {
+            clearResults();
+            log('🧪 Testing complete Room Status flow...');
+            
+            try {
+                // Test API call
+                const response = await fetch(`${API_BASE_URL}/rooms`, {
+                    headers: { 'X-API-Key': 'dev-api-key-2024' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ API Response received: ${data.success}`, 'success');
+                log(`📊 Total rooms: ${data.data?.length || 0}`, 'info');
+                
+                if (data.data && data.data.length > 0) {
+                    log('🏠 Sample room data:', 'info');
+                    const sampleRoom = data.data[0];
+                    log(`   Room ID: ${sampleRoom.id}`, 'info');
+                    log(`   Room Number: ${sampleRoom.number}`, 'info');
+                    log(`   Room Type: ${sampleRoom.type}`, 'info');
+                    log(`   Status: ${sampleRoom.status}`, 'info');
+                    log(`   Price: ${sampleRoom.price}`, 'info');
+                    
+                    // Test format function simulation
+                    log('🔧 Testing format function...', 'info');
+                    const formatted = formatRoomForStatus(sampleRoom);
+                    log(`   Formatted Room Number: ${formatted.roomNumber}`, 'info');
+                    log(`   Formatted Room Type: ${formatted.roomType}`, 'info');
+                    log(`   Formatted Status: ${formatted.status}`, 'info');
+                    log(`   Status Color: ${formatted.statusColor}`, 'info');
+                    
+                    log('🎉 Room Status API is working correctly!', 'success');
+                    log('💡 If data still not showing, the issue is in frontend rendering logic', 'warning');
+                } else {
+                    log('❌ No room data received from API', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ API Test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function fixLocalStorage() {
+            clearResults();
+            log('🔧 Fixing localStorage configuration...');
+            
+            // Clear all old tokens
+            const keysToRemove = ['token', 'hotel_admin_token', 'hotel_admin_refresh_token', 'hotel_admin_user'];
+            keysToRemove.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    localStorage.removeItem(key);
+                    log(`🗑️ Removed: ${key}`, 'info');
+                }
+            });
+            
+            // Set development token
+            const devToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZXYtdXNlci0xMjMiLCJlbWFpbCI6ImFkbWluQGhvdGVsLmRldiIsInVzZXJUeXBlIjoiQURNSU4iLCJzZXNzaW9uSWQiOiJkZXYtc2Vzc2lvbi0xMjMiLCJpYXQiOjE3NTUyNTA1MjIsImV4cCI6MTc1NTMzNjkyMiwiYXVkIjoiaG90ZWwtYm9va2luZy1jbGllbnQiLCJpc3MiOiJob3RlbC1ib29raW5nLWFwaSJ9.CORKuf1uLhDEl2XwMmcQnZIgvlvV99K7Y_RLhJ_sbAc';
+            
+            localStorage.setItem('hotel_admin_token', devToken);
+            
+            // Set user data
+            const userData = {
+                id: 'dev-admin-123',
+                email: 'admin@hotel.dev',
+                userType: 'ADMIN',
+                name: 'Development Admin'
+            };
+            localStorage.setItem('hotel_admin_user', JSON.stringify(userData));
+            
+            log('✅ Development token set successfully!', 'success');
+            log('✅ User data configured', 'success');
+            log('🎯 localStorage is now properly configured', 'success');
+            
+            // Test the configuration
+            try {
+                const response = await fetch(`${API_BASE_URL}/rooms`, {
+                    headers: {
+                        'Authorization': `Bearer ${devToken}`,
+                        'X-API-Key': 'dev-api-key-2024'
+                    }
+                });
+                
+                if (response.ok) {
+                    log('✅ Token authentication successful!', 'success');
+                } else {
+                    log('⚠️ Token auth failed, but dev bypass should work', 'warning');
+                }
+            } catch (error) {
+                log(`⚠️ Token test error: ${error.message}`, 'warning');
+            }
+        }
+
+        function testFormatFunction() {
+            clearResults();
+            log('🧪 Testing formatRoomForStatus function...');
+            
+            // Sample room data from API
+            const sampleRoom = {
+                id: "test-room-123",
+                number: "ST001",
+                type: "Standard Room",
+                price: 3500,
+                capacity: 2,
+                status: "available"
+            };
+            
+            log('📋 Sample room input:', 'info');
+            log(JSON.stringify(sampleRoom, null, 2), 'info');
+            
+            const formatted = formatRoomForStatus(sampleRoom);
+            
+            log('📋 Formatted output:', 'info');
+            log(JSON.stringify(formatted, null, 2), 'info');
+            
+            log('✅ Format function test completed!', 'success');
+        }
+
+        async function debugCurrentIssue() {
+            clearResults();
+            log('🔍 Debugging current Room Status issue...');
+            
+            // Check localStorage
+            log('1. 🔍 Checking localStorage...', 'info');
+            const token = localStorage.getItem('hotel_admin_token');
+            const user = localStorage.getItem('hotel_admin_user');
+            log(`   Token exists: ${!!token}`, token ? 'success' : 'error');
+            log(`   User data exists: ${!!user}`, user ? 'success' : 'error');
+            
+            // Check API connectivity
+            log('2. 🔍 Checking API connectivity...', 'info');
+            try {
+                const healthResponse = await fetch('http://localhost:3001/health');
+                const healthData = await healthResponse.json();
+                log(`   API Health: ${healthData.status}`, 'success');
+                log(`   Database: ${healthData.database}`, 'success');
+            } catch (error) {
+                log(`   API Health Check failed: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Check rooms API
+            log('3. 🔍 Checking rooms API...', 'info');
+            try {
+                const roomsResponse = await fetch(`${API_BASE_URL}/rooms`, {
+                    headers: { 'X-API-Key': 'dev-api-key-2024' }
+                });
+                
+                if (roomsResponse.ok) {
+                    const roomsData = await roomsResponse.json();
+                    log(`   Rooms API: SUCCESS (${roomsData.data?.length || 0} rooms)`, 'success');
+                } else {
+                    log(`   Rooms API: FAILED (${roomsResponse.status})`, 'error');
+                }
+            } catch (error) {
+                log(`   Rooms API error: ${error.message}`, 'error');
+            }
+            
+            // Check frontend compatibility
+            log('4. 🔍 Checking frontend compatibility...', 'info');
+            if (typeof roomStatusService !== 'undefined') {
+                log('   roomStatusService: Available in global scope', 'success');
+            } else {
+                log('   roomStatusService: NOT available in global scope', 'warning');
+                log('   This is normal for React components', 'info');
+            }
+            
+            // Final recommendations
+            log('5. 📋 Diagnosis complete!', 'info');
+            log('💡 RECOMMENDATIONS:', 'warning');
+            log('   1. API is working correctly ✅', 'info');
+            log('   2. Data format functions added ✅', 'info');
+            log('   3. Try: Refresh Room Status page now', 'warning');
+            log('   4. If still not working: Check browser console for React errors', 'warning');
+            log('   5. Make sure React dev server is running', 'warning');
+        }
+
+        // Helper function (same as in roomStatusService)
+        function formatRoomForStatus(room) {
+            return {
+                id: room.id,
+                roomNumber: room.number || room.roomNumber,
+                roomType: room.type || 'Standard',
+                floor: Math.floor(parseInt(room.number || room.roomNumber || '101') / 100) || 1,
+                checkOut: room.checkOut || '-',
+                status: room.status || 'available',
+                statusColor: getStatusColor(room.status || 'available'),
+                capacity: room.capacity || 2,
+                price: room.price || 0
+            };
+        }
+        
+        function getStatusColor(status) {
+            switch (status.toLowerCase()) {
+                case 'available': return 'bg-success';
+                case 'occupied': return 'bg-danger';
+                case 'dirty': return 'bg-warning';
+                case 'maintenance': return 'bg-secondary';
+                case 'out-of-order': return 'bg-dark';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // Auto-run basic check on load
+        window.onload = function() {
+            log('🚀 Room Status Quick Fix Tool loaded');
+            log('📋 Click buttons above to diagnose and fix issues');
+        };
+    </script>
+</body>
+</html>

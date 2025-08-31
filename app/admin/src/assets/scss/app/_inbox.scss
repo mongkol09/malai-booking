@@ -1,0 +1,83 @@
+
+
+.app-inbox{
+
+    .fa-star{
+        color: var(--bs-gray-300);
+        &:hover,
+        &.active{
+            color: var(--primary-color);
+        }
+    }
+    .user-list{
+        li:hover{
+            .user-msg{
+                color: var(--primary-color);
+            }
+        }
+    }
+    .order-1{
+        top: 60px;
+        .fa-circle{
+            font-size: 10px;
+        }
+        a{
+            color: inherit;
+            &:hover{
+                color: var(--accent-color);
+            }
+        }
+
+        @include media-breakpoint-up(lg){
+            .user-list{
+                height: calc(100vh - 205px);
+            }
+        }
+    }
+    
+    .order-2{
+        .list-group{
+            li{
+                &:first-child{
+                    border-radius: .75rem .75rem 0 0;
+                }
+                &:last-child{
+                    border-radius: 0 0 .75rem .75rem;
+                }
+                &:hover{
+                    .hover-actions{
+                        display: flex;
+                        justify-content: space-between;
+                    }    
+                }
+                .hover-actions{
+                    position: absolute;
+                    text-align: end;
+                    display: none;
+                    width: 135px;
+                    right: 0;
+                }
+            }
+        }
+    }
+    
+    @include media-breakpoint-down(md) {
+        .order-1{
+            @include transition(ease .1s);
+            position: relative;
+            left: 0;
+            
+            &.open{
+                left: 0;
+                z-index: 99;
+            }
+        }
+    }
+
+    .main {
+        .sidebar{
+            position: fixed;
+            left: -500px;
+        }
+    }
+}

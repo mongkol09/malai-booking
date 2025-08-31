@@ -1,0 +1,126 @@
+1. ภาพรวมและหลักการออกแบบ
+เป้าหมายของโมดูลนี้คือการสร้างระบบที่สามารถบันทึกทุกธุรกรรมทางการเงินได้อย่างถูกต้อง, ตรวจสอบย้อนหลังได้, และสามารถนำข้อมูลไปสร้างรายงานเชิงวิเคราะห์เพื่อผู้บริหารได้
+หลักการสำคัญ:
+ความถูกต้อง (Accuracy): ทุกตัวเลขต้องแม่นยำ การใช้ Data Type ที่เหมาะสม (เช่น DECIMAL สำหรับเงิน) เป็นสิ่งจำเป็น
+ความสามารถในการตรวจสอบ (Auditability): ทุกธุรกรรมที่เกิดขึ้นจะต้องมีร่องรอยเสมอ เราจะไม่ "ลบ" ข้อมูลทางการเงิน แต่จะใช้วิธี "ปรับปรุง" ด้วยการสร้างธุรกรรมใหม่ขึ้นมาหักล้าง (Credit/Debit)
+แหล่งข้อมูลจริงเพียงแหล่งเดียว (Single Source of Truth): ตาราง Transactions จะเป็นหัวใจหลักที่เก็บทุกการเคลื่อนไหวทางการเงิน และรายงานทั้งหมดจะต้องถูกสร้างขึ้นจากข้อมูลในตารางนี้
+2. การออกแบบโครงสร้างฐานข้อมูล (Database Schema)
+เราจะใช้ 3 ตารางหลักในการสร้างระบบการเงินนี้
+ตารางที่ 1: Folios
+ตารางนี้เปรียบเสมือน "แฟ้มใบแจ้งหนี้" ของแต่ละการจอง ทำหน้าที่เป็นคอนเทนเนอร์สำหรับเก็บธุรกรรมทั้งหมดที่เกี่ยวข้อง
+CREATE TABLE Folios (
+    folio_id VARCHAR(36) PRIMARY KEY,       -- UUID
+    booking_id VARCHAR(36) NOT NULL,
+    status VARCHAR(50) NOT NULL,            -- 'OPEN', 'CLOSED'
+    current_balance DECIMAL(12, 2) NOT NULL DEFAULT 0.00, -- ยอดคงเหลือปัจจุบัน
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (booking_id) REFERENCES Bookings(booking_id)
+);
+
+
+ตารางที่ 2: Transactions (สำคัญที่สุด)
+นี่คือหัวใจของระบบบัญชี เป็นที่บันทึกทุกการเคลื่อนไหวทางการเงิน ไม่ว่าจะเล็กหรือใหญ่
+CREATE TABLE Transactions (
+    transaction_id VARCHAR(36) PRIMARY KEY, -- UUID
+    folio_id VARCHAR(36) NOT NULL,
+    
+    transaction_type VARCHAR(50) NOT NULL,  -- 'CHARGE', 'PAYMENT', 'REFUND', 'DEPOSIT'
+    description TEXT NOT NULL,              -- เช่น "ค่าห้องพักคืนแรก", "ค่ามินิบาร์", "ชำระด้วยบัตรเครดิต"
+    
+    amount DECIMAL(12, 2) NOT NULL,         -- จำนวนเงิน (จะเป็นบวกสำหรับ CHARGE, เป็นลบสำหรับ PAYMENT)
+    
+    posted_by VARCHAR(255),                 -- 'System', 'User:frontdesk@hotel.com'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (folio_id) REFERENCES Folios(folio_id)
+);
+
+CREATE INDEX idx_transactions_folio_id ON Transactions(folio_id);
+
+
+ตารางที่ 3: Invoices
+ตารางสำหรับเก็บข้อมูลใบแจ้งหนี้/ใบเสร็จรับเงินที่ออกอย่างเป็นทางการ
+CREATE TABLE Invoices (
+    invoice_id VARCHAR(36) PRIMARY KEY,     -- UUID
+    invoice_number VARCHAR(100) NOT NULL UNIQUE, -- เลขที่ใบแจ้งหนี้
+    folio_id VARCHAR(36) NOT NULL,
+    issue_date DATE NOT NULL,
+    due_date DATE,
+    status VARCHAR(50) NOT NULL,            -- 'DRAFT', 'SENT', 'PAID', 'VOID'
+    pdf_url TEXT,                           -- ลิงก์ไปยังไฟล์ PDF ของใบแจ้งหนี้
+    
+    FOREIGN KEY (folio_id) REFERENCES Folios(folio_id)
+);
+
+
+3. Flow การทำงานทางการเงิน
+Flow A: การบันทึกค่าใช้จ่าย (Posting a Charge)
+สถานการณ์: ลูกค้าสั่ง Room Service หรือใช้บริการมินิบาร์
+กระบวนการ:
+พนักงาน (จากร้านอาหารหรือฟร้อนท์) เข้าสู่หน้า Folio ของลูกค้าใน Dashboard
+กดปุ่ม "เพิ่มรายการ (Add Charge)"
+กรอกรายละเอียด: "Room Service - ชุดอาหารเย็น" และจำนวนเงิน "850 บาท"
+เบื้องหลัง: ระบบจะทำการ INSERT ระเบียนใหม่ลงในตาราง Transactions
+transaction_type: 'CHARGE'
+description: 'Room Service - ชุดอาหารเย็น'
+amount: 850.00 (ค่าบวก)
+ระบบจะ UPDATE ค่า current_balance ในตาราง Folios โดยการบวกเพิ่ม 850 บาท
+Flow B: การรับชำระเงิน (Making a Payment)
+สถานการณ์: ลูกค้าชำระค่าใช้จ่ายเพิ่มเติมตอนเช็คเอาท์
+กระบวนการ:
+พนักงานรับเงินจากลูกค้า (เช่น 1,200 บาท ผ่านบัตรเครดิต)
+พนักงานกดปุ่ม "รับชำระเงิน (Receive Payment)" ในหน้า Folio
+กรอกรายละเอียด: "ชำระด้วยบัตรเครดิต" และจำนวนเงิน "1,200 บาท"
+เบื้องหลัง: ระบบจะทำการ INSERT ระเบียนใหม่ลงในตาราง Transactions
+transaction_type: 'PAYMENT'
+description: 'ชำระด้วยบัตรเครดิต'
+amount: -1200.00 (ค่าลบ)
+ระบบจะ UPDATE ค่า current_balance ในตาราง Folios โดยการลบออก 1,200 บาท
+Flow C: กระบวนการปิดยอดสิ้นวัน (End-of-Day Process)
+สถานการณ์: เป็นกระบวนการอัตโนมัติที่รันทุกคืนเพื่อปิดบัญชีของวันนั้นๆ
+กระบวนการ:
+Cron Job เริ่มทำงานตอนเที่ยงคืน
+ระบบจะทำการ "ตรวจสอบ (Audit)" ธุรกรรมทั้งหมดที่เกิดขึ้นใน 24 ชั่วโมงที่ผ่านมา
+สร้าง "รายงานสรุปประจำวัน (Daily Summary Report)" ซึ่งประกอบด้วย:
+รายรับรวม แยกตามประเภท (ค่าห้อง, ค่าอาหาร, อื่นๆ)
+ยอดชำระรวม แยกตามวิธีการชำระ (เงินสด, บัตรเครดิต)
+ข้อมูลสรุปนี้จะถูกบันทึกไว้เพื่อใช้ในการทำบัญชีและเปรียบเทียบผลการดำเนินงานในแต่ละวัน
+4. Flow การรายงานและวิเคราะห์ข้อมูล (Reporting & Analytics)
+นี่คือส่วนที่เราจะนำข้อมูลดิบจากตาราง Transactions มาแปลงเป็นข้อมูลเชิงลึกทางธุรกิจ
+การคำนวณตัวชี้วัดสำคัญ (KPIs)
+ADR (Average Daily Rate) - ราคาห้องพักเฉลี่ยต่อวัน:
+ตรรกะ: (รายรับจากค่าห้องพักทั้งหมดในหนึ่งวัน) / (จำนวนห้องทั้งหมดที่ขายได้ในวันนั้น)
+SQL-like Logic:
+SELECT SUM(amount) / COUNT(DISTINCT folio_id) AS adr
+FROM Transactions
+WHERE transaction_type = 'CHARGE'
+  AND description LIKE 'ค่าห้องพัก%' -- หรือใช้ Category ที่ชัดเจน
+  AND created_at BETWEEN 'YYYY-MM-DD 00:00:00' AND 'YYYY-MM-DD 23:59:59';
+
+
+RevPAR (Revenue Per Available Room) - รายได้เฉลี่ยต่อห้องพักที่มีทั้งหมด:
+ตรรกะ: (รายรับจากค่าห้องพักทั้งหมดในหนึ่งวัน) / (จำนวนห้องพักทั้งหมดที่มีในโรงแรม)
+SQL-like Logic:
+SELECT SUM(amount) / (SELECT total_inventory FROM HotelInfo) AS revpar
+FROM Transactions
+WHERE transaction_type = 'CHARGE'
+  AND description LIKE 'ค่าห้องพัก%'
+  AND created_at BETWEEN 'YYYY-MM-DD 00:00:00' AND 'YYYY-MM-DD 23:59:59';
+
+
+API สำหรับ Dashboard ผู้บริหาร
+Endpoint: GET /api/v1/admin/reports/kpi-summary?period=last_30_days
+Backend Logic: Backend จะทำการ Query ที่ซับซ้อน (เหมือนตัวอย่างข้างบน) เพื่อคำนวณ KPI ต่างๆ ตามช่วงเวลาที่ร้องขอ และส่งผลลัพธ์ที่สรุปแล้วกลับไป
+Response Payload:
+{
+  "period": "last_30_days",
+  "totalRevenue": 1500000.00,
+  "averageADR": 3200.00,
+  "averageRevPAR": 2800.00,
+  "averageOccupancy": "87.50%"
+}
+
+
+ด้วยโครงสร้างและ Flow ทั้งหมดนี้ ระบบของคุณจะสามารถจัดการด้านการเงินได้อย่างเป็นระบบและมีประสิทธิภาพ พร้อมทั้งมีข้อมูลเชิงลึกเพื่อนำไปต่อยอดทางธุรกิจได้อย่างสมบูรณ์ครับ

@@ -1,0 +1,182 @@
+สำหรับระบบจองโรงแรมระดับ Enterprise การยืนยันการชำระเงินจะเน้นที่ ความถูกต้อง (Accuracy), การทำงานอัตโนมัติ (Automation) และ ความสามารถในการตรวจสอบ (Auditability) แทนที่จะใช้ "หลักฐานการโอน" ที่เป็นรูปภาพสลิป ซึ่งอาจถูกปลอมแปลงและต้องใช้คนตรวจสอบ
+
+เมื่อใช้ Payment Gateway อย่าง Omise เราจะเปลี่ยนแนวคิดจากการ "เก็บหลักฐาน" มาเป็น "การยืนยันสถานะการทำรายการจากแหล่งที่น่าเชื่อถือ (Source of Truth)" ซึ่งก็คือ Omise นั่นเองครับ
+
+นี่คือ Flow และ Logic ที่โรงแรมระดับ Enterprise ใช้กันครับ
+
+หลักการสำคัญ: "Webhook is the Single Source of Truth"
+หัวใจของระบบนี้คือการใช้ Omise Webhook ครับ เราจะไม่เชื่อสถานะการจ่ายเงินที่มาจากฝั่ง Client (Browser ของลูกค้า) 100% เพราะอาจถูกปลอมแปลงได้ แต่เราจะเชื่อข้อมูลที่ Omise Server ส่งมายืนยันที่ Backend Server ของเราโดยตรงผ่าน Webhook เท่านั้น
+
+ผู้เกี่ยวข้องในระบบ (Actors)
+Client (Frontend): หน้าเว็บที่ลูกค้าใช้งาน (React, Vue, etc.)
+
+Your Server (Backend): API ของคุณ (Node.js, Python, Go, PHP, etc.)
+
+Your Database: ฐานข้อมูล (PostgreSQL, MySQL, etc.)
+
+Omise Server: ระบบของ Omise
+
+Flow & Logic การยืนยันการชำระเงิน (Enterprise-Grade)
+นี่คือภาพรวมแบบ Step-by-Step ตั้งแต่ลูกค้ากดจ่ายเงินจนถึงการออก Booking Confirmation ครับ
+
+Phase 1: การสร้างรายการชำระเงิน
+Step 1: ลูกค้าตรวจสอบข้อมูลและกดปุ่ม "ชำระเงิน"
+
+Frontend: แสดงสรุปยอดการจอง (ห้อง, จำนวนคืน, ราคารวม)
+
+Booking Status ใน DB: pending (รอการชำระเงิน)
+
+Step 2: Frontend สร้าง Token สำหรับการชำระเงิน
+
+Frontend: ใช้ Omise.js หรือ Mobile SDK เพื่อรวบรวมข้อมูลบัตรเครดิตของลูกค้าอย่างปลอดภัย แล้วส่งให้ Omise โดยตรง (ข้อมูลบัตรจะไม่วิ่งผ่าน Server ของเราเลย เป็นไปตามมาตรฐาน PCI DSS)
+
+Omise Server: ตรวจสอบข้อมูลบัตรเบื้องต้นและส่ง Token (เช่น tokn_...) กลับมาที่ Frontend Token นี้เป็นตัวแทนของข้อมูลบัตรที่ใช้ได้ครั้งเดียว
+
+Step 3: Frontend ส่ง Token และ Booking ID ไปที่ Backend
+
+Frontend: ส่ง Request ไปยัง API ของเรา พร้อมแนบ omise_token และ booking_id ที่เกี่ยวข้อง
+
+JSON
+
+POST /api/v1/bookings/charge
+{
+  "bookingId": "booking_12345",
+  "omiseToken": "tokn_test_5as4f6d5s4f65sd4f"
+}
+Step 4: Backend สร้าง Charge กับ Omise
+
+Backend: ได้รับ Request จาก Step 3
+
+ดึงข้อมูลการจองจาก Database ด้วย bookingId เพื่อหายอดเงินที่ต้องชำระ
+
+ใช้ Secret Key ของเรายิง API ไปที่ Omise เพื่อสร้างการชำระเงิน (Create a Charge) โดยใช้ omiseToken และ amount ที่ถูกต้อง
+
+Logic: ณ จุดนี้ การชำระเงินยังไม่สำเร็จ อาจจะยังอยู่ในสถานะ pending หรือ processing
+
+Backend: เก็บ omise_charge_id (เช่น chrg_...) ที่ได้รับจากการสร้าง Charge ลงในตาราง Payments ของเราทันที และผูกกับ booking_id
+
+Payment Status ใน DB: processing
+
+Phase 2: การยืนยันการชำระเงิน (ส่วนที่สำคัญที่สุด)
+Step 5: Omise ประมวลผลและส่ง Webhook
+
+Omise Server: ติดต่อธนาคารเจ้าของบัตรและประมวลผลการชำระเงิน
+
+เมื่อมีผลลัพธ์ (สำเร็จ, ไม่สำเร็จ) Omise จะยิง Webhook Event (เป็น HTTP POST Request) มายัง URL ที่เรากำหนดไว้ใน Omise Dashboard (เช่น https://api.yourhotel.com/webhooks/omise)
+
+Event ที่สำคัญคือ charge.complete
+
+Step 6: Backend รับและตรวจสอบ Webhook
+
+Backend: สร้าง Endpoint พิเศษ (/webhooks/omise) เพื่อรอรับข้อมูลจาก Omise
+
+Security Logic (สำคัญมาก): ตรวจสอบ Signature ของ Webhook ที่ส่งมาเพื่อให้แน่ใจว่า Request นี้มาจาก Omise จริงๆ ไม่ใช่ผู้ไม่หวังดี (Omise มีวิธีให้ตรวจสอบ)
+
+Idempotency Logic: ตรวจสอบ Event ID ที่ส่งมากับ Webhook เพื่อป้องกันการประมวลผลซ้ำซ้อนกรณี Omise ส่ง Webhook มาซ้ำ
+
+Step 7: Backend อัปเดตสถานะตามผลลัพธ์จาก Webhook
+
+Backend: แยกข้อมูลจาก Payload ของ Webhook จะมี data.id (ซึ่งคือ omise_charge_id) และ data.status (เช่น successful, failed)
+
+Core Logic:
+
+IF charge.status is successful:
+
+ค้นหารายการในตาราง Payments ด้วย omise_charge_id
+
+อัปเดตสถานะในตาราง Payments เป็น paid หรือ successful
+
+อัปเดตสถานะในตาราง Bookings ที่ผูกกันอยู่เป็น confirmed
+
+Trigger Actions:
+
+ส่งอีเมลยืนยันการจอง (Booking Confirmation) ให้ลูกค้า
+
+ส่ง Notification ไปยังหน้า Admin หรือทีมที่เกี่ยวข้อง
+
+(ถ้ามี) ส่งข้อมูลต่อไปยังระบบบัญชีหรือ PMS (Property Management System)
+
+IF charge.status is failed:
+
+ค้นหาและอัปเดตสถานะในตาราง Payments เป็น failed พร้อมเก็บ failure_message ไว้
+
+อัปเดตสถานะในตาราง Bookings เป็น payment_failed
+
+Trigger Actions:
+
+ส่งอีเมลแจ้งลูกค้าว่าการชำระเงินไม่สำเร็จ พร้อมลิงก์ให้ลองชำระเงินอีกครั้ง
+
+การออกแบบ Database และ "หลักฐาน"
+"หลักฐานการโอน" ในยุคใหม่นี้ ไม่ใช่รูปภาพ แต่คือ Record ที่ตรวจสอบได้ ใน Database ของเราครับ
+
+ตาราง Bookings
+
+id (PK)
+
+guest_name
+
+room_id
+
+check_in_date, check_out_date
+
+total_amount
+
+status (Enum: pending, confirmed, payment_failed, cancelled)
+
+...
+
+ตาราง Payments (แนะนำให้แยกออกมา)
+
+id (PK)
+
+booking_id (FK to Bookings)
+
+omise_charge_id (TEXT, นี่คือหลักฐานชิ้นสำคัญที่สุด)
+
+amount (DECIMAL)
+
+currency (VARCHAR, e.g., 'THB')
+
+status (Enum: processing, successful, failed)
+
+payment_method (VARCHAR, e.g., 'credit_card', 'promptpay')
+
+gateway_response (JSON, เก็บ log response จาก Omise ไว้ทั้งหมดเพื่อการตรวจสอบ)
+
+created_at, updated_at
+
+ทำไม omise_charge_id ถึงเป็นหลักฐานที่ดีที่สุด?
+เพราะมันคือ Key ที่เราสามารถนำไปใช้ตรวจสอบกับ Omise Dashboard ได้โดยตรง ทำให้ทั้งเราและ Omise มีข้อมูลที่ตรงกัน 100%
+
+การแสดงผลใน Booking Confirmation และหน้า Admin
+1. Booking Confirmation (สำหรับลูกค้า)
+เมื่อสถานะ Booking เป็น confirmed แล้ว เราจะสร้างใบยืนยันการจองโดยดึงข้อมูลจาก Database:
+
+Booking Details: จากตาราง Bookings (ชื่อ, วันที่, ห้อง)
+
+Payment Details: จากตาราง Payments ที่ผูกกัน
+
+ยอดชำระ: payments.amount
+
+วันที่ชำระเงิน: payments.updated_at (ตอนที่สถานะเปลี่ยนเป็น successful)
+
+ช่องทางการชำระเงิน: payments.payment_method
+
+รหัสอ้างอิงการชำระเงิน: payments.omise_charge_id (อาจจะแสดงบางส่วน หรือไม่แสดงเลยก็ได้ แล้วแต่ Policy)
+
+2. หน้า Admin (สำหรับพนักงาน)
+หน้า Admin ควรแสดงข้อมูลที่ละเอียดกว่าเพื่อการจัดการและตรวจสอบ:
+
+รายการจองทั้งหมด: พร้อม status ที่ชัดเจน (Confirmed, Pending Payment etc.)
+
+เมื่อคลิกดูรายละเอียดการจอง:
+
+แสดงข้อมูลการจองทั้งหมด
+
+แสดงข้อมูลการชำระเงินที่ผูกกันอยู่
+
+แสดง Omise Charge ID อย่างชัดเจน และควรทำเป็นลิงก์ที่คลิกแล้วพาไปหน้า Transaction นั้นๆ ใน Omise Dashboard เลย
+
+https://dashboard.omise.co/charges/chrg_test_...
+
+นี่คือเครื่องมือที่ทรงพลังมากสำหรับทีม Finance หรือ Support ในการตรวจสอบข้อผิดพลาด
