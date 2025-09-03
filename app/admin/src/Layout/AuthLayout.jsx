@@ -47,16 +47,17 @@ const AuthLayout = () => {
 
                 {/* <!-- start: project logo --> */}
                 <div className="px-xl-5 px-4 auth-header" data-bs-theme="none">
-                    <Link to="/index" className="brand-icon text-decoration-none d-flex align-items-center" title="HotelAir Admin Template">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
-                            <path d="M9 8l0 8"></path>
-                            <path d="M9 12l6 0"></path>
-                            <path d="M15 8l0 8"></path>
-                        </svg>
-                        <span className="fw-bold ps-2 fs-5 text-gradient">HotelAir</span>
+                    <Link to="/index" className="brand-icon text-decoration-none d-flex align-items-center" title="Malai Admin Template">
+                        <img
+                            src="/Malai_info/malailogo.png"
+                            alt="Malai Logo"
+                            className="brand-logo"
+                            style={{ height: '40px', width: 'auto' }}
+                        />
                     </Link>
+                    <div className="d-flex align-items-center">
+                        <span className="fw-bold ps-2 fs-5 text-gradient">Malai</span>
+                    </div>
                 </div>
 
                 {/* <!-- start: page body area --> */}
@@ -64,7 +65,7 @@ const AuthLayout = () => {
 
                 {/* <!-- start: page footer --> */}
                 <footer className="px-xl-5 px-4">
-                    <p className="mb-0 text-muted">© 2024 <Link to="/" target="_blank" title="hotelair">HotelAir</Link>, All Rights Reserved.</p>
+                    <p className="mb-0 text-muted">© 2024 <Link to="/" target="_blank" title="malai">Malai</Link>, All Rights Reserved.</p>
                 </footer>
 
             </main>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Alert, Card, Badge } from 'react-bootstrap';
+import bookingService from './bookingService';
 
 const BookingCancelModal = ({ show, onHide, booking, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -80,16 +81,28 @@ const BookingCancelModal = ({ show, onHide, booking, onCancel }) => {
     try {
       setLoading(true);
       
-      // TODO: เรียก API เมื่อ POST /admin/bookings/:id/cancel พร้อมใช้งาน
       console.log('❌ Canceling booking...', {
         bookingId: booking.id,
         cancellationData: formData
       });
       
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // เรียก API จริง
+      const response = await bookingService.cancelBooking(booking.id, formData);
       
-      alert('⚠️ API ยังไม่พร้อม - การยกเลิกการจองจะพร้อมใช้งานเร็วๆ นี้');
+      console.log('✅ Cancellation response:', response);
+      
+      // แสดงข้อความสำเร็จ
+      if (window.Swal) {
+        window.Swal.fire({
+          title: '✅ ยกเลิกการจองสำเร็จ',
+          text: `การจอง ${booking.bookingReferenceId} ถูกยกเลิกเรียบร้อยแล้ว`,
+          icon: 'success',
+          timer: 3000,
+          showConfirmButton: false
+        });
+      } else {
+        alert(`✅ ยกเลิกการจองสำเร็จ\nการจอง ${booking.bookingReferenceId} ถูกยกเลิกเรียบร้อยแล้ว`);
+      }
       
       if (onCancel) {
         onCancel(formData);
@@ -98,7 +111,18 @@ const BookingCancelModal = ({ show, onHide, booking, onCancel }) => {
       
     } catch (error) {
       console.error('❌ Error canceling booking:', error);
-      alert(`เกิดข้อผิดพลาด: ${error.message}`);
+      
+      // แสดงข้อความผิดพลาด
+      if (window.Swal) {
+        window.Swal.fire({
+          title: '❌ เกิดข้อผิดพลาด',
+          text: error.message || 'เกิดข้อผิดพลาดในการยกเลิกการจอง',
+          icon: 'error',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        alert(`❌ เกิดข้อผิดพลาด: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -126,11 +150,7 @@ const BookingCancelModal = ({ show, onHide, booking, onCancel }) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Modal.Body>
-        <Alert variant="warning" className="mb-4">
-          <i className="bi bi-exclamation-triangle me-2"></i>
-          <strong>หมายเหตุ:</strong> ฟีเจอร์นี้อยู่ในระหว่างการพัฒนา API backend จะพร้อมใช้งานเร็วๆ นี้
-        </Alert>
+             <Modal.Body>
 
         {booking && (
           <>

@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { BusinessNotificationService } from '../services/businessNotificationService';
+import { sendBookingConfirmationEmailDirect } from './emailController';
+import { lockRoomForBooking, checkRoomAvailability } from '../services/dailyAvailabilityService';
+import { checkFinalAvailability } from '../services/availabilityCheckService';
 
 const prisma = new PrismaClient();
 
@@ -37,7 +40,7 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
 
     // Validate required guest information
     const guestName = guestInfo?.name?.trim() || '';
-    if (!guestName || guestName === '' || guestName === 'Guest User') {
+    if (!guestName || guestName === '') {
       return res.status(400).json({
         success: false,
         error: {
@@ -45,6 +48,11 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
           details: 'Please provide valid guest first and last name'
         }
       });
+    }
+
+    // Allow 'Guest User' but add logging for tracking
+    if (guestName === 'Guest User') {
+      console.log('⚠️ Booking created with Guest User - should be updated with real name later');
     }
 
     if (!guestInfo?.email || guestInfo.email.trim() === '') {
@@ -219,6 +227,28 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
 
     console.log('🏠 Room found:', roomRecord.roomNumber, roomRecord.roomType.name);
 
+    // 2.1 Check availability using Night-based Logic
+    console.log('🔍 [Night-based Logic] Checking room availability...');
+    const availabilityCheck = await checkFinalAvailability(
+      roomRecord.id,
+      bookingData.checkinDate,
+      bookingData.checkoutDate
+    );
+
+    if (!availabilityCheck.canBook) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Room is not available for the selected dates',
+          details: availabilityCheck.message,
+          conflictingDates: availabilityCheck.conflictingDates.map(d => d.toISOString().split('T')[0]),
+          roomStatus: availabilityCheck.roomStatus
+        }
+      });
+    }
+
+    console.log('✅ [Night-based Logic] Room availability confirmed');
+
     // 3. Create actual booking in database
     const realBooking = await prisma.booking.create({
       data: {
@@ -245,13 +275,44 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
 
     console.log('✅ Real booking created in database:', realBooking.id);
 
-    // 4. Update room status to occupied
-    await prisma.room.update({
-      where: { id: roomRecord.id },
-      data: { status: 'Occupied' }
-    });
+    // 4. Lock room using Daily Availability (Night-based Logic)
+    console.log('🔒 [Night-based Logic] Locking room for booking...');
+    const lockSuccess = await lockRoomForBooking(
+      roomRecord.id,
+      realBooking.id,
+      bookingData.checkinDate,
+      bookingData.checkoutDate
+    );
 
-    console.log('🏠 Room status updated to Occupied');
+    if (!lockSuccess) {
+      console.error('❌ [Night-based Logic] Failed to lock room - rolling back booking');
+      // Rollback booking if lock fails
+      await prisma.booking.delete({
+        where: { id: realBooking.id }
+      });
+      return res.status(500).json({
+        success: false,
+        error: {
+          message: 'Failed to lock room for booking',
+          details: 'Please try again'
+        }
+      });
+    }
+
+    console.log('✅ [Night-based Logic] Room locked successfully');
+
+    // 📧 ส่งอีเมลยืนยันการจอง
+    try {
+      await sendBookingConfirmationEmailDirect(
+        realBooking,
+        guestRecord,
+        roomRecord.roomType
+      );
+      console.log('✅ Booking confirmation email sent successfully');
+    } catch (emailError) {
+      console.error('⚠️ Failed to send booking confirmation email:', emailError);
+      // ไม่ให้ email error ทำให้ booking ล้มเหลว
+    }
 
     // 📢 ส่งการแจ้งเตือน Booking สำเร็จ
     try {

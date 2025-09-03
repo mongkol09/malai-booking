@@ -266,12 +266,11 @@ router.delete('/:id', sessionAuth, requireSessionRole(['ADMIN']), async (req: Se
 });
 
 // ============================================
-// GET AVAILABLE RESOURCES (for permissions)
+// GET AVAILABLE RESOURCES
 // ============================================
 
-router.get('/resources/available', sessionAuth, requireSessionRole(['ADMIN']), async (req: SessionAuthenticatedRequest, res: Response) => {
+router.get('/resources', sessionAuth, requireSessionRole(['ADMIN']), async (req: SessionAuthenticatedRequest, res: Response) => {
   try {
-    // Define available resources that can have permissions
     const resources = [
       'users',
       'bookings',
@@ -287,14 +286,14 @@ router.get('/resources/available', sessionAuth, requireSessionRole(['ADMIN']), a
       'permissions'
     ];
 
-    res.json({
+    return res.json({
       success: true,
       data: { resources },
       message: 'Available resources retrieved successfully'
     });
   } catch (error) {
     console.error('Error fetching resources:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: { message: 'Failed to fetch resources' }
     });
@@ -308,6 +307,13 @@ router.get('/resources/available', sessionAuth, requireSessionRole(['ADMIN']), a
 router.get('/permissions/me', sessionAuth, async (req: SessionAuthenticatedRequest, res: Response) => {
   try {
     const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'User not authenticated' }
+      });
+    }
 
     // For now, return basic permissions based on userType
     // In the future, this could be expanded to check staff role permissions
@@ -360,7 +366,7 @@ router.get('/permissions/me', sessionAuth, async (req: SessionAuthenticatedReque
       };
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: { 
         permissions,
@@ -370,7 +376,7 @@ router.get('/permissions/me', sessionAuth, async (req: SessionAuthenticatedReque
     });
   } catch (error) {
     console.error('Error fetching user permissions:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: { message: 'Failed to fetch user permissions' }
     });

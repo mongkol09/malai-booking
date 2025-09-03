@@ -159,21 +159,53 @@ export class UnifiedEmailService {
     if (this.config.primary === EmailProvider.MAILERSEND && this.mailerSendService) {
       // ใช้ MailerSend template ที่มีอยู่แล้ว
       console.log('📋 Using existing MailerSend template');
+      
+      // เตรียมข้อมูลสำหรับ MailerSend Template
+      const numAdults = bookingData.numAdults || 1;
+      const numChildren = bookingData.numChildren || 0;
+      
+      // คำนวณราคาต่อคืน
+      const checkinDate = new Date(bookingData.checkinDate);
+      const checkoutDate = new Date(bookingData.checkoutDate);
+      const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+      const roomPricePerNight = Math.round((bookingData.finalAmount || 0) / nights);
+      
+      // คำนวณภาษี (7% ของยอดรวม)
+      const totalAmount = bookingData.finalAmount || 0;
+      const taxAmount = Math.round(totalAmount * 0.07);
+      
+      const templateData = {
+        // Reservation Details
+        guest_name: guestName,
+        room_type: bookingData.roomType?.name || 'Standard Room',
+        guest_count: `${numAdults} ผู้ใหญ่${numChildren > 0 ? `, ${numChildren} เด็ก` : ''}`,
+        checkin_date: checkinDate.toLocaleDateString('th-TH'),
+        checkout_date: checkoutDate.toLocaleDateString('th-TH'),
+        booking_reference: bookingData.bookingReferenceId,
+        
+        // Payment Details
+        room_price_per_night: `฿${roomPricePerNight.toLocaleString()}`,
+        tax_amount: `฿${taxAmount.toLocaleString()}`,
+        grand_total: `฿${totalAmount.toLocaleString()}`,
+        
+        // Additional fields (backward compatibility)
+        guest_email: guestEmail,
+        booking_id: bookingData.bookingReferenceId,
+        room_number: bookingData.room?.roomNumber || 'จะแจ้งให้ทราบ',
+        num_adults: numAdults,
+        num_children: numChildren,
+        total_amount: `฿${totalAmount.toLocaleString()}`,
+        hotel_name: 'Malai Khaoyai Resort',
+        current_date: new Date().toLocaleDateString('th-TH')
+      };
+
       return await this.sendWithMailerSend({
         type: EmailType.BOOKING_CONFIRMATION,
         to: guestEmail,
         toName: guestName,
-        subject: `ยืนยันการจอง ${bookingData.bookingReferenceId} ที่ Malai Khaoyai Resort`,
-        templateData: {
-          guestName,
-          bookingId: bookingData.bookingReferenceId,
-          roomType: bookingData.roomType?.name || 'Standard Room',
-          roomNumber: bookingData.room?.roomNumber || 'TBD',
-          checkinDate: bookingData.checkinDate,
-          checkoutDate: bookingData.checkoutDate,
-          totalAmount: bookingData.finalAmount,
-          hotelName: 'Malai Khaoyai Resort'
-        }
+        subject: `ยืนยันการจอง ${bookingData.bookingReferenceId} - Malai Khaoyai Resort`,
+        templateId: process.env.BOOKING_CONFIRMATION_TEMPLATE_ID || 'z3m5jgrq390ldpyo',
+        templateData: templateData
       });
     } else {
       // ใช้ Resend service

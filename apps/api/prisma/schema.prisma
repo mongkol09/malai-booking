@@ -55,6 +55,8 @@ model User {
   activityLogs          ActivityLog[]
   roomStatusChanges     RoomStatusHistory[] @relation("RoomStatusChangedBy")
   walkInGuests          WalkInGuest[]     @relation("WalkInHandledBy")
+  bookingCancellations  BookingCancellation[] @relation("BookingCancelledBy")
+  paymentRefunds        PaymentRefund[]   @relation("PaymentRefundProcessedBy")
 
   @@map("users")
 }
@@ -174,6 +176,7 @@ model Room {
   actualBookings        Booking[]      @relation("ActualRoomAssignment")
   statusHistory         RoomStatusHistory[]
   checkinSessions       CheckinSession[]
+  dailyAvailability     DailyAvailability[]
 
   @@map("rooms")
 }
@@ -300,6 +303,7 @@ model Booking {
   statusHistoryBooking  RoomStatusHistory[] @relation("RoomStatusBooking")
   checkinSessions       CheckinSession[]
   walkInConversion      WalkInGuest[] @relation("WalkInConvertedBooking")
+  dailyAvailability     DailyAvailability[]
 
   bookingServices         BookingService[]
   cabBookings             CabBooking[]
@@ -308,6 +312,8 @@ model Booking {
   payments                Payment[]
   promocodeUsage          PromocodeUsage[]
   files                   FileManager[]
+  cancellations           BookingCancellation[]
+  refunds                 PaymentRefund[]
 
   @@map("bookings")
 }
@@ -1277,6 +1283,14 @@ enum PaymentStatus {
   CANCELLED
 }
 
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 enum EventStatus {
   PENDING_REVIEW @map("pending_review")
   CONFIRMED      @map("confirmed")
@@ -1888,4 +1902,77 @@ model ActivityLog {
   @@index([activityType])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+// ============================================
+// BOOKING CANCELLATION MODELS
+// ============================================
+
+model BookingCancellation {
+  id                String    @id @default(uuid()) @map("cancellation_id")
+  bookingId         String    @map("booking_id")
+  reason            String
+  refundAmount      Decimal   @map("refund_amount") @db.Decimal(12, 2)
+  refundMethod      String    @map("refund_method")
+  cancelledBy       String    @map("cancelled_by")
+  internalNotes     String?   @map("internal_notes")
+  cancellationTime  DateTime  @map("cancellation_time")
+  policyApplied     String?   @map("policy_applied")
+  originalAmount    Decimal   @map("original_amount") @db.Decimal(12, 2)
+  penaltyAmount     Decimal   @default(0.00) @map("penalty_amount") @db.Decimal(12, 2)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  booking           Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  cancelledByUser   User      @relation("BookingCancelledBy", fields: [cancelledBy], references: [id])
+  refund            PaymentRefund?
+  
+  @@index([bookingId])
+  @@index([cancelledBy])
+  @@index([cancellationTime])
+  @@map("booking_cancellations")
+}
+
+model PaymentRefund {
+  id                String    @id @default(uuid()) @map("refund_id")
+  bookingId         String    @map("booking_id")
+  cancellationId    String?   @unique @map("cancellation_id")
+  amount            Decimal   @map("amount") @db.Decimal(12, 2)
+  method            String    @map("method")
+  status            RefundStatus @default(PENDING)
+  processedBy       String    @map("processed_by")
+  refundReason      String    @map("refund_reason")
+  processedAt       DateTime? @map("processed_at")
+  gatewayResponse   Json?     @map("gateway_response")
+  failureMessage    String?   @map("failure_message")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  booking           Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  cancellation      BookingCancellation? @relation(fields: [cancellationId], references: [id])
+  processedByUser   User      @relation("PaymentRefundProcessedBy", fields: [processedBy], references: [id])
+  
+  @@index([bookingId])
+  @@index([cancellationId])
+  @@index([status])
+  @@map("payment_refunds")
+}
+
+model DailyAvailability {
+  id          String   @id @default(uuid()) @map("availability_id")
+  roomId      String   @map("room_id")
+  date        DateTime @db.Date
+  status      String   @default("Available") // Available, Booked, Maintenance
+  bookingId   String?  @map("booking_id")
+  checkInDate DateTime? @map("check_in_date") @db.Date
+  checkOutDate DateTime? @map("check_out_date") @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  room        Room     @relation(fields: [roomId], references: [id])
+  booking     Booking? @relation(fields: [bookingId], references: [id])
+
+  @@unique([roomId, date])
+  @@map("daily_availability")
 }

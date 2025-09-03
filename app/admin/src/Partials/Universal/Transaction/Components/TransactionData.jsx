@@ -101,7 +101,7 @@ export const transactionColumns = [
         order_total:'$99.90'
     },
     {
-        description:'Hotelair Pharmacy',
+        description:'Malai Pharmacy',
         status:'Your order is successful',
         price:'$122.00',
         order_no:'B-123123',
@@ -141,7 +141,7 @@ export const transactionColumns = [
         order_total:'$99.90'
     },
     {
-        description:'Hotelair Pharmacy',
+        description:'Malai Pharmacy',
         status:'Your order is successful',
         price:'$122.00',
         order_no:'B-123124',

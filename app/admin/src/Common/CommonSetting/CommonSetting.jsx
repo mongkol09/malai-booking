@@ -109,13 +109,13 @@ const CommonSetting = ({selectedMode}) => {
 			<div className="mb-4">
 				<h6>Set Theme Color</h6>
 				<ul className="choose-skin list-unstyled mb-0">
-					<li className={`${ValenciaRed ? 'active' : ''}`} onClick={() => handleThemeChange('ValenciaRed')} data-theme="ValenciaRed"><div style={{"--hotelair-theme-color": "#D63B38"}}></div></li>
-					<li className={`${SunOrange ? 'active' : ''}`} onClick={() => handleThemeChange('SunOrange')} data-theme="SunOrange"><div style={{"--hotelair-theme-color": "#F7A614"}}></div></li>
-					<li className={`${AppleGreen ? 'active' : ''}`} onClick={() => handleThemeChange('AppleGreen')} data-theme="AppleGreen"><div style={{"--hotelair-theme-color": "#5BC43A"}}></div></li>
-					<li className={`${CeruleanBlue ? 'active' : ''}`} onClick={() => handleThemeChange('CeruleanBlue')} data-theme="CeruleanBlue"><div style={{"--hotelair-theme-color": "#00B8D6"}}></div></li>
-					<li className={`${Mariner ? 'active' : ''}`} onClick={() => handleThemeChange('Mariner')} data-theme="Mariner"><div style={{"--hotelair-theme-color": "#0066FE"}}></div></li>
-					<li className={`${PurpleHeart ? 'active' : ''}`} onClick={() => handleThemeChange('PurpleHeart')} data-theme="PurpleHeart"><div style={{"--hotelair-theme-color": "#6238B3"}}></div></li>
-					<li className={`${FrenchRose ? 'active' : ''}`} onClick={() => handleThemeChange('FrenchRose')} data-theme="FrenchRose"><div style={{"--hotelair-theme-color": "#EB5393"}}></div></li>
+					<li className={`${ValenciaRed ? 'active' : ''}`} onClick={() => handleThemeChange('ValenciaRed')} data-theme="ValenciaRed"><div style={{"--malai-theme-color": "#D63B38"}}></div></li>
+					<li className={`${SunOrange ? 'active' : ''}`} onClick={() => handleThemeChange('SunOrange')} data-theme="SunOrange"><div style={{"--malai-theme-color": "#F7A614"}}></div></li>
+					<li className={`${AppleGreen ? 'active' : ''}`} onClick={() => handleThemeChange('AppleGreen')} data-theme="AppleGreen"><div style={{"--malai-theme-color": "#5BC43A"}}></div></li>
+					<li className={`${CeruleanBlue ? 'active' : ''}`} onClick={() => handleThemeChange('CeruleanBlue')} data-theme="CeruleanBlue"><div style={{"--malai-theme-color": "#00B8D6"}}></div></li>
+					<li className={`${Mariner ? 'active' : ''}`} onClick={() => handleThemeChange('Mariner')} data-theme="Mariner"><div style={{"--malai-theme-color": "#0066FE"}}></div></li>
+					<li className={`${PurpleHeart ? 'active' : ''}`} onClick={() => handleThemeChange('PurpleHeart')} data-theme="PurpleHeart"><div style={{"--malai-theme-color": "#6238B3"}}></div></li>
+					<li className={`${FrenchRose ? 'active' : ''}`} onClick={() => handleThemeChange('FrenchRose')} data-theme="FrenchRose"><div style={{"--malai-theme-color": "#EB5393"}}></div></li>
 				</ul>
 			</div>
 			<div className="svg-stroke mb-4">

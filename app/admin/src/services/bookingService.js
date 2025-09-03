@@ -474,12 +474,11 @@ const bookingService = {
     return params;
   },
 
-  // ยกเลิกการจอง (รอ API)
+  // ยกเลิกการจอง
   async cancelBooking(bookingId, cancellationData) {
     try {
       console.log('🚫 Canceling booking...', { bookingId, cancellationData });
       
-      // TODO: ใช้ POST /admin/bookings/:id/cancel เมื่อ API พร้อม
       const response = await this.request(`/admin/bookings/${bookingId}/cancel`, {
         method: 'POST',
         body: JSON.stringify(cancellationData)
@@ -490,6 +489,40 @@ const bookingService = {
     } catch (error) {
       console.error('❌ Error canceling booking:', error);
       throw new Error(error.message || 'เกิดข้อผิดพลาดในการยกเลิกการจอง');
+    }
+  },
+
+  // ดึงข้อมูลนโยบายการยกเลิก
+  async getCancellationPolicy(bookingId) {
+    try {
+      console.log('📋 Getting cancellation policy for booking:', bookingId);
+      
+      const response = await this.request(`/admin/bookings/${bookingId}/cancellation-policy`, {
+        method: 'GET'
+      });
+      
+      return response;
+      
+    } catch (error) {
+      console.error('❌ Error getting cancellation policy:', error);
+      throw new Error(error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลนโยบายการยกเลิก');
+    }
+  },
+
+  // ดึงประวัติการยกเลิก
+  async getCancellationHistory(bookingId) {
+    try {
+      console.log('📋 Getting cancellation history for booking:', bookingId);
+      
+      const response = await this.request(`/admin/bookings/${bookingId}/cancellations`, {
+        method: 'GET'
+      });
+      
+      return response;
+      
+    } catch (error) {
+      console.error('❌ Error getting cancellation history:', error);
+      throw new Error(error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลประวัติการยกเลิก');
     }
   },
 

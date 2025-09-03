@@ -421,39 +421,153 @@ export const testEmail = async (req: Request, res: Response): Promise<void> => {
 // ============================================
 
 /**
- * Updated function - ใช้ Resend แทน MailerSend
+ * Updated function - ใช้ MailerSend Template ที่มีอยู่แล้ว
  */
 export const sendBookingConfirmationEmailDirect = async (booking: any, guest: any, roomType: any): Promise<void> => {
   try {
-    console.log(`📧 [Resend] Sending booking confirmation email for ${booking.bookingReferenceId}`);
+    console.log(`📧 [MailerSend] Sending booking confirmation email for ${booking.bookingReferenceId}`);
     
-    // Import Resend service
-    const { resendEmailService } = await import('../services/resendEmailService');
+    // Import MailerSend service
+    const { emailService } = await import('../services/emailService');
     
-    // ส่งอีเมลผ่าน Resend service
-    const result = await resendEmailService.sendBookingConfirmation(
-      guest.email,
-      `${guest.firstName} ${guest.lastName}`,
-      {
-        bookingReferenceId: booking.bookingReferenceId,
-        roomType: roomType,
-        room: booking.room,
-        checkinDate: booking.checkinDate,
-        checkoutDate: booking.checkoutDate,
-        finalAmount: booking.finalAmount,
-        numAdults: booking.numAdults,
-        numChildren: booking.numChildren
-      }
-    );
+    // เตรียมข้อมูลสำหรับ Template - ปรับให้ตรงกับ MailerSend Template
+    const numAdults = booking.numAdults || 1;
+    const numChildren = booking.numChildren || 0;
+    const totalGuests = numAdults + numChildren;
+    
+    // คำนวณราคาต่อคืน
+    const checkinDate = new Date(booking.checkinDate);
+    const checkoutDate = new Date(booking.checkoutDate);
+    const nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24)) || 1;
+    const finalAmount = parseFloat(booking.finalAmount?.toString() || '0');
+    const roomPricePerNight = Math.round(finalAmount / nights);
+    
+    // คำนวณภาษี (7% ของยอดรวม)
+    const totalAmount = finalAmount;
+    const taxAmount = Math.round(totalAmount * 0.07);
+    const accommodationFee = totalAmount - taxAmount;
+    
+    const templateData = {
+      // Reservation Details
+      guest_name: `${guest.firstName} ${guest.lastName}`,
+      room_type: roomType?.name || 'Standard Room',
+      guest_count: `${numAdults} ผู้ใหญ่${numChildren > 0 ? `, ${numChildren} เด็ก` : ''}`,
+      checkin_date: checkinDate.toLocaleDateString('th-TH'),
+      checkout_date: checkoutDate.toLocaleDateString('th-TH'),
+      booking_reference: booking.bookingReferenceId,
+      
+      // Payment Details  
+      room_price_per_night: `฿${roomPricePerNight.toLocaleString()}`,
+      tax_amount: `฿${taxAmount.toLocaleString()}`,
+      grand_total: `฿${totalAmount.toLocaleString()}`,
+      
+      // Additional fields (backward compatibility)
+      guest_email: guest.email,
+      booking_id: booking.bookingReferenceId,
+      room_number: booking.room?.roomNumber || 'จะแจ้งให้ทราบ',
+      num_adults: numAdults,
+      num_children: numChildren,
+      total_amount: `฿${totalAmount.toLocaleString()}`,
+      hotel_name: 'Malai Khaoyai Resort',
+      current_date: new Date().toLocaleDateString('th-TH')
+    };
+
+    console.log('📋 [MailerSend] Using template data:', templateData);
+    
+    // ส่งอีเมลผ่าน MailerSend Template
+    const result = await emailService.sendTemplateEmail({
+      type: 'BOOKING_CONFIRMATION' as any,
+      to: guest.email,
+      toName: `${guest.firstName} ${guest.lastName}`,
+      subject: `ยืนยันการจอง ${booking.bookingReferenceId} - Malai Khaoyai Resort`,
+      templateId: process.env.BOOKING_CONFIRMATION_TEMPLATE_ID || 'z3m5jgrq390ldpyo',
+      templateData: templateData
+    });
 
     if (!result.success) {
-      throw new Error(`Resend email failed: ${result.error}`);
+      throw new Error(`MailerSend template email failed: ${result.error}`);
     }
 
-    console.log(`✅ [Resend] Booking confirmation email sent successfully. Message ID: ${result.messageId}`);
+    console.log(`✅ [MailerSend] Booking confirmation email sent successfully. Message ID: ${result.messageId}`);
     
   } catch (error) {
-    console.error('❌ [Resend] Error sending booking confirmation email:', error);
+    console.error('❌ [MailerSend] Error sending booking confirmation email:', error);
     throw error;
   }
+};
+
+/**
+ * ส่งอีเมลแจ้งการยกเลิกการจอง
+ */
+export const sendCancellationEmail = async (booking: any, cancellation: any, refundAmount: number): Promise<void> => {
+  try {
+    console.log(`📧 [Cancellation] Sending cancellation email for ${booking.bookingReferenceId}`);
+    
+    // Import email service
+    const { emailService } = await import('../services/emailService');
+    
+    // เตรียมข้อมูลสำหรับ Template
+    const checkinDate = new Date(booking.checkinDate);
+    const checkoutDate = new Date(booking.checkoutDate);
+    const cancellationTime = new Date(cancellation.cancellationTime);
+    
+    const templateData = {
+      // Booking Details
+      guest_name: `${booking.guest.firstName} ${booking.guest.lastName}`,
+      booking_reference: booking.bookingReferenceId,
+      room_type: booking.roomType?.name || 'Standard Room',
+      room_number: booking.room?.roomNumber || 'N/A',
+      checkin_date: checkinDate.toLocaleDateString('th-TH'),
+      checkout_date: checkoutDate.toLocaleDateString('th-TH'),
+      
+      // Cancellation Details
+      cancellation_reason: cancellation.reason,
+      cancellation_time: cancellationTime.toLocaleString('th-TH'),
+      refund_amount: refundAmount > 0 ? `฿${refundAmount.toLocaleString()}` : '฿0',
+      refund_method: getRefundMethodDisplay(cancellation.refundMethod),
+      original_amount: `฿${parseFloat(booking.finalAmount.toString()).toLocaleString()}`,
+      
+      // Additional fields
+      guest_email: booking.guest.email,
+      hotel_name: 'Malai Khaoyai Resort',
+      current_date: new Date().toLocaleDateString('th-TH'),
+      contact_info: 'โทร: 044-123-456 หรือ อีเมล: info@malaikhaoyai.com'
+    };
+
+    console.log('📋 [Cancellation] Using template data:', templateData);
+    
+    // ส่งอีเมลผ่าน MailerSend Template
+    const result = await emailService.sendTemplateEmail({
+      type: 'BOOKING_CANCELLATION' as any,
+      to: booking.guest.email,
+      toName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+      subject: `การยกเลิกการจอง ${booking.bookingReferenceId} - Malai Khaoyai Resort`,
+      templateId: process.env.CANCELLATION_TEMPLATE_ID || 'cancellation_template_id', // ต้องสร้าง template ใหม่
+      templateData: templateData
+    });
+
+    if (!result.success) {
+      throw new Error(`MailerSend cancellation email failed: ${result.error}`);
+    }
+
+    console.log(`✅ [Cancellation] Cancellation email sent successfully. Message ID: ${result.messageId}`);
+    
+  } catch (error) {
+    console.error('❌ [Cancellation] Error sending cancellation email:', error);
+    throw error;
+  }
+};
+
+/**
+ * แปลงวิธีการคืนเงินเป็นข้อความที่อ่านง่าย
+ */
+const getRefundMethodDisplay = (method: string): string => {
+  const methodMap: { [key: string]: string } = {
+    'original_payment': 'คืนเงินไปยังบัตรเครดิต/เดบิตเดิม',
+    'credit_note': 'เครดิตโน๊ตสำหรับการจองครั้งต่อไป',
+    'bank_transfer': 'โอนเงินเข้าบัญชีธนาคาร',
+    'cash': 'เงินสด'
+  };
+  
+  return methodMap[method] || method;
 };

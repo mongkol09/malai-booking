@@ -12,7 +12,7 @@ const Changelog = () => {
                                 <span className="ps-2 mb-2">-- 23 Feb 2024</span>
                             </div>
                             <ul className="mt-3 lh-lg">
-                                <li><b>Initial release of HotelAir!</b></li>
+                                <li><b>Initial release of Malai!</b></li>
                                 <li>bootstrap ^5.3.2</li>
                                 <li>@types/react ^18.2.14</li>
                             </ul>

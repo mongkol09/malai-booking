@@ -134,7 +134,7 @@ const BlogDetail = () => {
                 </div>
             </li>
             <li className="col-xl-4 col-lg-4 col-md-4">
-                <div className="text-uppercase mb-3 pb-2 border-bottom">More from HotelAir</div>
+                <div className="text-uppercase mb-3 pb-2 border-bottom">More from Malai</div>
                 <ul className="row g-4 list-unstyled li_animate mb-0">
                     <li className="col-lg-12 d-flex align-items-start">
                         <div className="fs-3 text-muted lh-sm"><span className="d-inline-flex" style={{minwidth: "2.5rem"}}>01</span></div>

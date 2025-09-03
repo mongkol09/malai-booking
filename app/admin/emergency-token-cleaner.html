@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 Emergency Token Cleaner</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .emergency { 
+            background: #dc3545; 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .step { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-left: 4px solid #007bff; 
+            background: #f8f9fa; 
+            border-radius: 0 5px 5px 0;
+        }
+        .success { border-left-color: #28a745; background: #f8fff8; }
+        .warning { border-left-color: #ffc107; background: #fffbf0; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        .danger-btn { background: #dc3545; }
+        .danger-btn:hover { background: #c82333; }
+        .success-btn { background: #28a745; }
+        .success-btn:hover { background: #218838; }
+        .result { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border: 2px solid;
+        }
+        .result.success { background: #f8fff8; border-color: #28a745; color: #155724; }
+        .result.error { background: #fff5f5; border-color: #dc3545; color: #721c24; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+            border: 1px solid #dee2e6;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .status-card {
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .status-card.good { border-color: #28a745; background: #f8fff8; }
+        .status-card.bad { border-color: #dc3545; background: #fff5f5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emergency">
+            <h1>🚨 Emergency Token Cleaner</h1>
+            <p>แก้ปัญหา "JsonWebTokenError: invalid signature" แบบฉุกเฉิน</p>
+        </div>
+
+        <div class="step warning">
+            <h3>⚠️ ปัญหาปัจจุบัน</h3>
+            <p><strong>JsonWebTokenError: invalid signature</strong> - Browser ยังคงส่ง old token ที่มี signature ไม่ถูกต้อง</p>
+            <p>แม้จะ restart server แล้วก็ยังเจอปัญหาเพราะ browser localStorage ยังเก็บ token เก่าอยู่</p>
+        </div>
+
+        <div class="step">
+            <h3>🔍 Step 1: ตรวจสอบ Token Status</h3>
+            <button onclick="checkTokenStatus()">🔍 Check Current Tokens</button>
+            <div id="tokenStatus"></div>
+        </div>
+
+        <div class="step">
+            <h3>🧹 Step 2: Emergency Clear All Tokens</h3>
+            <p>ลบ token ทั้งหมดออกจาก browser (localStorage + sessionStorage)</p>
+            <button class="danger-btn" onclick="emergencyClearAll()">🚨 EMERGENCY CLEAR ALL</button>
+            <div id="clearResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>🔐 Step 3: Fresh Login</h3>
+            <p>Login ใหม่หลังจาก clear tokens แล้ว</p>
+            <button class="success-btn" onclick="freshLogin()">🚀 Fresh Login</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="step">
+            <h3>✅ Step 4: Verify Fix</h3>
+            <button onclick="verifyFix()">✅ Test API Calls</button>
+            <div id="verifyResult"></div>
+        </div>
+
+        <div class="step success">
+            <h3>🎯 Expected Result</h3>
+            <p>หลังจากทำตามขั้นตอน:</p>
+            <ul>
+                <li>✅ ไม่มี invalid signature errors</li>
+                <li>✅ Room Status page ทำงานได้ปกติ</li>
+                <li>✅ API calls ได้รับ 200 responses</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001/api/v1';
+        
+        function checkTokenStatus() {
+            const resultDiv = document.getElementById('tokenStatus');
+            
+            const allKeys = Object.keys(localStorage);
+            const tokenKeys = allKeys.filter(key => 
+                key.includes('token') || 
+                key.includes('auth') || 
+                key.includes('user') ||
+                key.includes('admin') ||
+                key.includes('hotel')
+            );
+            
+            const sessionKeys = Object.keys(sessionStorage);
+            const sessionTokenKeys = sessionKeys.filter(key => 
+                key.includes('token') || 
+                key.includes('auth') || 
+                key.includes('user')
+            );
+            
+            let statusHtml = '<div class="status-grid">';
+            
+            // localStorage status
+            statusHtml += `<div class="status-card ${tokenKeys.length > 0 ? 'bad' : 'good'}">
+                <h4>📱 localStorage</h4>
+                <p><strong>${tokenKeys.length}</strong> token(s) found</p>
+                ${tokenKeys.length > 0 ? '<p>🚨 Needs cleaning</p>' : '<p>✅ Clean</p>'}
+            </div>`;
+            
+            // sessionStorage status  
+            statusHtml += `<div class="status-card ${sessionTokenKeys.length > 0 ? 'bad' : 'good'}">
+                <h4>💾 sessionStorage</h4>
+                <p><strong>${sessionTokenKeys.length}</strong> token(s) found</p>
+                ${sessionTokenKeys.length > 0 ? '<p>🚨 Needs cleaning</p>' : '<p>✅ Clean</p>'}
+            </div>`;
+            
+            statusHtml += '</div>';
+            
+            if (tokenKeys.length > 0) {
+                statusHtml += '<h4>🔍 Found localStorage tokens:</h4><pre>';
+                tokenKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    const preview = value ? (value.length > 50 ? value.substring(0, 50) + '...' : value) : 'null';
+                    statusHtml += `${key}: ${preview}\n`;
+                });
+                statusHtml += '</pre>';
+            }
+            
+            if (sessionTokenKeys.length > 0) {
+                statusHtml += '<h4>🔍 Found sessionStorage tokens:</h4><pre>';
+                sessionTokenKeys.forEach(key => {
+                    const value = sessionStorage.getItem(key);
+                    const preview = value ? (value.length > 50 ? value.substring(0, 50) + '...' : value) : 'null';
+                    statusHtml += `${key}: ${preview}\n`;
+                });
+                statusHtml += '</pre>';
+            }
+            
+            resultDiv.innerHTML = statusHtml;
+        }
+        
+        function emergencyClearAll() {
+            const resultDiv = document.getElementById('clearResult');
+            
+            try {
+                console.log('🚨 Starting emergency clear...');
+                
+                // Get all keys before clearing
+                const localKeys = Object.keys(localStorage);
+                const sessionKeys = Object.keys(sessionStorage);
+                
+                const authLocalKeys = localKeys.filter(key => 
+                    key.includes('token') || 
+                    key.includes('auth') || 
+                    key.includes('user') ||
+                    key.includes('admin') ||
+                    key.includes('hotel')
+                );
+                
+                const authSessionKeys = sessionKeys.filter(key => 
+                    key.includes('token') || 
+                    key.includes('auth') || 
+                    key.includes('user')
+                );
+                
+                // Clear localStorage
+                authLocalKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log(`🗑️ Removed from localStorage: ${key}`);
+                });
+                
+                // Clear sessionStorage
+                authSessionKeys.forEach(key => {
+                    sessionStorage.removeItem(key);
+                    console.log(`🗑️ Removed from sessionStorage: ${key}`);
+                });
+                
+                const totalCleared = authLocalKeys.length + authSessionKeys.length;
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h4>🚨 Emergency Clear Completed!</h4>
+                        <p><strong>Total cleared:</strong> ${totalCleared} items</p>
+                        <p><strong>localStorage:</strong> ${authLocalKeys.length} items</p>
+                        <p><strong>sessionStorage:</strong> ${authSessionKeys.length} items</p>
+                        <br>
+                        <p>✅ All old/invalid tokens have been removed</p>
+                        <p>🔄 Now proceed to fresh login</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Emergency clear failed:', error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Emergency Clear Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function freshLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                console.log('🔐 Starting fresh login...');
+                
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@hotel.com',
+                        password: 'SecureAdmin123!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Save new tokens properly
+                    localStorage.setItem('hotel_admin_token', data.data.tokens.accessToken);
+                    localStorage.setItem('token', data.data.tokens.accessToken);
+                    localStorage.setItem('hotel_admin_refresh_token', data.data.tokens.refreshToken);
+                    localStorage.setItem('hotel_admin_user', JSON.stringify(data.data.user));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>🎉 Fresh Login Successful!</h4>
+                            <p><strong>User:</strong> ${data.data.user.firstName} ${data.data.user.lastName}</p>
+                            <p><strong>Email:</strong> ${data.data.user.email}</p>
+                            <p><strong>Role:</strong> ${data.data.user.userType}</p>
+                            <p><strong>New Token:</strong> ${data.data.tokens.accessToken.substring(0, 40)}...</p>
+                            <br>
+                            <p>✅ New valid token saved successfully</p>
+                            <p>🔄 Now test API calls to verify the fix</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('❌ Fresh login failed:', error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Fresh Login Failed</h4>
+                        <p>${error.message}</p>
+                        <p>Please check your credentials and server status</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function verifyFix() {
+            const resultDiv = document.getElementById('verifyResult');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ No Token Found</h4>
+                        <p>Please complete fresh login first</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                console.log('🧪 Testing API calls with new token...');
+                
+                const tests = [
+                    { name: 'Rooms List', endpoint: '/rooms/' },
+                    { name: 'Today Arrivals', endpoint: '/bookings/arrivals' },
+                    { name: 'Today Departures', endpoint: '/bookings/departures' }
+                ];
+                
+                const results = [];
+                let allPassed = true;
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}${test.endpoint}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        
+                        if (response.ok) {
+                            results.push(`✅ ${test.name}: Success (${response.status})`);
+                        } else {
+                            results.push(`❌ ${test.name}: Failed (${response.status})`);
+                            allPassed = false;
+                        }
+                    } catch (error) {
+                        results.push(`❌ ${test.name}: Error - ${error.message}`);
+                        allPassed = false;
+                    }
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="result ${allPassed ? 'success' : 'error'}">
+                        <h4>🧪 API Test Results</h4>
+                        <pre>${results.join('\n')}</pre>
+                        <br>
+                        ${allPassed ? 
+                            '<p><strong>🎉 All tests passed! The invalid signature issue is FIXED!</strong></p><p>✅ Your Room Status page should now work properly</p>' : 
+                            '<p><strong>⚠️ Some tests failed. Please check server status and try again.</strong></p>'
+                        }
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Verification Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-check status on page load
+        window.addEventListener('load', () => {
+            checkTokenStatus();
+        });
+    </script>
+</body>
+</html>

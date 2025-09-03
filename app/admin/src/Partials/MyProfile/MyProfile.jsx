@@ -12,7 +12,7 @@ const MyProfile = () => {
                         <img src={profileImage} alt="" className="rounded-4"/>
                         <div className="media-body ms-md-5 m-0 mt-4 mt-md-0 text-md-start text-center">
                             <h4 className="mb-1">Anny glover</h4>
-                            <p>anny-glover@hotelair.com</p>
+                            <p>anny-glover@malai.com</p>
                             <span className="text-muted">Exploring a chic and contemporary admin template for your upcoming project? Discover our latest Bootstrap admin template! 🚀</span>
                             <div className="my-3">
                                 <button className="btn btn-primary me-1">Follow</button>
@@ -89,7 +89,7 @@ const MyProfile = () => {
                             <div className="row g-3 my-3">
                                 <div className="col-md-5">
                                     <label className="form-label small text-muted">Company</label>
-                                    <input type="text" className="form-control" disabled placeholder="Company" defaultValue="hotelair"/>
+                                    <input type="text" className="form-control" disabled placeholder="Company" defaultValue="malai"/>
                                 </div>
                                 <div className="col-sm-6 col-md-3">
                                     <label className="form-label small text-muted">Username</label>

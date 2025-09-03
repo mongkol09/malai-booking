@@ -18,7 +18,7 @@ const Blog = () => {
                     <article key={index} className="mb-4 pb-5 border-bottom">
                         <h5><Link className={`title-font ${data.text_color}`} to="/app/blog-detail" title="blog title">{data.title}</Link></h5>
                         <div className="d-flex align-items-center text-muted mb-3">
-                            <span className="pe-4">By <Link to="/">HotelAir</Link></span>
+                            <span className="pe-4">By <Link to="/">Malai</Link></span>
                             <span className="pe-4">{data.date}</span>
                             <span className="pe-4">{data.comment}</span>
                         </div>

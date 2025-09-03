@@ -13,7 +13,7 @@ const CommonSidebar = ({iconColor}) => {
 			<nav className="navbar navbar-expand-xl py-0">
 				<div className="offcanvas offcanvas-start" data-bs-scroll="true" tabIndex="-1" id="offcanvas_Navbar">
 					<div className="offcanvas-header">
-						<span className="fw-bold fs-5 text-gradient">HotelAir</span>
+						<span className="fw-bold fs-5 text-gradient">Malai</span>
 						<button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 					</div>
 					<div className="offcanvas-body flex-column custom_scroll ps-4 ps-xl-0">

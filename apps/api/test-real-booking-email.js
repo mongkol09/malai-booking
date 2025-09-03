@@ -1,60 +1,135 @@
+#!/usr/bin/env node
+
 /**
- * Test Email with Real Booking Data
+ * 🧪 ทดสอบการส่ง Email ด้วยข้อมูล Booking จริงของผู้ใช้
+ * Booking ID: BK02316084 หรือ BK02229520
  */
 
-const axios = require('axios');
+const { PrismaClient } = require('@prisma/client');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+// Import email service
+const { emailService } = require('./dist/services/emailService');
 
-async function testEmailWithRealBooking() {
-  console.log('📧 Testing Email with Real Booking Data...');
-  
+const prisma = new PrismaClient();
+
+async function testRealBookingEmail() {
+  console.log('🧪 Testing Real Booking Email...');
+  console.log('=====================================');
+
   try {
-    // Use the actual booking data from our successful booking
-    const mockBookingData = {
-      bookingId: 'c5a7ff37-7874-4248-bdb4-7fc86ce1226f',
-      confirmationNumber: 'B-636376728',
-      guestFirstName: 'ทดสอบ',
-      guestLastName: 'การจอง',
-      guestEmail: 'test@example.com',
-      checkinDate: '2025-12-25T00:00:00.000Z',
-      checkoutDate: '2025-12-27T00:00:00.000Z',
-      roomTypeName: 'Onsen Villa',
-      totalAmount: 16000,
-      numberOfGuests: 2
-    };
+    // 1. ดึงข้อมูล booking ล่าสุดของ Mongkol
+    console.log('📋 Fetching latest booking...');
     
-    console.log('📤 Sending test email...');
-    console.log(`📧 To: ${mockBookingData.guestEmail}`);
-    console.log(`🎫 Booking: ${mockBookingData.confirmationNumber}`);
-    
-    const response = await axios.post(`${API_BASE_URL}/email/test-booking-confirmation`, mockBookingData, {
-      headers: {
-        'Content-Type': 'application/json'
+    const latestBooking = await prisma.booking.findFirst({
+      where: {
+        guest: {
+          email: 'mongkol09ms@gmail.com'
+        }
+      },
+      include: {
+        guest: true,
+        room: {
+          include: {
+            roomType: true
+          }
+        },
+        roomType: true
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
+
+    if (!latestBooking) {
+      console.log('❌ No booking found for mongkol09ms@gmail.com');
+      return;
+    }
+
+    console.log('✅ Found booking:', latestBooking.bookingReferenceId);
+    console.log('📧 Guest email:', latestBooking.guest.email);
+    console.log('🏨 Room:', latestBooking.room?.roomNumber || 'TBD');
+    console.log('🛏️ Room Type:', latestBooking.roomType?.name || 'Unknown');
+
+    // 2. เตรียมข้อมูลสำหรับ Email Template
+    const templateData = {
+      guest_name: `${latestBooking.guest.firstName} ${latestBooking.guest.lastName}`,
+      guest_email: latestBooking.guest.email,
+      booking_id: latestBooking.bookingReferenceId,
+      room_type: latestBooking.roomType?.name || 'Standard Room',
+      room_number: latestBooking.room?.roomNumber || 'จะแจ้งให้ทราบ',
+      checkin_date: latestBooking.checkinDate ? new Date(latestBooking.checkinDate).toLocaleDateString('th-TH') : 'ไม่ระบุ',
+      checkout_date: latestBooking.checkoutDate ? new Date(latestBooking.checkoutDate).toLocaleDateString('th-TH') : 'ไม่ระบุ',
+      num_adults: String(latestBooking.numAdults || 1),
+      num_children: String(latestBooking.numChildren || 0),
+      total_amount: `฿${(latestBooking.finalAmount || 0).toLocaleString()}`,
+      hotel_name: 'Malai Khaoyai Resort',
+      current_date: new Date().toLocaleDateString('th-TH')
+    };
+
+    console.log('');
+    console.log('📋 Template Data:');
+    console.log(JSON.stringify(templateData, null, 2));
+
+    // 3. ส่ง Email ด้วย MailerSend Template
+    console.log('');
+    console.log('📤 Sending email with MailerSend Template...');
     
-    if (response.data.success) {
+    const emailData = {
+      type: 'BOOKING_CONFIRMATION',
+      to: latestBooking.guest.email,
+      toName: templateData.guest_name,
+      subject: `ยืนยันการจอง ${latestBooking.bookingReferenceId} - Malai Khaoyai Resort`,
+      templateId: process.env.BOOKING_CONFIRMATION_TEMPLATE_ID || 'z3m5jgrq390ldpyo',
+      templateData: templateData
+    };
+
+    const result = await emailService.sendTemplateEmail(emailData);
+
+    console.log('');
+    if (result.success) {
       console.log('✅ Email sent successfully!');
-      console.log('🔍 Please check your email and verify:');
-      console.log('  1. Name shows: "ทดสอบ การจอง" (not {{name}})');
-      console.log('  2. Booking ID shows: "B-636376728" (not {{booking_id}})');
-      console.log('  3. Check-in date is properly formatted');
-      console.log('  4. Room type shows: "Onsen Villa"');
-      console.log('  5. Total amount shows: "16,000 บาท"');
+      console.log(`📨 Message ID: ${result.messageId}`);
+      console.log(`📧 Sent to: ${latestBooking.guest.email}`);
+      console.log(`📋 Template: ${emailData.templateId}`);
       
-      console.log('\n📋 If you still see {{variables}}, the issue is:');
-      console.log('  • Template ID mismatch');
-      console.log('  • Variable naming mismatch');
-      console.log('  • MailerSend template configuration error');
+      console.log('');
+      console.log('🎯 Test Summary:');
+      console.log('• ✅ Real booking data retrieved');
+      console.log('• ✅ MailerSend template email sent');
+      console.log('• 🔍 Check the recipient email inbox!');
       
     } else {
-      console.error('❌ Email failed:', response.data.message);
+      console.log('❌ Email sending failed!');
+      console.log('Error:', result.error);
     }
-    
+
   } catch (error) {
-    console.error('❌ Error:', error.response?.data || error.message);
+    console.error('');
+    console.error('❌ Test failed:');
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
+
+    console.error('');
+    console.error('🔧 Troubleshooting:');
+    console.error('1. Check database connection');
+    console.error('2. Verify MailerSend configuration');
+    console.error('3. Check template ID exists');
+    console.error('4. Verify email service initialization');
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-testEmailWithRealBooking();
+// รัน test
+testRealBookingEmail()
+  .then(() => {
+    console.log('');
+    console.log('🏁 Test completed');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('💥 Unexpected error:', error);
+    process.exit(1);
+  });

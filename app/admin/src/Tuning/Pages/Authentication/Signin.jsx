@@ -9,7 +9,7 @@ const Signin = () => {
                     
                     <li className="col-12">
                         <label className="form-label">Email</label>
-                        <input type="email" className="form-control form-control-lg" placeholder="" defaultValue="admin@hotelair.com"/>
+                        <input type="email" className="form-control form-control-lg" placeholder="" defaultValue="admin@malai.com"/>
                     </li>
                     <li className="col-12">
                         <div className="form-label">
@@ -18,7 +18,7 @@ const Signin = () => {
                                 <Link className="text-primary" to="/password-reset">Forgot Password?</Link>
                             </span>
                         </div>
-                        <input type="password" className="form-control form-control-lg" placeholder="" defaultValue="admin.hotelair"/>
+                        <input type="password" className="form-control form-control-lg" placeholder="" defaultValue="admin.malai"/>
                     </li>
                     <li className="col-12">
                         <div className="form-check fs-5">
@@ -34,7 +34,7 @@ const Signin = () => {
                         </Link>
                     </li>
                     <li className="col-12 text-center">
-                        <span className="text-muted d-flex d-sm-inline-flex">New to HotelAir <Link className="ms-2" to="/signup" title="">Sign up here</Link></span>
+                        <span className="text-muted d-flex d-sm-inline-flex">New to Malai <Link className="ms-2" to="/signup" title="">Sign up here</Link></span>
                     </li>
                 </ul>
             </form>

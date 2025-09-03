@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Emergency Fix</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: #f9f9f9;
+        }
+        .error { color: #dc3545; font-weight: bold; }
+        .success { color: #28a745; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 12px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #c82333; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+        .token-display { 
+            word-break: break-all; 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .step { 
+            background: #e7f3ff; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-left: 4px solid #007bff; 
+        }
+        input[type="email"], input[type="password"] {
+            width: 200px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 Token Emergency Fix Tool</h1>
+        <p class="error">แก้ไขปัญหา "Invalid JWT format - token must have 3 parts"</p>
+        
+        <div class="section">
+            <h3>🔍 Current Token Status</h3>
+            <div id="tokenStatus"></div>
+            <button onclick="checkToken()">Check Token</button>
+        </div>
+        
+        <div class="section">
+            <h3>🧹 Emergency Clear</h3>
+            <div class="step">
+                <strong>Step 1:</strong> Clear all corrupted tokens
+            </div>
+            <button onclick="clearAllTokens()" class="danger">Clear All Tokens</button>
+            <div id="clearResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🔑 Fresh Login</h3>
+            <div class="step">
+                <strong>Step 2:</strong> Login with fresh credentials
+            </div>
+            <div>
+                <input type="email" id="email" placeholder="Email" value="admin@hotel.com">
+                <input type="password" id="password" placeholder="Password" value="SecureAdmin123!">
+                <button onclick="performLogin()" class="success">Login Now</button>
+            </div>
+            <div id="loginResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>🧪 Token Test</h3>
+            <div class="step">
+                <strong>Step 3:</strong> Test token after login
+            </div>
+            <button onclick="testToken()">Test Token</button>
+            <div id="testResult"></div>
+        </div>
+        
+        <div class="section">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Click "Clear All Tokens" to remove corrupted tokens</li>
+                <li>Click "Login Now" to get fresh tokens</li>
+                <li>Click "Test Token" to verify token works</li>
+                <li>Go back to User Management and try again</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost:3001/api/v1';
+        const tokenKey = 'hotel_admin_token';
+        const userKey = 'hotel_admin_user';
+        const refreshKey = 'hotel_admin_refresh_token';
+
+        function checkToken() {
+            const token = localStorage.getItem(tokenKey);
+            const statusEl = document.getElementById('tokenStatus');
+            
+            if (!token) {
+                statusEl.innerHTML = '<span class="warning">⚠️ No token found in localStorage</span>';
+                return;
+            }
+            
+            statusEl.innerHTML = `
+                <div class="info">Token found: ${token.substring(0, 20)}...</div>
+                <div class="token-display">${token}</div>
+            `;
+            
+            // Check JWT format
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                statusEl.innerHTML += '<div class="error">❌ Invalid JWT format - token must have 3 parts (found ' + parts.length + ')</div>';
+                return;
+            }
+            
+            try {
+                const payload = JSON.parse(atob(parts[1]));
+                const currentTime = Math.floor(Date.now() / 1000);
+                const isExpired = payload.exp <= currentTime;
+                
+                statusEl.innerHTML += `
+                    <div class="${isExpired ? 'error' : 'success'}">
+                        ${isExpired ? '❌ Token Expired' : '✅ Token Valid'}
+                    </div>
+                    <div>Expires: ${new Date(payload.exp * 1000).toLocaleString()}</div>
+                `;
+            } catch (error) {
+                statusEl.innerHTML += '<div class="error">❌ Cannot decode token: ' + error.message + '</div>';
+            }
+        }
+        
+        function clearAllTokens() {
+            localStorage.removeItem(tokenKey);
+            localStorage.removeItem(userKey);
+            localStorage.removeItem(refreshKey);
+            
+            // Clear any other possible keys
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.includes('hotel') || key.includes('admin') || key.includes('token')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            
+            document.getElementById('clearResult').innerHTML = 
+                '<div class="success">✅ All tokens cleared successfully!</div>';
+        }
+        
+        async function performLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultEl = document.getElementById('loginResult');
+            
+            if (!email || !password) {
+                resultEl.innerHTML = '<div class="error">❌ Please enter email and password</div>';
+                return;
+            }
+            
+            try {
+                resultEl.innerHTML = '<div class="info">🔄 Logging in...</div>';
+                
+                const response = await fetch(`${baseURL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Store the token
+                    localStorage.setItem(tokenKey, data.token);
+                    localStorage.setItem(userKey, JSON.stringify(data.user));
+                    if (data.refreshToken) {
+                        localStorage.setItem(refreshKey, data.refreshToken);
+                    }
+                    
+                    resultEl.innerHTML = `
+                        <div class="success">✅ Login successful!</div>
+                        <div class="info">Token: ${data.token.substring(0, 30)}...</div>
+                        <div class="info">User: ${data.user.email}</div>
+                    `;
+                    
+                    // Auto check token
+                    setTimeout(checkToken, 500);
+                } else {
+                    resultEl.innerHTML = `<div class="error">❌ Login failed: ${data.error?.message || data.message}</div>`;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ Login error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testToken() {
+            const token = localStorage.getItem(tokenKey);
+            const resultEl = document.getElementById('testResult');
+            
+            if (!token) {
+                resultEl.innerHTML = '<div class="error">❌ No token found - please login first</div>';
+                return;
+            }
+            
+            try {
+                resultEl.innerHTML = '<div class="info">🔄 Testing token...</div>';
+                
+                const response = await fetch(`${baseURL}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultEl.innerHTML = `
+                        <div class="success">✅ Token works! API call successful</div>
+                        <div class="info">Found ${data.data?.length || 0} users</div>
+                    `;
+                } else {
+                    resultEl.innerHTML = `
+                        <div class="error">❌ Token test failed: ${data.error?.message || data.message}</div>
+                        <div class="warning">You may need to login again</div>
+                    `;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<div class="error">❌ Test error: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-check token on load
+        window.onload = function() {
+            checkToken();
+        };
+    </script>
+</body>
+</html>

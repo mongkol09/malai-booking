@@ -26,12 +26,12 @@ const Documentation = () => {
                     <nav className="navbar navbar-expand-xl py-0">
                         <div className="offcanvas offcanvas-start" data-bs-scroll="true" tabIndex="-1" id="offcanvas_Navbar">
                             <div className="offcanvas-header">
-                                <span className="fw-bold fs-5 text-gradient">HotelAir</span>
+                                <span className="fw-bold fs-5 text-gradient">Malai</span>
                                 <button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                             </div>
                             <div className="offcanvas-body flex-column custom_scroll ps-3 ps-xl-0">
                                 <div className="d-flex align-items-start mb-4 d-none d-xl-inline-flex">
-                                    <Link to="/index" className="brand-icon text-decoration-none d-flex align-items-center" title="HotelAir Admin Template">
+                                    <Link to="/index" className="brand-icon text-decoration-none d-flex align-items-center" title="Malai Admin Template">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                             <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
@@ -39,7 +39,7 @@ const Documentation = () => {
                                             <path d="M9 12l6 0" />
                                             <path d="M15 8l0 8" />
                                         </svg>
-                                        <span className="fw-bold ps-2 fs-5 text-gradient">HotelAir</span>
+                                        <span className="fw-bold ps-2 fs-5 text-gradient">Malai</span>
                                     </Link>
                                 </div>
                                 {/* <!-- start: Menu tab --> */}

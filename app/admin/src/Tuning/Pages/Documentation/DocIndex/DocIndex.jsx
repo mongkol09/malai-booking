@@ -145,7 +145,7 @@ import '../src/assets/scss/styles.scss';
                     </div>
                     <div className="card-body">
                        
-                        <p className="lead">HotelAir is carefully well thought UI frame work that is built on top of React & Bootstrap5, This part of the doc will help you to quickly start your project and will you a basic idea about how HotelAir work.</p>
+                        <p className="lead">Malai is carefully well thought UI frame work that is built on top of React & Bootstrap5, This part of the doc will help you to quickly start your project and will you a basic idea about how Malai work.</p>
                         
                     </div>
                 </div>
@@ -235,7 +235,7 @@ import '../src/assets/scss/styles.scss';
                         <h4 id="Configurations">Theme Configurations</h4>
                     </div>
                     <div className="card-body">
-                    <p>Theme color scss file path: <code>hotelair/src/assets/global/_themes.scss</code> you can change as per your project/client requirements.</p>
+                    <p>Theme color scss file path: <code>malai/src/assets/global/_themes.scss</code> you can change as per your project/client requirements.</p>
                     <p>Theme light/dark version you can changes in HTML tage <code>data-bs-theme="light"</code>, <code>data-bs-theme="dark"</code></p>
                     <ul className="list-unstyled d-flex flex-wrap">
                         <li className="bg-primary p-4 flex-grow-1 text-white">
@@ -273,7 +273,7 @@ import '../src/assets/scss/styles.scss';
                 <div className="border-top pt-4 mt-4"></div>
                 <div className="card">
                     <div className="card-header">
-                        <h4>HotelAir Template References</h4>
+                        <h4>Malai Template References</h4>
                     </div>
                     <div className="card-body">
                         <div className="table-responsive">

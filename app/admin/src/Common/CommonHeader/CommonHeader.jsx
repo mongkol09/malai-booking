@@ -50,16 +50,15 @@ const CommonHeader = ( {toggleSidebar} ) => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="svg-stroke" width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 21a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3" /><path d="M21 6v12a3 3 0 0 1 -6 0v-12a3 3 0 0 1 6 0z" fill="var(--accent-color)" /><path d="M15 12h-8" /><path d="M10 9l-3 3l3 3" /></svg>
                 </button>
                 {/* <!--[ Start:: Brand Logo icon ]--> */}
-                <Link to="/" className="brand-icon text-decoration-none d-flex align-items-center" title="HotelAir Admin Template">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
-                        <path d="M9 8l0 8" />
-                        <path d="M9 12l6 0" />
-                        <path d="M15 8l0 8" />
-                    </svg>
-                    <span className="fw-bold ps-2 fs-5 d-none d-xl-inline-flex text-gradient">HotelAir</span>
+                <Link to="/" className="brand-icon text-decoration-none d-flex align-items-center" title="Malai Admin Template">
+                    <img
+                        src="/Malai_info/malailogo.png"
+                        alt="Malai Logo"
+                        className="brand-logo"
+                        style={{ height: '40px', width: 'auto' }}
+                    />
                 </Link>
+                <span className="fw-bold ps-2 fs-5 d-none d-xl-inline-flex text-gradient">Malai</span>
             </div>
             <form className="dropdown main-search me-md-4 w-100 d-none d-md-inline-flex">
                 <div className="w-100" data-bs-toggle="dropdown" data-bs-auto-close="outside">
@@ -212,7 +211,7 @@ const CommonHeader = ( {toggleSidebar} ) => {
                                         </div>
                                         <div className="flex-fill ms-3">
                                             <span className="d-flex justify-content-between"><small className="text-danger">Error 404</small><small className="text-muted">Yesterday</small></span>
-                                            <p className="mb-0 mt-1">HotelAir admin template on website analytics configurations</p>
+                                            <p className="mb-0 mt-1">Malai admin template on website analytics configurations</p>
                                         </div>
                                     </Link>
                                 </li>

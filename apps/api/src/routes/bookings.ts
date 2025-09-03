@@ -34,6 +34,13 @@ import { createBookingWithTelegram } from '../controllers/telegramBookingControl
 // Import admin booking controller for real data
 import { getAllBookingsAdmin, getBookingStatsAdmin } from '../controllers/adminBookingController';
 
+// Import booking cancellation controller
+import { 
+  cancelBooking, 
+  getCancellationHistory, 
+  getCancellationPolicy 
+} from '../controllers/bookingCancellationController';
+
 const router = express.Router();
 
 // Add method validation to all routes
@@ -226,5 +233,21 @@ router.post('/admin/rooms/:roomId/status', sessionAuth, requireSessionRole(['DEV
 
 // Get active booking by room (temporarily without auth for testing)
 router.get('/admin/bookings/active', getActiveBookingByRoom);
+
+// ============================================
+// BOOKING CANCELLATION ENDPOINTS
+// ============================================
+
+// Cancel booking (Session Auth)
+router.post('/:id/cancel', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), cancelBooking);
+
+// Cancel booking (JWT Auth for Professional Dashboard)
+router.post('/admin/:id/cancel', authenticateToken, requireRole(['DEV', 'ADMIN', 'STAFF']), cancelBooking);
+
+// Get cancellation history for a booking
+router.get('/:id/cancellations', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), getCancellationHistory);
+
+// Get cancellation policy for a booking
+router.get('/:id/cancellation-policy', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), getCancellationPolicy);
 
 export default router;

@@ -8,7 +8,7 @@ const EnhancedSignin = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    email: 'admin@hotelair.com', // ค่าเริ่มต้นสำหรับ demo
+    email: 'admin@malai.com', // ค่าเริ่มต้นสำหรับ demo
     password: 'Admin123!',       // ค่าเริ่มต้นสำหรับ demo - password ที่ถูกต้อง
     rememberMe: false
   });
@@ -108,7 +108,7 @@ const EnhancedSignin = () => {
               type="email" 
               name="email"
               className={`form-control form-control-lg ${formErrors.email ? 'is-invalid' : ''}`}
-              placeholder="admin@hotelair.com"
+              placeholder="admin@malai.com"
               value={formData.email}
               onChange={handleInputChange}
               disabled={isLoading}
@@ -218,7 +218,7 @@ const EnhancedSignin = () => {
           {/* Sign Up Link */}
           <li className="col-12 text-center">
             <span className="text-muted d-flex d-sm-inline-flex">
-              ใหม่กับ HotelAir? 
+              ใหม่กับ Malai? 
               <Link className="ms-2" to="/signup" title="สมัครสมาชิก">
                 สมัครสมาชิกที่นี่
               </Link>
@@ -229,8 +229,8 @@ const EnhancedSignin = () => {
           <li className="col-12">
             <div className="alert alert-info" role="alert">
               <strong>ข้อมูลสำหรับทดสอบ:</strong><br />
-              อีเมล: admin@hotelair.com<br />
-              รหัสผ่าน: admin.hotelair
+              อีเมล: admin@malai.com<br />
+              รหัสผ่าน: admin.malai
             </div>
           </li>
 

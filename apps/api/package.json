@@ -1,12 +1,13 @@
 {
-  "name": "hotel-booking-api",
+  "name": "malai-resort-api",
   "version": "1.0.0",
-  "description": "Hotel Booking System API - Secure Backend with TypeScript",
+  "description": "Malai Resort Hotel Management System API - Secure Backend with TypeScript",
   "main": "dist/app.js",
   "scripts": {
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
+    "start:prod": "NODE_ENV=production node dist/app.js",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -14,24 +15,47 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "tsx src/utils/seed.ts",
+    "db:backup": "node scripts/backup-database.js",
     "security:audit": "npm audit",
     "security:fix": "npm audit fix",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:prod": "NODE_ENV=production jest",
+    "health:check": "curl -f http://localhost:3001/api/v1/health",
+    "logs:view": "tail -f logs/combined.log",
+    "logs:error": "tail -f logs/err.log",
+    "logs:clear": "rm -rf logs/*",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop malai-resort-api",
+    "pm2:restart": "pm2 restart malai-resort-api",
+    "pm2:status": "pm2 status",
+    "pm2:logs": "pm2 logs malai-resort-api",
+    "pm2:monit": "pm2 monit",
+    "production:build": "./build-production.sh",
+    "production:deploy": "npm run build && npm run pm2:start"
   },
   "keywords": [
+    "malai",
+    "resort",
     "hotel",
     "booking",
     "api",
     "typescript",
     "express",
     "prisma",
-    "postgresql"
+    "postgresql",
+    "thailand",
+    "khaoyai"
   ],
-  "author": "Hotel Booking System",
+  "author": "Malai Resort Development Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mongkol09/malai-admin.git"
+  },
+  "homepage": "https://malai-resort.com",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "@types/node-telegram-bot-api": "^0.64.10",
@@ -86,5 +110,14 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
-  }
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
 }

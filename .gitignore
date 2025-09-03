@@ -1,46 +1,43 @@
-# ============================================
-# MALAI RESORT ADMIN PANEL - GITIGNORE
-# ============================================
-
-# Environment variables (NEVER commit these!)
-.env
-.env.local
-.env.development
-.env.production
-.env.backup.*
-.env.corrupted.*
-.env.organized
-
-# Node.js dependencies
+# Dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.organecho
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
 coverage/
-*.lcov
 
-# Logs
-logs/
-*.log
+# nyc test coverage
+.nyc_output
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
 
 # Optional REPL history
 .node_repl_history
@@ -53,54 +50,12 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
-.env.test
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# ============================================
-# DATABASE & PRISMA
-# ============================================
-# Prisma
-*.db
-*.db-journal
-
-# ============================================
-# DEVELOPMENT TOOLS
-# ============================================
-# VS Code
+# IDE files
 .vscode/
-
-# WebStorm
 .idea/
-
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
+*.swp
+*.swo
 
 # OS generated files
 .DS_Store
@@ -111,65 +66,15 @@ tmp/
 ehthumbs.db
 Thumbs.db
 
-# ============================================
-# BUILD & DIST
-# ============================================
-build/
-dist/
-out/
+# Test files (temporary)
+test-*.js
+*test*.js
+scripts/test-*.js
 
-# ============================================
-# TESTING
-# ============================================
-coverage/
-.nyc_output
-
-# ============================================
-# BACKUP FILES
-# ============================================
-*.backup
+# Backup files
 *.bak
-*~
+*.backup
 
-# ============================================
-# SENSITIVE FILES (Hotel Specific)
-# ============================================
-# API Keys and tokens
-*api-key*
-*secret*
-*token*
-
-# Database backups
-*.sql
-*.dump
-
-# Email templates (if they contain sensitive info)
-# mailer_template/
-
-# Test scripts with real data
-# *test*.js (uncomment if needed)
-
-# ============================================
-# GENERATED FILES
-# ============================================
-# Auto-generated documentation
-docs/generated/
-
-# Compiled TypeScript
-*.tsbuildinfo
-
-# ============================================
-# RAILWAY DEPLOYMENT
-# ============================================
-.railway/
-
-# ============================================
-# IMPORTANT: ALWAYS KEEP THESE PRIVATE
-# ============================================
-# - All .env files
-# - Database credentials  
-# - API keys (MailerSend, Resend, Telegram, etc.)
-# - JWT secrets
-# - Payment gateway keys (Omise, Stripe)
-# - Admin passwords
-# ============================================
+# Temporary files
+*.tmp
+*.temp
