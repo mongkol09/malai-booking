@@ -1,31 +1,30 @@
-# Use Node.js LTS
+# Use Node.js 18 LTS
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files from apps/api
 COPY apps/api/package*.json ./
 COPY apps/api/prisma ./prisma/
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy source code
-COPY apps/api ./
+# Install dependencies (including devDependencies for build)
+RUN npm ci --include=dev
 
 # Generate Prisma client
 RUN npx prisma generate
 
+# Copy source code from apps/api
+COPY apps/api/ .
+
 # Build the application
 RUN npm run build
 
+# Remove devDependencies to reduce image size
+RUN npm prune --production
+
 # Expose port
 EXPOSE 3001
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/api/v1/payments/health || exit 1
 
 # Start the application
 CMD ["npm", "start"]
