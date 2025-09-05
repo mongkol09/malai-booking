@@ -6,10 +6,14 @@ const router = Router();
 // 🏥 Quick Health Check (สำหรับ Railway)
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const result = await healthCheckService.quickHealthCheck();
-    const statusCode = result.status === 'healthy' ? 200 : 503;
-    
-    res.status(statusCode).json(result);
+    // Simple health check without database dependency for Railway
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      message: 'API is running',
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development'
+    });
   } catch (error) {
     res.status(503).json({
       status: 'unhealthy',
@@ -39,24 +43,14 @@ router.get('/detailed', async (req: Request, res: Response) => {
 // 🔍 Database Health Check
 router.get('/database', async (req: Request, res: Response) => {
   try {
-    const result = await healthCheckService.runHealthCheck();
-    const dbCheck = result.checks.find(c => c.name === 'database');
+    const result = await healthCheckService.quickHealthCheck();
+    const statusCode = result.status === 'healthy' ? 200 : 503;
     
-    if (dbCheck) {
-      const statusCode = dbCheck.status === 'healthy' ? 200 : 503;
-      res.status(statusCode).json({
-        status: dbCheck.status,
-        timestamp: new Date().toISOString(),
-        database: dbCheck.details,
-        responseTime: dbCheck.responseTime
-      });
-    } else {
-      res.status(503).json({
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        error: 'Database check not found'
-      });
-    }
+    res.status(statusCode).json({
+      status: result.status,
+      timestamp: result.timestamp,
+      database: result.status === 'healthy' ? 'connected' : 'disconnected'
+    });
   } catch (error) {
     res.status(503).json({
       status: 'unhealthy',
