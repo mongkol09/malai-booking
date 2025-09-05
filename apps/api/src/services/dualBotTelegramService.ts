@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { Telegraf } from 'telegraf';
 
 /**
  * Dual Bot Telegram Service
@@ -40,29 +40,25 @@ interface OperationalNotification {
 }
 
 export class DualBotTelegramService {
-  private ceoBot: BotConfig;
-  private staffBot: BotConfig;
+  private ceoBot: Telegraf;
+  private staffBot: Telegraf;
+  private ceoChatId: string;
+  private staffChatId: string;
 
   constructor() {
     // CEO Bot configuration
-    this.ceoBot = {
-      token: process.env.TELEGRAM_BOT_TOKEN || '8090902784:AAHqVuSWGscl_CSG2ojmqF5A7NMmUFxAEA8',
-      chatId: process.env.TELEGRAM_CHAT_ID || '-1002579208700',
-      level: 'executive',
-      notifications: ['booking', 'payment', 'revenue', 'financial']
-    };
+    const ceoToken = process.env.TELEGRAM_BOT_TOKEN || '8090902784:AAHqVuSWGscl_CSG2ojmqF5A7NMmUFxAEA8';
+    this.ceoChatId = process.env.TELEGRAM_CHAT_ID || '-1002579208700';
+    this.ceoBot = new Telegraf(ceoToken);
 
-    // Staff Bot configuration - ใช้ Chat ID ที่ได้จากการตั้งค่า
-    this.staffBot = {
-      token: process.env.STAFF_TELEGRAM_BOT_TOKEN || '8236751083:AAGOS9YE_VdOo-mBQ3cMQ9dr1DYRXdzbNgI',
-      chatId: process.env.STAFF_TELEGRAM_CHAT_ID || '-1002926114573', // Chat ID ที่ได้จากการตั้งค่า
-      level: 'operational',
-      notifications: ['housekeeping', 'checkin', 'checkout', 'room_status']
-    };
+    // Staff Bot configuration
+    const staffToken = process.env.STAFF_TELEGRAM_BOT_TOKEN || '8236751083:AAGOS9YE_VdOo-mBQ3cMQ9dr1DYRXdzbNgI';
+    this.staffChatId = process.env.STAFF_TELEGRAM_CHAT_ID || '-1002926114573';
+    this.staffBot = new Telegraf(staffToken);
 
-    console.log('🤖 Dual Bot Service initialized:');
-    console.log(`   👔 CEO Bot: ${this.ceoBot.chatId}`);
-    console.log(`   🏨 Staff Bot: ${this.staffBot.chatId}`);
+    console.log('🤖 Dual Bot Service initialized with Telegraf:');
+    console.log(`   👔 CEO Bot: ${this.ceoChatId}`);
+    console.log(`   🏨 Staff Bot: ${this.staffChatId}`);
   }
 
   /**
@@ -73,7 +69,7 @@ export class DualBotTelegramService {
       console.log('📊 Sending executive notification:', notification.type);
       
       const message = this.formatExecutiveMessage(notification);
-      return await this.sendTelegramMessage(this.ceoBot, message);
+      return await this.sendTelegramMessage(this.ceoBot, this.ceoChatId, message, 'executive');
       
     } catch (error) {
       console.error('❌ Executive notification failed:', error);
@@ -89,7 +85,7 @@ export class DualBotTelegramService {
       console.log('🏨 Sending operational notification:', notification.type);
       
       const message = this.formatOperationalMessage(notification);
-      return await this.sendTelegramMessage(this.staffBot, message);
+      return await this.sendTelegramMessage(this.staffBot, this.staffChatId, message, 'operational');
       
     } catch (error) {
       console.error('❌ Operational notification failed:', error);
@@ -312,27 +308,18 @@ ${data.specialNotes ? `📋 *หมายเหตุ:* ${data.specialNotes}\n` 
   /**
    * ส่งข้อความผ่าน Telegram API
    */
-  private async sendTelegramMessage(bot: BotConfig, message: string): Promise<boolean> {
+  private async sendTelegramMessage(bot: Telegraf, chatId: string, message: string, level: string): Promise<boolean> {
     try {
-      const telegramApiUrl = `https://api.telegram.org/bot${bot.token}/sendMessage`;
-      
-      const response = await axios.post(telegramApiUrl, {
-        chat_id: bot.chatId,
-        text: message,
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true
+      await bot.telegram.sendMessage(chatId, message, {
+        parse_mode: 'Markdown'
+        // disable_web_page_preview: true // Not available in Telegraf
       });
 
-      if (response.data.ok) {
-        console.log(`✅ ${bot.level} notification sent successfully`);
-        return true;
-      } else {
-        console.error(`❌ ${bot.level} notification failed:`, response.data);
-        return false;
-      }
+      console.log(`✅ ${level} notification sent successfully`);
+      return true;
 
     } catch (error) {
-      console.error(`❌ ${bot.level} Telegram API error:`, error);
+      console.error(`❌ ${level} Telegram API error:`, error);
       return false;
     }
   }
@@ -346,11 +333,11 @@ ${data.specialNotes ? `📋 *หมายเหตุ:* ${data.specialNotes}\n` 
     try {
       // Test CEO Bot
       const ceoTestMessage = `🔧 *Bot Test - Executive Level*\n\nTesting CEO Bot connection...\n⏰ ${new Date().toLocaleString('th-TH')}`;
-      results.ceo = await this.sendTelegramMessage(this.ceoBot, ceoTestMessage);
+      results.ceo = await this.sendTelegramMessage(this.ceoBot, this.ceoChatId, ceoTestMessage, 'executive');
 
       // Test Staff Bot  
       const staffTestMessage = `🔧 *Bot Test - Operational Level*\n\nTesting Staff Bot connection...\n⏰ ${new Date().toLocaleString('th-TH')}`;
-      results.staff = await this.sendTelegramMessage(this.staffBot, staffTestMessage);
+      results.staff = await this.sendTelegramMessage(this.staffBot, this.staffChatId, staffTestMessage, 'operational');
 
     } catch (error) {
       console.error('❌ Bot testing failed:', error);
@@ -365,16 +352,16 @@ ${data.specialNotes ? `📋 *หมายเหตุ:* ${data.specialNotes}\n` 
   getBotStatus(): { ceo: any; staff: any } {
     return {
       ceo: {
-        configured: !!(this.ceoBot.token && this.ceoBot.chatId),
-        token: this.ceoBot.token ? '✅ Configured' : '❌ Missing',
-        chatId: this.ceoBot.chatId ? '✅ Configured' : '❌ Missing',
-        level: this.ceoBot.level
+        configured: !!(process.env.TELEGRAM_BOT_TOKEN && this.ceoChatId),
+        token: process.env.TELEGRAM_BOT_TOKEN ? '✅ Configured' : '❌ Missing',
+        chatId: this.ceoChatId ? '✅ Configured' : '❌ Missing',
+        level: 'executive'
       },
       staff: {
-        configured: !!(this.staffBot.token && this.staffBot.chatId),
-        token: this.staffBot.token ? '✅ Configured' : '❌ Missing', 
-        chatId: this.staffBot.chatId ? '✅ Configured' : '❌ Missing',
-        level: this.staffBot.level
+        configured: !!(process.env.STAFF_TELEGRAM_BOT_TOKEN && this.staffChatId),
+        token: process.env.STAFF_TELEGRAM_BOT_TOKEN ? '✅ Configured' : '❌ Missing', 
+        chatId: this.staffChatId ? '✅ Configured' : '❌ Missing',
+        level: 'operational'
       }
     };
   }

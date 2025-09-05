@@ -44,6 +44,15 @@ import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { validateApiKey } from './middleware/validateApiKey';
 
+// Import security middleware
+import { securityHeaders, customSecurityHeaders, corsConfig, securityAuditLog } from './middleware/securityHeaders';
+import { generalRateLimit, authRateLimit, paymentRateLimit, bookingRateLimit, adminRateLimit } from './middleware/rateLimiting';
+import { sanitizeInput, validateRateLimit } from './middleware/inputValidation';
+import { auditLogger, securityLogger, authLogger, paymentLogger, adminLogger } from './middleware/auditLogging';
+import { enhancedAuth, requireAdmin, requireStaff, requireManager } from './middleware/enhancedAuth';
+import { validatePaymentRequest, fraudDetection, paymentRateLimit as paymentSecurityRateLimit, verifyWebhookSignature } from './middleware/paymentSecurity';
+import securityConfig from './config/security';
+
 // Load environment variables
 dotenv.config();
 
@@ -56,43 +65,27 @@ export const prisma = new PrismaClient({
 const app = express();
 
 // ============================================
-// SECURITY MIDDLEWARE
+// ENHANCED SECURITY MIDDLEWARE
 // ============================================
 
-// Basic security headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
+// Security headers with enhanced configuration
+app.use(securityHeaders);
+app.use(customSecurityHeaders);
 
-// CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
-};
-app.use(cors(corsOptions));
+// CORS with enhanced security
+app.use(cors(corsConfig));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later',
-    retryAfter: Math.ceil(parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000') / 1000),
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api', limiter);
+// General rate limiting
+app.use('/api', generalRateLimit);
+
+// Security audit logging
+app.use(securityAuditLog);
+
+// Input sanitization
+app.use(sanitizeInput);
+
+// Suspicious activity detection
+app.use(validateRateLimit);
 
 // Slow down repeated requests
 const speedLimiter = slowDown({
