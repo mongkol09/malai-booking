@@ -185,7 +185,7 @@ export class UpdatedNotificationService {
             message: 'WebSocket test notification'
           });
           testResults.webSocket = true;
-          testResults.webSocketConnections = this.webSocketService.getConnectedAdminCount();
+          testResults.webSocketConnections = this.webSocketService.getConnectedAdminsCount();
         } catch (error) {
           console.error('❌ WebSocket test failed:', error);
         }
@@ -208,7 +208,7 @@ export class UpdatedNotificationService {
   // 📊 สถิติการแจ้งเตือน
   public getNotificationStats() {
     const stats = {
-      connectedAdmins: this.webSocketService?.getConnectedAdminCount() || 0,
+      connectedAdmins: this.webSocketService?.getConnectedAdminsCount() || 0,
       connectedAdminsList: this.webSocketService?.getConnectedAdmins() || [],
       services: {
         websocket: !!this.webSocketService,

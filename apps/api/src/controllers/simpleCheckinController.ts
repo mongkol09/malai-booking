@@ -294,15 +294,15 @@ export const performCheckin = async (req: Request, res: Response) => {
           bookingId: result.bookingReferenceId || result.id,
           guestName: `${guestInfo.firstName} ${guestInfo.lastName}`,
           roomNumber: room.roomNumber,
-          phoneNumber: booking.guest?.phoneNumber || 'ไม่ระบุ',
-          email: booking.guest?.email || 'ไม่ระบุ',
-          checkinDate: booking.checkinDate?.toLocaleDateString('th-TH') || 'วันนี้',
-          checkoutDate: booking.checkoutDate?.toLocaleDateString('th-TH') || 'ไม่ระบุ',
-          guestCount: booking.adults || 1,
-          totalAmount: parseFloat(booking.finalAmount?.toString() || '0'),
-          paymentStatus: 'ชำระแล้ว',
-          checkInTime: new Date().toLocaleString('th-TH'),
-          checkedInBy: 'Professional Check-in System'
+          // phoneNumber: booking.guest?.phoneNumber || 'ไม่ระบุ', // Property not in schema
+          // email: booking.guest?.email || 'ไม่ระบุ', // Property not in schema
+          // checkinDate: booking.checkinDate?.toLocaleDateString('th-TH') || 'วันนี้', // Property not in schema
+          // checkoutDate: booking.checkoutDate?.toLocaleDateString('th-TH') || 'ไม่ระบุ', // Property not in schema
+          // guestCount: booking.adults || 1, // Property not in schema
+          // totalAmount: parseFloat(booking.finalAmount?.toString() || '0'), // Property not in schema
+          // paymentStatus: 'ชำระแล้ว', // Property not in schema
+          checkInTime: new Date().toLocaleString('th-TH')
+          // checkedInBy: 'Professional Check-in System' // Property not in schema
         });
         console.log('✅ Check-in notification sent successfully');
       }

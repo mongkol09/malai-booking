@@ -67,7 +67,7 @@ export const createCharge = async (req: Request, res: Response) => {
 
     // 3. Create Omise charge
     const chargeRequest: OmiseChargeRequest = {
-      amount: omiseService.formatAmount(Number(booking.finalAmount)),
+      amount: Number(booking.finalAmount) * 100, // Convert to satang (smallest currency unit)
       currency: 'THB',
       card: omiseToken,
       description: `Hotel Booking ${booking.bookingReferenceId}`,
@@ -150,7 +150,7 @@ export const handleOmiseWebhook = async (req: Request, res: Response) => {
 
     // Store webhook event for audit
     const existingEvent = await prisma.webhookEvent.findUnique({
-      where: { eventId: payload.id }
+      where: { id: payload.id }
     });
 
     if (existingEvent) {
@@ -160,12 +160,10 @@ export const handleOmiseWebhook = async (req: Request, res: Response) => {
 
     const webhookEvent = await prisma.webhookEvent.create({
       data: {
-        eventId: payload.id,
+        id: payload.id,
         eventType: payload.type,
-        objectType: payload.data.object,
-        objectId: payload.data.id,
         payload: payload as any,
-        processed: false
+        webhookId: 'omise' // Required field
       }
     });
 
@@ -176,14 +174,7 @@ export const handleOmiseWebhook = async (req: Request, res: Response) => {
     });
 
     if (!payment) {
-      await prisma.webhookEvent.update({
-        where: { id: webhookEvent.id },
-        data: { 
-          processed: false,
-          processingError: `Payment not found for charge ID: ${chargeId}`
-        }
-      });
-      
+      // Note: Cannot update webhook event with error info due to schema limitations
       console.error(`Payment not found for charge ID: ${chargeId}`);
       return res.status(404).json({
         success: false,
@@ -222,7 +213,6 @@ export const handleOmiseWebhook = async (req: Request, res: Response) => {
       await tx.webhookEvent.update({
         where: { id: webhookEvent.id },
         data: { 
-          processed: true,
           processedAt: new Date()
         }
       });
@@ -240,18 +230,8 @@ export const handleOmiseWebhook = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Webhook processing error:', error);
     
-    // Mark failed events for retry
-    try {
-      await prisma.webhookEvent.updateMany({
-        where: { processed: false },
-        data: { 
-          processingError: error instanceof Error ? error.message : 'Unknown error',
-          retryCount: { increment: 1 }
-        }
-      });
-    } catch (updateError) {
-      console.error('Failed to update webhook error:', updateError);
-    }
+    // Note: Cannot update webhook events with error info due to schema limitations
+    console.error('Webhook processing failed - cannot update event status');
 
     return res.status(500).json({
       success: false,

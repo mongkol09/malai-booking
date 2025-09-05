@@ -62,7 +62,7 @@ export const createCharge = async (req: Request, res: Response) => {
 
     // 3. Create Omise charge
     const chargeRequest: OmiseChargeRequest = {
-      amount: omiseService.formatAmount(Number(booking.finalAmount)),
+      amount: Number(booking.finalAmount) * 100, // Convert to satang (smallest currency unit)
       currency: 'THB',
       card: omiseToken,
       description: `Hotel Booking ${booking.bookingReferenceId}`,

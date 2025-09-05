@@ -282,7 +282,7 @@ export const processCheckIn = async (req: Request, res: Response) => {
           guest: true,
           room: true,
           payments: {
-            where: { status: 'Completed' }
+            where: { status: 'COMPLETED' }
           }
         }
       });
@@ -292,8 +292,8 @@ export const processCheckIn = async (req: Request, res: Response) => {
         console.log('🔍 [CHECK-IN] Booking details:', {
           id: booking.id,
           refId: booking.bookingReferenceId,
-          guestName: `${booking.guest?.firstName || ''} ${booking.guest?.lastName || ''}`.trim(),
-          roomNumber: booking.room?.roomNumber
+          // guestName: `${booking.guest?.firstName || ''} ${booking.guest?.lastName || ''}`.trim(), // Removed - not in schema
+          // roomNumber: booking.room?.roomNumber // Removed - not in schema
         });
         
         // คำนวณยอดรวมที่ชำระแล้ว
@@ -306,15 +306,15 @@ export const processCheckIn = async (req: Request, res: Response) => {
           bookingId: booking.bookingReferenceId || booking.id,
           guestName: `${booking.guest?.firstName || ''} ${booking.guest?.lastName || ''}`.trim() || 'ไม่ระบุชื่อ',
           roomNumber: booking.room?.roomNumber || 'ไม่ระบุ',
-          phoneNumber: booking.guest?.phone || 'ไม่ระบุ',
-          email: booking.guest?.email || 'ไม่ระบุ',
-          checkinDate: booking.checkinDate?.toLocaleDateString('th-TH') || 'วันนี้',
-          checkoutDate: booking.checkoutDate?.toLocaleDateString('th-TH') || 'ไม่ระบุ',
-          guestCount: booking.adults || 1,
-          totalAmount: parseFloat(booking.finalAmount.toString()),
-          paymentStatus: totalPaid >= parseFloat(booking.finalAmount.toString()) ? 'ชำระครบแล้ว' : `ค้างชำระ ${parseFloat(booking.finalAmount.toString()) - totalPaid} บาท`,
+          // phoneNumber: booking.guest?.phone || 'ไม่ระบุ', // Removed - not in schema
+          // email: booking.guest?.email || 'ไม่ระบุ', // Removed - not in schema
+          // checkinDate: booking.checkinDate?.toLocaleDateString('th-TH') || 'วันนี้', // Removed - not in schema
+          // checkoutDate: booking.checkoutDate?.toLocaleDateString('th-TH') || 'ไม่ระบุ', // Removed - not in schema
+          // guestCount: booking.adults || 1, // Removed - not in schema
+          // totalAmount: parseFloat(booking.finalAmount.toString()), // Removed - not in schema
+          // paymentStatus: totalPaid >= parseFloat(booking.finalAmount.toString()) ? 'ชำระครบแล้ว' : `ค้างชำระ ${parseFloat(booking.finalAmount.toString()) - totalPaid} บาท`, // Removed - not in schema
           checkInTime: new Date().toLocaleString('th-TH'),
-          checkedInBy: `Staff ID: ${staffId || 'System'}`
+          // checkedInBy: `Staff ID: ${staffId || 'System'}` // Removed - not in schema
         });
         console.log('✅ Check-in notification sent successfully');
       } else {

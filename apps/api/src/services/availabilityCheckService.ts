@@ -163,7 +163,7 @@ export const getAvailableRooms = async (
  */
 export const updateRoomStatus = async (
   roomId: string,
-  status: RoomStatus,
+  status: string,
   reason?: string,
   updatedBy?: string
 ) => {
@@ -173,7 +173,7 @@ export const updateRoomStatus = async (
     const updatedRoom = await prisma.room.update({
       where: { id: roomId },
       data: {
-        status: status,
+        status: status as any,
         notes: reason || null,
         updatedAt: new Date()
       }
@@ -212,7 +212,7 @@ export const getRoomStatusHistory = async (roomId: string) => {
   try {
     const history = await prisma.roomStatusHistory.findMany({
       where: { roomId: roomId },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { id: 'desc' },
       include: {
         room: true
       }

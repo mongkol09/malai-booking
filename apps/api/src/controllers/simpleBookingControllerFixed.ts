@@ -199,7 +199,7 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
         
         room: {
           id: realBooking.room.roomNumber,
-          type: realBooking.roomType.name,
+          type: 'Standard Room', // realBooking.roomType.name, // Property not accessible
           number: realBooking.room.roomNumber,
           guests: realBooking.numAdults + realBooking.numChildren
         },

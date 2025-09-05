@@ -162,6 +162,7 @@ export class EmailQueueService {
 
       // Prepare email data
       const emailData: EmailData = {
+        type: queueItem.emailType,
         to: queueItem.recipientEmail,
         toName: queueItem.emailData.guest_name || queueItem.recipientEmail,
         subject: this.generateSubject(queueItem.emailType, queueItem.emailData),
@@ -382,7 +383,8 @@ export class EmailQueueService {
         to: recipientEmail,
         toName: emailData.guest_name || recipientEmail,
         subject: this.generateSubject(emailType, emailData),
-        templateData: emailData
+        templateData: emailData,
+        type: emailType
       };
 
       // Add template ID if available

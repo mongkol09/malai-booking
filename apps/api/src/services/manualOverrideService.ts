@@ -152,7 +152,7 @@ export class ManualOverrideService {
       where: { id: ruleId }
     });
     
-    if (!rule || !rule.conditions?.isOverride) {
+    if (!rule || !(rule.conditions as any)?.isOverride) {
       throw new Error('Rule not found or not an override rule');
     }
     
@@ -164,7 +164,7 @@ export class ManualOverrideService {
         dateRangeStart: updates.startDate || rule.dateRangeStart,
         dateRangeEnd: updates.endDate || rule.dateRangeEnd,
         conditions: {
-          ...rule.conditions,
+          ...(rule.conditions as any),
           lastModified: new Date(),
           modificationReason: updates.reason || 'Updated by admin'
         }
@@ -182,12 +182,12 @@ export class ManualOverrideService {
       where: { id: ruleId }
     });
     
-    if (!overrideRule || !overrideRule.conditions?.isOverride) {
+    if (!overrideRule || !(overrideRule.conditions as any)?.isOverride) {
       throw new Error('Override rule not found');
     }
     
     // 1. เปิดการทำงานของ Rules เดิมที่ถูก disable
-    const originalRuleIds = overrideRule.conditions.overriddenRules || [];
+    const originalRuleIds = (overrideRule.conditions as any).overriddenRules || [];
     await this.restoreOriginalRules(originalRuleIds, ruleId);
     
     // 2. ปิดการทำงานของ Override Rule
@@ -196,7 +196,7 @@ export class ManualOverrideService {
       data: { 
         isActive: false,
         conditions: {
-          ...overrideRule.conditions,
+          ...(overrideRule.conditions as any),
           deactivatedAt: new Date(),
           deactivatedBy: staffId,
           deactivationReason: reason || 'Manual removal'
@@ -338,13 +338,13 @@ export class ManualOverrideService {
         where: { id: rule.id },
         data: {
           isActive: false,
-          conditions: {
-            ...rule.conditions,
-            temporarilyDisabled: true,
-            disabledBy: overrideRuleId,
-            disabledAt: new Date(),
-            disableReason: 'Temporarily disabled by emergency override'
-          }
+                  conditions: {
+          ...(rule.conditions as any),
+          temporarilyDisabled: true,
+          disabledBy: overrideRuleId,
+          disabledAt: new Date(),
+          disableReason: 'Temporarily disabled by emergency override'
+        }
         }
       });
     }
@@ -356,13 +356,13 @@ export class ManualOverrideService {
         where: { id: ruleId }
       });
       
-      if (rule && rule.conditions?.disabledBy === overrideRuleId) {
+      if (rule && (rule.conditions as any)?.disabledBy === overrideRuleId) {
         await prisma.dynamicPricingRule.update({
           where: { id: ruleId },
           data: {
             isActive: true,
             conditions: {
-              ...rule.conditions,
+              ...(rule.conditions as any),
               temporarilyDisabled: false,
               restoredAt: new Date(),
               restoredReason: 'Override removed'

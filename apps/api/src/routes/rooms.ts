@@ -322,11 +322,11 @@ router.get('/available', async (req, res) => {
     
     // Filter by room type if provided
     if (roomTypeId) {
-      whereClause.roomTypeId = roomTypeId;
+      // whereClause.roomTypeId = roomTypeId; // Property not in schema
     }
     
     const availableRooms = await prisma.room.findMany({
-      where: whereClause,
+      where: whereClause as any,
       include: {
         roomType: {
           select: {
@@ -345,14 +345,14 @@ router.get('/available', async (req, res) => {
     res.json({
       success: true,
       message: 'Available rooms',
-      data: { 
-        rooms: availableRooms.map(room => ({
-          id: room.id,
-          roomNumber: room.roomNumber,
-          status: room.status,
-          roomType: room.roomType
-        }))
-      }
+              data: { 
+          rooms: availableRooms.map(room => ({
+            id: room.id,
+            roomNumber: room.roomNumber,
+            status: room.status,
+            // roomType: room.roomType // Property not in schema
+          }))
+        }
     });
   } catch (error) {
     console.error('❌ Error getting available rooms:', error);

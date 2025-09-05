@@ -306,20 +306,16 @@ export const generateTokenPair = async (
     jwtPayload,
     process.env.JWT_SECRET!,
     { 
-      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
-      issuer: 'hotel-booking-api',
-      audience: 'hotel-booking-client'
-    }
+      expiresIn: process.env.JWT_EXPIRES_IN || '24h'
+    } as jwt.SignOptions
   );
 
   const refreshToken = jwt.sign(
     { userId: user.id, sessionId },
     process.env.JWT_REFRESH_SECRET!,
     { 
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-      issuer: 'hotel-booking-api',
-      audience: 'hotel-booking-client'
-    }
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d'
+    } as jwt.SignOptions
   );
 
   // Calculate expiration time

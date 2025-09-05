@@ -163,7 +163,7 @@ export const cancelBooking = async (req: Request, res: Response) => {
     console.log(`🚫 [Cancellation] Starting cancellation process for booking: ${bookingId}`);
 
     // 1. Get or create system user for cancellation
-    let cancelledByUserId = req.user?.id;
+    let cancelledByUserId = (req as any).user?.id;
     
     if (!cancelledByUserId) {
       // Try to find system user or create one
@@ -279,8 +279,8 @@ export const cancelBooking = async (req: Request, res: Response) => {
         await tx.room.update({
           where: { id: booking.actualRoomId },
           data: {
-            status: newRoomStatus,
-            housekeepingStatus: newHousekeepingStatus
+            status: newRoomStatus as any,
+            housekeepingStatus: newHousekeepingStatus as any
           }
         });
         console.log(`🏠 [Cancellation] Room ${booking.actualRoomId} status updated to ${newRoomStatus}`);

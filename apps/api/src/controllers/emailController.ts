@@ -438,7 +438,7 @@ export const sendBookingConfirmationEmailDirect = async (booking: any, guest: an
     // คำนวณราคาต่อคืน
     const checkinDate = new Date(booking.checkinDate);
     const checkoutDate = new Date(booking.checkoutDate);
-    const nights = Math.ceil((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24)) || 1;
+    const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)) || 1;
     const finalAmount = parseFloat(booking.finalAmount?.toString() || '0');
     const roomPricePerNight = Math.round(finalAmount / nights);
     

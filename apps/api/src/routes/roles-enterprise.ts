@@ -133,14 +133,15 @@ router.put('/staff/:id/role', sessionAuth, requireSessionRole(['ADMIN']), async 
     // Log the change (audit trail)
     await prisma.auditLog.create({
       data: {
-        userId: req.user?.id || '',
+        userId: (req.user as any)?.id || '',
         action: 'ROLE_ASSIGNMENT',
-        entityType: 'Staff',
-        entityId: staffId,
-        changes: JSON.stringify({
-          oldRoleId: staff.roleId,
-          newRoleId: roleId,
-          staffName: `${staff.firstName} ${staff.lastName}`
+        resourceType: 'Staff',
+        resourceId: staffId,
+        oldValues: JSON.stringify({
+          roleId: staff.roleId
+        }),
+        newValues: JSON.stringify({
+          roleId: roleId
         }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent') || 'Unknown'
@@ -263,7 +264,7 @@ router.post('/roles/from-template', sessionAuth, requireSessionRole(['ADMIN']), 
     }
 
     const templateData = await templateResponse.json();
-    const template = templateData.data.templates.find((t: any) => t.id === templateId);
+    const template = (templateData as any).data?.templates?.find((t: any) => t.id === templateId);
 
     if (!template) {
       return res.status(404).json({
@@ -365,16 +366,16 @@ router.post('/users/bulk-assign-role', sessionAuth, requireSessionRole(['ADMIN']
     // Log bulk operation
     await prisma.auditLog.create({
       data: {
-        userId: req.user?.id || '',
+        userId: (req.user as any)?.id || '',
         action: 'BULK_ROLE_ASSIGNMENT',
-        entityType: 'User',
-        entityId: 'bulk',
-        changes: JSON.stringify({
-          roleId,
-          userIds,
-          roleName: role.name,
-          affectedUsers: results.filter(r => r.status === 'success').length
-        }),
+        resourceType: 'User',
+        resourceId: 'bulk',
+        // changes: JSON.stringify({ // Property not in schema
+        //   roleId,
+        //   userIds,
+        //   roleName: role.name,
+        //   affectedUsers: results.filter(r => r.status === 'success').length
+        // }),
         ipAddress: req.ip,
         userAgent: req.get('User-Agent') || 'Unknown'
       }

@@ -1,7 +1,7 @@
 import express from 'express';
 import { validateApiKey } from '../middleware/validateApiKey';
 import { sessionAuth, requireSessionRole } from '../middleware/sessionAuth';
-import { verifyAdminToken, requireRole } from '../middleware/adminAuth';
+import { verifyAdminToken } from '../middleware/adminAuth';
 import {
   sendCleaningNotification,
   sendBulkCleaningNotifications,
@@ -34,11 +34,11 @@ router.use((req, res, next) => {
 
 // Role validation for both auth types
 router.use((req, res, next) => {
-  if (req.user?.userId) {
+  if ((req as any).user?.userId) {
     // JWT user format (from verifyAdminToken)
-    console.log('🔍 JWT user detected:', req.user);
+    console.log('🔍 JWT user detected:', (req as any).user);
     // Allow DEV, ADMIN, STAFF roles
-    const userRole = req.user.userType || req.user.role;
+    const userRole = (req as any).user.userType || (req as any).user.role;
     if (!['DEV', 'ADMIN', 'STAFF'].includes(userRole)) {
       return res.status(403).json({
         success: false,

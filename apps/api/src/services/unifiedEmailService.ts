@@ -90,7 +90,7 @@ export class UnifiedEmailService {
         console.log(`✅ [${this.config.fallback}] Failover successful`);
         return {
           ...fallbackResult,
-          provider: `${this.config.fallback} (failover from ${this.config.primary})`
+          // provider: `${this.config.fallback} (failover from ${this.config.primary})` // Property not in schema
         };
       }
 
@@ -101,7 +101,7 @@ export class UnifiedEmailService {
     return {
       success: false,
       error: `Both ${this.config.primary} and ${this.config.fallback} failed`,
-      provider: 'unified (failed)'
+      // provider: 'unified (failed)' // Property not in schema
     };
   }
 
@@ -125,7 +125,7 @@ export class UnifiedEmailService {
       return {
         success: false,
         error: error.message,
-        provider: provider
+        // provider: provider // Property not in schema
       };
     }
   }

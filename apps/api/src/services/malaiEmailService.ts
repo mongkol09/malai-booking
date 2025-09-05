@@ -82,15 +82,15 @@ export class MalaiEmailService {
         
         return {
           success: true,
-          messageId: result.data.id,
-          provider: 'resend'
+          messageId: result.data.id
+          // provider: 'resend' // Property not in schema
         };
       } else {
         console.log('❌ [Malai] Failed to send - no message ID');
         return {
           success: false,
-          error: 'No message ID returned',
-          provider: 'resend'
+          error: 'No message ID returned'
+          // provider: 'resend' // Property not in schema
         };
       }
 
@@ -99,8 +99,8 @@ export class MalaiEmailService {
       
       return {
         success: false,
-        error: error?.message || 'Unknown error',
-        provider: 'resend'
+        error: error?.message || 'Unknown error'
+        // provider: 'resend' // Property not in schema
       };
     }
   }
@@ -197,14 +197,14 @@ Contact: 083-922-2929 | center@malaikhaoyai.com
         console.log(`✅ [Malai] Payment receipt sent successfully`);
         return {
           success: true,
-          messageId: result.data.id,
-          provider: 'resend'
+          messageId: result.data.id
+          // provider: 'resend' // Property not in schema
         };
       } else {
         return {
           success: false,
-          error: 'No message ID returned',
-          provider: 'resend'
+          error: 'No message ID returned'
+          // provider: 'resend' // Property not in schema
         };
       }
 
@@ -212,8 +212,8 @@ Contact: 083-922-2929 | center@malaikhaoyai.com
       console.error('❌ [Malai] Payment receipt failed:', error?.message || error);
       return {
         success: false,
-        error: error?.message || 'Unknown error',
-        provider: 'resend'
+        error: error?.message || 'Unknown error'
+        // provider: 'resend' // Property not in schema
       };
     }
   }
@@ -314,14 +314,14 @@ Contact: 083-922-2929 | center@malaikhaoyai.com
         console.log(`✅ [Malai] Check-in reminder sent successfully`);
         return {
           success: true,
-          messageId: result.data.id,
-          provider: 'resend'
+          messageId: result.data.id
+          // provider: 'resend' // Property not in schema
         };
       } else {
         return {
           success: false,
-          error: 'No message ID returned',
-          provider: 'resend'
+          error: 'No message ID returned'
+          // provider: 'resend' // Property not in schema
         };
       }
 
@@ -329,8 +329,8 @@ Contact: 083-922-2929 | center@malaikhaoyai.com
       console.error('❌ [Malai] Check-in reminder failed:', error?.message || error);
       return {
         success: false,
-        error: error?.message || 'Unknown error',
-        provider: 'resend'
+        error: error?.message || 'Unknown error'
+        // provider: 'resend' // Property not in schema
       };
     }
   }
@@ -362,15 +362,15 @@ Contact: 083-922-2929 | center@malaikhaoyai.com
 
       return {
         success: !!result.data?.id,
-        messageId: result.data?.id,
-        provider: 'resend'
+        messageId: result.data?.id
+        // provider: 'resend' // Property not in schema
       };
 
     } catch (error: any) {
       return {
         success: false,
-        error: error?.message || 'Connection test failed',
-        provider: 'resend'
+        error: error?.message || 'Connection test failed'
+        // provider: 'resend' // Property not in schema
       };
     }
   }
@@ -380,7 +380,7 @@ Contact: 083-922-2929 | center@malaikhaoyai.com
    */
   getConfig() {
     return {
-      provider: 'resend',
+      // provider: 'resend', // Property not in schema
       fromEmail: this.config.fromEmail,
       fromName: this.config.fromName,
       ready: !!this.resend
