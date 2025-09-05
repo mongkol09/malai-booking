@@ -1,0 +1,43 @@
+# Debug Dockerfile to identify the issue
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY apps/api/package*.json ./
+COPY apps/api/prisma ./prisma/
+
+# Install dependencies
+RUN npm ci --include=dev
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy source code
+COPY apps/api/ .
+
+# Build the application
+RUN npm run build
+
+# Debug: List all files in the container
+RUN ls -la
+
+# Debug: Check if dist/app.js exists
+RUN ls -la dist/
+
+# Debug: Check file permissions
+RUN ls -la dist/app.js
+
+# Debug: Try to run the file directly
+RUN node --version
+RUN which node
+
+# Remove devDependencies
+RUN npm prune --production
+
+# Expose port
+EXPOSE 3001
+
+# Start with debug output
+CMD ["sh", "-c", "echo 'Starting application...' && node dist/app.js"]

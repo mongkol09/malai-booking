@@ -1,5 +1,5 @@
 import axios from 'axios';
-import TelegramBot from 'node-telegram-bot-api';
+import { Telegraf } from 'telegraf';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // 📱 External Notification Service สำหรับ LINE และ Telegram
 export class ExternalNotificationService {
   private lineToken: string;
-  private telegramBot: TelegramBot | null = null;
+  private telegramBot: Telegraf | null = null;
   private telegramChatId: string;
 
   constructor() {
@@ -18,7 +18,7 @@ export class ExternalNotificationService {
     // Initialize Telegram Bot if token is available
     if (telegramToken) {
       try {
-        this.telegramBot = new TelegramBot(telegramToken, { polling: false });
+        this.telegramBot = new Telegraf(telegramToken);
       } catch (error) {
         console.error('❌ Failed to initialize Telegram Bot:', error);
       }
@@ -106,7 +106,7 @@ export class ExternalNotificationService {
     }
 
     try {
-      await this.telegramBot.sendMessage(this.telegramChatId, message, {
+      await this.telegramBot.telegram.sendMessage(this.telegramChatId, message, {
         parse_mode: 'Markdown'
       });
       return true;

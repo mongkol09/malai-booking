@@ -6,7 +6,7 @@
 // Kept: Telegram Bot
 
 import axios from 'axios';
-import TelegramBot from 'node-telegram-bot-api';
+import { Telegraf } from 'telegraf';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 // ============================================
 
 class TelegramNotificationService {
-  private bot: TelegramBot | null = null;
+  private bot: Telegraf | null = null;
   private chatId: string | null = null;
 
   constructor() {
@@ -24,7 +24,7 @@ class TelegramNotificationService {
     this.chatId = process.env.TELEGRAM_CHAT_ID || null;
 
     if (token) {
-      this.bot = new TelegramBot(token, { polling: false });
+      this.bot = new Telegraf(token);
     }
   }
 
@@ -38,9 +38,8 @@ class TelegramNotificationService {
       const emoji = this.getEventEmoji(eventType);
       const formattedMessage = `${emoji} *Hotel Admin Alert*\n\n${message}\n\n_${new Date().toLocaleString('th-TH')}_`;
       
-      await this.bot.sendMessage(this.chatId, formattedMessage, { 
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true 
+      await this.bot.telegram.sendMessage(this.chatId, formattedMessage, { 
+        parse_mode: 'Markdown' 
       });
       
       console.log('✅ Telegram notification sent successfully');
