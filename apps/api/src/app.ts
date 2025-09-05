@@ -91,8 +91,11 @@ app.use(validateRateLimit);
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 50, // allow 50 requests per 15 minutes, then...
-  delayMs: 500, // begin adding 500ms of delay per request above 50
+  delayMs: () => 500, // Fixed: new behavior - constant 500ms delay
   maxDelayMs: 20000, // maximum delay of 20 seconds
+  validate: {
+    delayMs: false // Disable the warning message
+  }
 });
 app.use('/api', speedLimiter);
 
@@ -122,27 +125,13 @@ app.use(requestLogger);
 // HEALTH CHECK ROUTES
 // ============================================
 
-app.get('/health', async (req, res) => {
-  try {
-    // Check database connection
-    await prisma.$queryRaw`SELECT 1`;
-    
-    res.status(200).json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
-      version: process.env.API_VERSION || 'v1',
-      database: 'connected',
-    });
-  } catch (error) {
-    res.status(503).json({
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      error: 'Database connection failed',
-    });
-  }
-});
+// Import Health Check Routes
+import healthRoutes from './routes/health';
 
+// 🏥 Health Check Routes
+app.use('/health', healthRoutes);
+
+// 🔄 Legacy Health Check (redirect)
 app.get('/api/health', async (req, res) => {
   res.redirect('/health');
 });
