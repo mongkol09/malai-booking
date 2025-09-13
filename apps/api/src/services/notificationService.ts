@@ -105,6 +105,30 @@ export class NotificationService {
     return this.notifyAll('GuestCheckOut', checkOutData);
   }
 
+  // 🚫 การยกเลิกการจอง
+  public async notifyBookingCancelled(cancellationData: {
+    bookingId: string;
+    guestName: string;
+    guestEmail?: string;
+    guestPhone?: string;
+    roomNumber: string;
+    roomType?: string;
+    checkInDate?: string;
+    checkOutDate?: string;
+    originalAmount?: number;
+    refundAmount?: number;
+    penaltyAmount?: number;
+    cancellationReason: string;
+    cancellationTime: string;
+    cancelledBy?: string;
+    internalNotes?: string;
+  }) {
+    console.log('🔔 NotificationService.notifyBookingCancelled called with data:', JSON.stringify(cancellationData, null, 2));
+    const result = await this.notifyAll('BookingCancelled', cancellationData);
+    console.log('📢 NotificationService.notifyBookingCancelled result:', result);
+    return result;
+  }
+
   // 🏠 สถานะห้องเปลี่ยน
   public async notifyRoomStatusChange(roomData: {
     roomId: string;

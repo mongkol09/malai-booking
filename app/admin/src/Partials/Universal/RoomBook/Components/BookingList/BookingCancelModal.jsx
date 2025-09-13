@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Alert, Card, Badge } from 'react-bootstrap';
-import bookingService from './bookingService';
+import bookingService from '../../../../../services/bookingService';
 
 const BookingCancelModal = ({ show, onHide, booking, onCancel }) => {
   const [formData, setFormData] = useState({

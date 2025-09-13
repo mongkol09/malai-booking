@@ -1,7 +1,15 @@
 export const bookingColumns = [
     {
+      Header: 'Booking Reference',
+      accessor: 'bookingReference',
+    },
+    {
       Header: 'Name',
       accessor: 'name',
+    },
+    {
+      Header: 'Room Number',
+      accessor: 'roomNumber',
     },
     {
       Header: 'Room Type',

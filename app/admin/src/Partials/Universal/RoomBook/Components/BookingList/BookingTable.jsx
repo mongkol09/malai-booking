@@ -100,7 +100,32 @@ class BookingTable extends Component {
           const formattedBooking = bookingService.formatBookingForDisplay(booking);
           return {
             id: formattedBooking.id,
+            bookingReference: (
+              <div className="d-flex align-items-center">
+                <span className="badge bg-primary text-white border me-2 fs-6 px-3 py-2">
+                  <i className="bi bi-receipt-cutoff me-1"></i>
+                  {formattedBooking.bookingReferenceId || 'N/A'}
+                </span>
+                {formattedBooking.bookingReferenceId && (
+                  <button 
+                    className="btn btn-outline-secondary btn-sm" 
+                    onClick={() => this.copyBookingReference(formattedBooking.bookingReferenceId)}
+                    title="คัดลอกหมายเลขการจอง"
+                  >
+                    <i className="bi bi-clipboard"></i>
+                  </button>
+                )}
+              </div>
+            ),
             name: formattedBooking.guestName,
+            roomNumber: (
+              <div className="text-center">
+                <span className="badge bg-secondary text-white fs-6 px-3 py-2">
+                  <i className="bi bi-door-open me-1"></i>
+                  {formattedBooking.roomNumber || 'ยังไม่มีห้อง'}
+                </span>
+              </div>
+            ),
             roomType: formattedBooking.roomType,
             checkIn: formattedBooking.checkIn,
             checkOut: formattedBooking.checkOut,
@@ -249,6 +274,8 @@ class BookingTable extends Component {
         item.name.toLowerCase().includes(searchTerm) ||
         item.roomType.toLowerCase().includes(searchTerm) ||
         item.id.toLowerCase().includes(searchTerm) ||
+        (item.originalBooking && item.originalBooking.roomNumber && 
+         item.originalBooking.roomNumber.toLowerCase().includes(searchTerm)) ||
         (item.originalBooking && item.originalBooking.bookingReferenceId && 
          item.originalBooking.bookingReferenceId.toLowerCase().includes(searchTerm))
       );
@@ -295,6 +322,66 @@ class BookingTable extends Component {
   // ===============================
   // ACTION HANDLERS
   // ===============================
+
+  // Copy booking reference to clipboard
+  copyBookingReference = async (bookingReference) => {
+    try {
+      await navigator.clipboard.writeText(bookingReference);
+      
+      // Show success toast (if available)
+      if (window.bootstrap && window.bootstrap.Toast) {
+        this.showCopyToast('success', 'คัดลอกหมายเลขการจองสำเร็จ');
+      } else {
+        // Fallback to console message
+        console.log(`✅ Copied booking reference: ${bookingReference}`);
+      }
+    } catch (error) {
+      console.error('❌ Failed to copy booking reference:', error);
+      // Fallback to alert
+      alert(`หมายเลขการจอง: ${bookingReference}`);
+    }
+  };
+
+  // Show copy toast notification
+  showCopyToast = (type, message) => {
+    try {
+      const toastContainer = document.getElementById('toast-container') || this.createToastContainer();
+      const toastId = `copy-toast-${Date.now()}`;
+      const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="bi bi-check-circle me-2"></i>
+              ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      `;
+      
+      toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+      
+      const toastElement = document.getElementById(toastId);
+      const toast = new window.bootstrap.Toast(toastElement, { delay: 2000 });
+      toast.show();
+      
+      toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+      });
+    } catch (error) {
+      console.log('Toast not available, using console message');
+    }
+  };
+
+  // Create toast container if it doesn't exist
+  createToastContainer = () => {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
+  };
 
   handleViewBooking = (bookingId, bookingReferenceId = null) => {
     console.log('📖 Viewing booking summary:', { bookingId, bookingReferenceId });

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { BusinessNotificationService } from '../services/businessNotificationService';
 import { sendCancellationEmail } from '../controllers/emailController';
+import { getEmailNotificationService } from '../services/emailNotificationService';
 import { unlockRoomAfterCancellation } from '../services/dailyAvailabilityService';
 
 const prisma = new PrismaClient();
@@ -326,7 +327,48 @@ export const cancelBooking = async (req: Request, res: Response) => {
       }
     }
 
-    // 6. Send notifications
+    // 6. Calculate business metrics for notifications
+    const totalPaid = booking.payments.reduce((sum: number, payment: any) => {
+      return sum + parseFloat(payment.amount.toString());
+    }, 0);
+
+    const daysUntilCheckin = Math.ceil((new Date(booking.checkinDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    const bookedDaysAgo = Math.ceil((new Date().getTime() - new Date(booking.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+    const stayDuration = Math.ceil((new Date(booking.checkoutDate).getTime() - new Date(booking.checkinDate).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate revenue loss
+    const revenueLoss = totalPaid - finalRefundAmount;
+    
+    // Get today's cancellation count
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    
+    const todayCancellations = await prisma.bookingCancellation.count({
+      where: {
+        cancellationTime: {
+          gte: todayStart,
+          lte: todayEnd
+        }
+      }
+    });
+
+    // Get user who cancelled the booking
+    const cancellingUser = await prisma.user.findUnique({
+      where: { id: validatedData.cancelledBy },
+      select: {
+        firstName: true,
+        lastName: true,
+        userType: true
+      }
+    });
+
+    const cancelledBy = cancellingUser 
+      ? `${cancellingUser.firstName} ${cancellingUser.lastName} (${cancellingUser.userType})`
+      : 'System';
+
+    // 7. Send notifications
     let emailSent = false;
     if (validatedData.notifyGuest) {
       try {
@@ -338,21 +380,69 @@ export const cancelBooking = async (req: Request, res: Response) => {
       }
     }
 
-    // 7. Send Telegram notification
+    // 8. Send Enhanced Telegram notification to CEO
     try {
       await BusinessNotificationService.notifyBookingCancellation({
         bookingId: booking.bookingReferenceId,
         guestName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+        guestEmail: booking.guest.email,
+        guestPhone: booking.guest.phoneNumber,
         roomNumber: booking.room.roomNumber,
-        cancellationReason: validatedData.reason,
+        roomType: booking.roomType.name,
+        checkInDate: booking.checkinDate.toISOString().split('T')[0],
+        checkOutDate: booking.checkoutDate.toISOString().split('T')[0],
+        originalAmount: parseFloat(booking.finalAmount.toString()),
         refundAmount: finalRefundAmount,
-        cancellationTime: result.cancellation.cancellationTime.toISOString()
+        penaltyAmount: calculatedRefund - finalRefundAmount,
+        cancellationReason: validatedData.reason,
+        cancellationTime: result.cancellation.cancellationTime.toISOString(),
+        cancelledBy: cancelledBy,
+        internalNotes: validatedData.internalNotes || 'ไม่มีหมายเหตุ',
+        // Business metrics
+        totalPaid,
+        revenueLoss,
+        daysUntilCheckin,
+        bookedDaysAgo,
+        stayDuration,
+        todayCancellations
       });
+      console.log(`📱 [Cancellation] Enhanced Telegram notification sent to CEO`);
     } catch (telegramError) {
       console.error('❌ [Cancellation] Failed to send Telegram notification:', telegramError);
     }
 
-    // 8. Prepare response
+    // 8. Send detailed Email notification to CEO
+    try {
+      const emailService = getEmailNotificationService();
+      await emailService.sendCancellationReport({
+        bookingId: booking.bookingReferenceId,
+        guestName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+        guestEmail: booking.guest.email,
+        guestPhone: booking.guest.phoneNumber,
+        roomNumber: booking.room.roomNumber,
+        roomType: booking.roomType.name,
+        checkInDate: booking.checkinDate.toISOString().split('T')[0],
+        checkOutDate: booking.checkoutDate.toISOString().split('T')[0],
+        originalAmount: parseFloat(booking.finalAmount.toString()),
+        refundAmount: finalRefundAmount,
+        penaltyAmount: calculatedRefund - finalRefundAmount,
+        totalPaid,
+        revenueLoss,
+        cancellationReason: validatedData.reason,
+        cancelledBy: cancelledBy,
+        daysUntilCheckin,
+        bookedDaysAgo,
+        stayDuration,
+        todayCancellations,
+        cancellationTime: result.cancellation.cancellationTime.toISOString(),
+        internalNotes: validatedData.internalNotes || undefined
+      });
+      console.log(`📧 [Cancellation] Detailed email report sent to CEO`);
+    } catch (emailError) {
+      console.error('❌ [Cancellation] Failed to send email notification:', emailError);
+    }
+
+    // 9. Prepare response
     const response: CancellationResponse = {
       success: true,
       message: 'ยกเลิกการจองสำเร็จ',

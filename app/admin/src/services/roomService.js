@@ -1,20 +1,32 @@
 // Room Management Service สำหรับ Hotel Admin Panel
-// เชื่อมต่อกับ Backend Room Management APIs (Session-Based Auth)
+// เชื่อมต่อกับ Backend Room Management APIs (JWT-Based Auth)
 
-import { authService } from './authService';
+import { apiService } from './apiService';
 
 class RoomService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
+    // apiService จัดการ baseURL และ authentication เอง
   }
 
-  // ใช้ authService สำหรับ session-based requests
+  // ใช้ apiService สำหรับ JWT-based requests
   async makeRequest(url, options = {}) {
     try {
       console.log(`🏠 Room API Request: ${options.method || 'GET'} ${url}`);
       
-      // ใช้ authService.request เพื่อการจัดการ session และ token
-      const response = await authService.request(url, options);
+      const method = options.method?.toLowerCase() || 'get';
+      let response;
+      
+      if (method === 'get') {
+        response = await apiService.get(url);
+      } else if (method === 'post') {
+        response = await apiService.post(url, JSON.parse(options.body || '{}'));
+      } else if (method === 'put') {
+        response = await apiService.put(url, JSON.parse(options.body || '{}'));
+      } else if (method === 'delete') {
+        response = await apiService.delete(url);
+      } else {
+        throw new Error(`Unsupported method: ${method}`);
+      }
       
       console.log(`✅ Room API Response:`, response);
       return response;
@@ -99,10 +111,10 @@ class RoomService {
   /**
    * Update room status
    */
-  async updateRoomStatus(roomId, status) {
-    return await this.makeRequest(`/rooms/${roomId}/status`, {
-      method: 'PUT',
-      body: JSON.stringify({ status })
+  async updateRoomStatus(roomId, statusData) {
+    return await this.makeRequest(`/bookings/admin/rooms/${roomId}/status`, {
+      method: 'POST',
+      body: JSON.stringify(statusData)
     });
   }
 
@@ -247,7 +259,9 @@ class RoomService {
    * Format room data for display in UI components
    */
   formatRoomForDisplay(room) {
-    return {
+    console.log('🏠 Formatting room for display:', room.roomNumber, room);
+    
+    const formatted = {
       id: room.id,
       roomNumber: room.roomNumber || room.number || 'N/A',
       roomType: room.roomType?.name || room.type || 'Unknown',
@@ -257,6 +271,13 @@ class RoomService {
       capacity: room.capacity || room.maxOccupancy || 1,
       rate: room.roomType?.baseRate || room.rate || 0,
       currency: 'THB',
+      
+      // Room List Table specific fields
+      roomPrice: room.roomType?.baseRate || room.price || 0,
+      bedCharge: room.extraBedCharge || 0,
+      roomSize: room.size || (room.roomType?.sizeSqm ? `${room.roomType.sizeSqm} sqm` : 'Standard'),
+      bedNo: room.bedCount || 1,
+      bedType: room.bedType || room.roomType?.bedType || 'Standard',
       
       // Booking information
       currentBooking: room.bookings?.[0] || null,
@@ -278,6 +299,9 @@ class RoomService {
       isAvailable: room.status === 'Available',
       isOutOfOrder: room.status === 'OutOfOrder' || room.status === 'Maintenance'
     };
+    
+    console.log('✅ Formatted room:', formatted);
+    return formatted;
   }
 
   /**

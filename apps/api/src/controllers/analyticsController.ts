@@ -14,8 +14,8 @@ const prisma = new PrismaClient();
 // ============================================
 
 const analyticsQuerySchema = z.object({
-  dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
-  dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+  dateFrom: z.string().min(1, 'dateFrom is required'),
+  dateTo: z.string().min(1, 'dateTo is required'),
   roomTypeId: z.string().optional(),
   groupBy: z.enum(['day', 'week', 'month']).optional().default('day')
 });
@@ -34,7 +34,24 @@ const dashboardQuerySchema = z.object({
  */
 export const getHotelKPIs = async (req: Request, res: Response) => {
   try {
-    const { period } = dashboardQuerySchema.parse(req.query);
+    console.log('📊 Hotel KPIs request received:', req.query);
+    
+    // Validate query parameters with better error handling
+    const validation = dashboardQuerySchema.safeParse(req.query);
+    
+    if (!validation.success) {
+      console.error('❌ Validation error:', validation.error.issues);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid query parameters',
+        error: validation.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    }
+    
+    const { period } = validation.data;
     
     // Calculate date range based on period
     const dateRange = calculateDateRange(period);
@@ -91,7 +108,24 @@ export const getHotelKPIs = async (req: Request, res: Response) => {
  */
 export const getRevenueAnalytics = async (req: Request, res: Response) => {
   try {
-    const { dateFrom, dateTo, roomTypeId, groupBy } = analyticsQuerySchema.parse(req.query);
+    console.log('💰 Revenue analytics request received:', req.query);
+    
+    // Validate query parameters with better error handling
+    const validation = analyticsQuerySchema.safeParse(req.query);
+    
+    if (!validation.success) {
+      console.error('❌ Validation error:', validation.error.issues);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid query parameters',
+        error: validation.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    }
+    
+    const { dateFrom, dateTo, roomTypeId, groupBy } = validation.data;
     
     console.log(`💰 Calculating revenue analytics from ${dateFrom} to ${dateTo}`);
 
@@ -209,7 +243,24 @@ export const getRealTimeDashboard = async (req: Request, res: Response) => {
  */
 export const getOccupancyAnalytics = async (req: Request, res: Response) => {
   try {
-    const { dateFrom, dateTo, roomTypeId } = analyticsQuerySchema.parse(req.query);
+    console.log('🏨 Occupancy analytics request received:', req.query);
+    
+    // Validate query parameters with better error handling
+    const validation = analyticsQuerySchema.safeParse(req.query);
+    
+    if (!validation.success) {
+      console.error('❌ Validation error:', validation.error.issues);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid query parameters',
+        error: validation.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    }
+    
+    const { dateFrom, dateTo, roomTypeId } = validation.data;
     
     console.log(`🏨 Calculating occupancy analytics from ${dateFrom} to ${dateTo}`);
 
@@ -254,7 +305,24 @@ export const getOccupancyAnalytics = async (req: Request, res: Response) => {
  */
 export const getBookingTrends = async (req: Request, res: Response) => {
   try {
-    const { dateFrom, dateTo, groupBy } = analyticsQuerySchema.parse(req.query);
+    console.log('📈 Booking trends request received:', req.query);
+    
+    // Validate query parameters with better error handling
+    const validation = analyticsQuerySchema.safeParse(req.query);
+    
+    if (!validation.success) {
+      console.error('❌ Validation error:', validation.error.issues);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid query parameters',
+        error: validation.error.issues.map(issue => ({
+          field: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    }
+    
+    const { dateFrom, dateTo, groupBy } = validation.data;
     
     console.log(`📈 Analyzing booking trends from ${dateFrom} to ${dateTo}`);
 

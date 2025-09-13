@@ -151,6 +151,23 @@ const HotelTabSidebar = ({iconColor}) => {
                     <li><NavLink to="/personalised-settings" aria-label="">All Settings</NavLink></li>
                 </ul>
             </li>
+            <li>
+                <Link to="#BookingHistoryMenu" data-bs-toggle="collapse" aria-expanded="false" className="dropdown-toggle" aria-label="Booking History">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M9 11h6l-6 -6v6z" />
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                        <path d="M12 7v5l3 3" />
+                    </svg>
+                    <span className="mx-3">📚 Booking History</span>
+                </Link>
+                <ul className="collapse list-unstyled" id="BookingHistoryMenu">
+                    <li><NavLink to="/booking-history" aria-label="Booking History">📋 History Records</NavLink></li>
+                    <li><NavLink to="/booking-analytics" aria-label="Booking Analytics">📊 Analytics</NavLink></li>
+                    <li><NavLink to="/expired-bookings" aria-label="Expired Bookings">⏰ Expired Bookings</NavLink></li>
+                    <li><NavLink to="/archive-management" aria-label="Archive Management">🗃️ Archive Management</NavLink></li>
+                </ul>
+            </li>
             <li className="py-2 mt-2">
                 <h6 className="fl-title title-font ps-2 small text-uppercase text-muted" style={{"--dynamic-color": "var(--theme-color1)"}}>Reports</h6>
                 <ul className="list-unstyled">

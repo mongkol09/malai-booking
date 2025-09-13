@@ -50,10 +50,44 @@ const RoomBooking = () => {
     companyEmail: '',
     companyGST: '',
     
-    // Payment
+    // Payment & Pricing Details - Enhanced for Dynamic Calculation
     totalAmount: 0,
+    baseAmount: 0,          // Room price × nights
     paymentMethod: 'Cash',
-    paymentStatus: 'Pending'
+    paymentStatus: 'Pending',
+    
+    // 💰 Dynamic Payment Configuration
+    discountType: 'amount',  // 'amount' or 'percentage'
+    discountAmount: '0',
+    discountPercentage: '0',
+    serviceChargeRate: '10',   // Default 10%
+    taxRate: '7',              // Default 7% VAT
+    commissionPercentage: '0',
+    commissionAmount: '0',
+    additionalCharges: '0',
+    
+    // 📋 Payment Breakdown (Calculated)
+    subtotalAfterDiscount: 0,
+    serviceChargeAmount: 0,
+    taxAmount: 0,
+    finalAmount: 0,
+    
+    // Legacy fields for compatibility
+    baseRate: '',
+    finalRate: '',
+    appliedRule: null
+  });
+
+  // 📊 Payment Calculation State
+  const [paymentBreakdown, setPaymentBreakdown] = useState({
+    baseAmount: 0,
+    discountAmount: 0,
+    subtotal: 0,
+    serviceChargeAmount: 0,
+    taxAmount: 0,
+    commissionAmount: 0,
+    additionalCharges: 0,
+    finalAmount: 0
   });
 
   // 📊 Data States
@@ -88,7 +122,91 @@ const RoomBooking = () => {
     }
   }, [selectedRoomType, formData.checkInDate, formData.checkOutDate, formData.adults, formData.children]);
 
-  // 📋 API Functions
+  // � Calculate Payment Breakdown with Dynamic Values
+  const calculatePaymentBreakdown = () => {
+    try {
+      // Base calculation
+      const baseAmount = Number(formData.totalAmount) || 0;
+      
+      // Calculate discount
+      let discountAmount = 0;
+      if (formData.discountType === 'percentage') {
+        discountAmount = baseAmount * (Number(formData.discountPercentage) / 100);
+      } else {
+        discountAmount = Number(formData.discountAmount) || 0;
+      }
+      
+      // Subtotal after discount
+      const subtotal = baseAmount - discountAmount;
+      
+      // Calculate service charge
+      const serviceChargeAmount = subtotal * (Number(formData.serviceChargeRate) / 100);
+      
+      // Calculate tax (VAT)
+      const taxAmount = subtotal * (Number(formData.taxRate) / 100);
+      
+      // Calculate commission
+      let commissionAmount = 0;
+      if (Number(formData.commissionPercentage) > 0) {
+        commissionAmount = subtotal * (Number(formData.commissionPercentage) / 100);
+      } else {
+        commissionAmount = Number(formData.commissionAmount) || 0;
+      }
+      
+      // Additional charges
+      const additionalCharges = Number(formData.additionalCharges) || 0;
+      
+      // Final amount
+      const finalAmount = subtotal + serviceChargeAmount + taxAmount + additionalCharges;
+      
+      // Update payment breakdown state
+      const breakdown = {
+        baseAmount: baseAmount,
+        discountAmount: discountAmount,
+        subtotal: subtotal,
+        serviceChargeAmount: serviceChargeAmount,
+        taxAmount: taxAmount,
+        commissionAmount: commissionAmount,
+        additionalCharges: additionalCharges,
+        finalAmount: finalAmount
+      };
+      
+      setPaymentBreakdown(breakdown);
+      
+      // Update form data with calculated values
+      setFormData(prev => ({
+        ...prev,
+        subtotalAfterDiscount: subtotal,
+        serviceChargeAmount: serviceChargeAmount,
+        taxAmount: taxAmount,
+        finalAmount: finalAmount
+      }));
+      
+      return breakdown;
+    } catch (error) {
+      console.error('❌ Error calculating payment breakdown:', error);
+      return paymentBreakdown;
+    }
+  };
+
+  // 🔄 Recalculate when payment-related fields change
+  useEffect(() => {
+    if (formData.totalAmount > 0) {
+      calculatePaymentBreakdown();
+    }
+  }, [
+    formData.totalAmount,
+    formData.discountType,
+    formData.discountAmount,
+    formData.discountPercentage,
+    formData.serviceChargeRate,
+    formData.taxRate,
+    formData.commissionPercentage,
+    formData.commissionAmount,
+    formData.additionalCharges
+  ]);
+
+  // �📋 API Functions
   const loadRoomTypes = async () => {
     try {
       setLoading(prev => ({ ...prev, roomTypes: true }));
@@ -1074,6 +1192,176 @@ const RoomBooking = () => {
                     </div>
                 </div>
             </div>
+            {/* Payment Details Form - NEW SECTION */}
+            <div className="col-md-6">
+                <div className="card">
+                    <div className="card-header">
+                        <h6 className="card-title">💰 Payment Details</h6>
+                    </div>
+                    <div className="card-body">
+                        <div className="row g-3">
+                            {/* Discount Section */}
+                            <div className="col-12">
+                                <h6 className="text-muted mb-3">💸 Discount Configuration</h6>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label text-muted">Discount Type</label>
+                                <select 
+                                  className="form-select" 
+                                  name="discountType"
+                                  value={formData.discountType}
+                                  onChange={handleInputChange}
+                                >
+                                    <option value="amount">Amount (฿)</option>
+                                    <option value="percentage">Percentage (%)</option>
+                                </select>
+                            </div>
+                            <div className="col-md-6">
+                                {formData.discountType === 'amount' ? (
+                                    <div>
+                                        <label className="form-label text-muted">Discount Amount</label>
+                                        <div className="input-group">
+                                            <span className="input-group-text">฿</span>
+                                            <input 
+                                              type="number" 
+                                              className="form-control" 
+                                              name="discountAmount"
+                                              value={formData.discountAmount}
+                                              onChange={handleInputChange}
+                                              placeholder="0"
+                                              min="0"
+                                              max={formData.totalAmount}
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="form-label text-muted">Discount Percentage</label>
+                                        <div className="input-group">
+                                            <input 
+                                              type="number" 
+                                              className="form-control" 
+                                              name="discountPercentage"
+                                              value={formData.discountPercentage}
+                                              onChange={handleInputChange}
+                                              placeholder="0"
+                                              min="0"
+                                              max="100"
+                                            />
+                                            <span className="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Service & Tax Section */}
+                            <div className="col-12">
+                                <hr className="my-3"/>
+                                <h6 className="text-muted mb-3">📋 Tax & Service Charges</h6>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label text-muted">Service Charge Rate</label>
+                                <div className="input-group">
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      name="serviceChargeRate"
+                                      value={formData.serviceChargeRate}
+                                      onChange={handleInputChange}
+                                      placeholder="10"
+                                      min="0"
+                                      max="50"
+                                      step="0.5"
+                                    />
+                                    <span className="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label text-muted">Tax Rate (VAT)</label>
+                                <div className="input-group">
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      name="taxRate"
+                                      value={formData.taxRate}
+                                      onChange={handleInputChange}
+                                      placeholder="7"
+                                      min="0"
+                                      max="20"
+                                      step="0.1"
+                                    />
+                                    <span className="input-group-text">%</span>
+                                </div>
+                            </div>
+
+                            {/* Commission Section */}
+                            <div className="col-12">
+                                <hr className="my-3"/>
+                                <h6 className="text-muted mb-3">💼 Commission</h6>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label text-muted">Commission (%)</label>
+                                <div className="input-group">
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      name="commissionPercentage"
+                                      value={formData.commissionPercentage}
+                                      onChange={handleInputChange}
+                                      placeholder="0"
+                                      min="0"
+                                      max="30"
+                                      step="0.5"
+                                    />
+                                    <span className="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <label className="form-label text-muted">Commission Amount</label>
+                                <div className="input-group">
+                                    <span className="input-group-text">฿</span>
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      name="commissionAmount"
+                                      value={formData.commissionAmount}
+                                      onChange={handleInputChange}
+                                      placeholder="0"
+                                      min="0"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Additional Charges */}
+                            <div className="col-12">
+                                <hr className="my-3"/>
+                                <h6 className="text-muted mb-3">➕ Additional Charges</h6>
+                            </div>
+                            <div className="col-md-12">
+                                <label className="form-label text-muted">Extra Charges</label>
+                                <div className="input-group">
+                                    <span className="input-group-text">฿</span>
+                                    <input 
+                                      type="number" 
+                                      className="form-control" 
+                                      name="additionalCharges"
+                                      value={formData.additionalCharges}
+                                      onChange={handleInputChange}
+                                      placeholder="0"
+                                      min="0"
+                                    />
+                                    <span className="input-group-text">
+                                        <i className="fa fa-info-circle" title="Additional charges like parking, wifi, etc."></i>
+                                    </span>
+                                </div>
+                                <small className="text-muted">Parking, WiFi, Extra services, etc.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Original Advance Details */}
             <div className="col-md-6">
                 <div className="card">
                     <div className="card-header">
@@ -1086,7 +1374,12 @@ const RoomBooking = () => {
                                     <label className="form-label text-muted">Payment Mode</label>
                                     <div className="input-group">
                                         <span className="input-group-text"><i className="bi bi-credit-card"></i></span>
-                                        <select className="form-select" defaultValue="Card Payment">
+                                        <select 
+                                          className="form-select" 
+                                          name="paymentMethod"
+                                          value={formData.paymentMethod}
+                                          onChange={handleInputChange}
+                                        >
                                             <option value="Card Payment">Card Payment</option>
                                             <option value="Paypal">Paypal</option>
                                             <option value="Cash Payment">Cash Payment</option>
@@ -1100,7 +1393,13 @@ const RoomBooking = () => {
                                     <label className="form-label text-muted">Total Amount</label>
                                     <div className="input-group">
                                         <span className="input-group-text"><i className="bi bi-currency-dollar"></i></span>
-                                        <input type="text" className="form-control" placeholder="3580"/>
+                                        <input 
+                                          type="text" 
+                                          className="form-control" 
+                                          value={`฿${paymentBreakdown.finalAmount.toLocaleString()}`}
+                                          readOnly
+                                          style={{backgroundColor: '#f8f9fa'}}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -1129,43 +1428,153 @@ const RoomBooking = () => {
             <div className="col-md-6">
                 <div className="card">
                     <div className="card-header">
-                        <h6 className="card-title">Billing Details</h6>
+                        <h6 className="card-title">📊 Billing Details</h6>
                     </div>
                     <div className="card-body">
                         <div className="table-responsive">
                             <table className="table table-sm table-bordered mb-0">
                                 <tbody>
                                 <tr>
-                                    <th scope="row">Booking Charge</th>
-                                    <td>$0.0</td>
+                                    <th scope="row" className="text-muted">Base Room Charge</th>
+                                    <td className="text-end"><strong>฿{paymentBreakdown.baseAmount.toLocaleString()}</strong></td>
+                                </tr>
+                                {paymentBreakdown.discountAmount > 0 && (
+                                <tr className="table-warning">
+                                    <th scope="row" className="text-muted">
+                                        💸 Discount 
+                                        <small className="d-block">
+                                            {formData.discountType === 'percentage' ? 
+                                              `(${formData.discountPercentage}%)` : 
+                                              '(Fixed Amount)'
+                                            }
+                                        </small>
+                                    </th>
+                                    <td className="text-end text-danger">-฿{paymentBreakdown.discountAmount.toLocaleString()}</td>
+                                </tr>
+                                )}
+                                <tr>
+                                    <th scope="row" className="text-muted">Subtotal</th>
+                                    <td className="text-end">฿{paymentBreakdown.subtotal.toLocaleString()}</td>
                                 </tr>
                                 <tr>
-                                    <th scope="row">Tax </th>
-                                    <td>580</td>
+                                    <th scope="row" className="text-muted">
+                                        Service Charge 
+                                        <small className="d-block">({formData.serviceChargeRate}%)</small>
+                                    </th>
+                                    <td className="text-end">+฿{paymentBreakdown.serviceChargeAmount.toLocaleString()}</td>
                                 </tr>
                                 <tr>
-                                    <th scope="row">Service Charge</th>
-                                    <td>280</td>
+                                    <th scope="row" className="text-muted">
+                                        Tax (VAT)
+                                        <small className="d-block">({formData.taxRate}%)</small>
+                                    </th>
+                                    <td className="text-end">+฿{paymentBreakdown.taxAmount.toLocaleString()}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Room Charge</th>
-                                    <td>฿{formData.totalAmount.toLocaleString()}</td>
+                                {paymentBreakdown.commissionAmount > 0 && (
+                                <tr className="table-info">
+                                    <th scope="row" className="text-muted">
+                                        💼 Commission
+                                        <small className="d-block">
+                                            {Number(formData.commissionPercentage) > 0 ? 
+                                              `(${formData.commissionPercentage}%)` : 
+                                              '(Fixed Amount)'
+                                            }
+                                        </small>
+                                    </th>
+                                    <td className="text-end text-info">+฿{paymentBreakdown.commissionAmount.toLocaleString()}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Tax (7%)</th>
-                                    <td>฿{(formData.totalAmount * 0.07).toLocaleString()}</td>
+                                )}
+                                {paymentBreakdown.additionalCharges > 0 && (
+                                <tr className="table-secondary">
+                                    <th scope="row" className="text-muted">➕ Additional Charges</th>
+                                    <td className="text-end">+฿{paymentBreakdown.additionalCharges.toLocaleString()}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Service Charge (10%)</th>
-                                    <td>฿{(formData.totalAmount * 0.10).toLocaleString()}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Total</th>
-                                    <td><span className="badge bg-primary">฿{(formData.totalAmount * 1.17).toLocaleString()}</span></td>
+                                )}
+                                <tr className="table-success">
+                                    <th scope="row" className="fw-bold">
+                                        💰 FINAL TOTAL
+                                    </th>
+                                    <td className="text-end">
+                                        <span className="badge bg-success fs-6">
+                                            ฿{paymentBreakdown.finalAmount.toLocaleString()}
+                                        </span>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="mt-3 pt-3 border-top">
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <button 
+                                      type="button" 
+                                      className="btn btn-outline-warning btn-sm w-100"
+                                      onClick={() => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          discountType: 'percentage',
+                                          discountPercentage: '10',
+                                          discountAmount: '0'
+                                        }));
+                                      }}
+                                    >
+                                        💸 10% Discount
+                                    </button>
+                                </div>
+                                <div className="col-6">
+                                    <button 
+                                      type="button" 
+                                      className="btn btn-outline-info btn-sm w-100"
+                                      onClick={() => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          serviceChargeRate: '5'
+                                        }));
+                                      }}
+                                    >
+                                        🔄 5% Service
+                                    </button>
+                                </div>
+                                <div className="col-6">
+                                    <button 
+                                      type="button" 
+                                      className="btn btn-outline-secondary btn-sm w-100"
+                                      onClick={() => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          discountType: 'amount',
+                                          discountAmount: '0',
+                                          discountPercentage: '0',
+                                          serviceChargeRate: '10',
+                                          taxRate: '7',
+                                          commissionPercentage: '0',
+                                          commissionAmount: '0',
+                                          additionalCharges: '0'
+                                        }));
+                                      }}
+                                    >
+                                        🔄 Reset All
+                                    </button>
+                                </div>
+                                <div className="col-6">
+                                    <button 
+                                      type="button" 
+                                      className="btn btn-outline-success btn-sm w-100"
+                                      onClick={() => {
+                                        setFormData(prev => ({
+                                          ...prev,
+                                          discountType: 'amount',
+                                          discountAmount: '100'
+                                        }));
+                                      }}
+                                    >
+                                        💰 ฿100 Off
+                                    </button>
+                                </div>
                             </div>
+                        </div>
                     </div>
                 </div>
             </div>

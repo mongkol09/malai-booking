@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { checkRoomAvailability } from './dailyAvailabilityService';
+import { checkRoomAvailabilityByBookings } from './bookingBasedAvailabilityService';
 
 const prisma = new PrismaClient();
 
@@ -63,18 +63,18 @@ export const checkFinalAvailability = async (
       };
     }
 
-    // 3. Check Daily Availability (Booking Level)
-    const dailyAvailabilityResult = await checkRoomAvailability(roomId, checkInDate, checkOutDate);
+    // 3. Check Booking-based Availability (Using actual booking records)
+    const bookingAvailabilityResult = await checkRoomAvailabilityByBookings(roomId, checkInDate, checkOutDate);
 
     // 4. Final Decision
-    const isAvailable = dailyAvailabilityResult.isAvailable;
+    const isAvailable = bookingAvailabilityResult.isAvailable;
     const canBook = isAvailable && room.status === 'Available';
 
     return {
       isAvailable,
-      message: dailyAvailabilityResult.message,
+      message: bookingAvailabilityResult.message,
       roomStatus: room.status,
-      conflictingDates: dailyAvailabilityResult.conflictingDates,
+      conflictingDates: bookingAvailabilityResult.conflictingDates,
       canBook
     };
 

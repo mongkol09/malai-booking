@@ -479,10 +479,7 @@ const bookingService = {
     try {
       console.log('🚫 Canceling booking...', { bookingId, cancellationData });
       
-      const response = await this.request(`/admin/bookings/${bookingId}/cancel`, {
-        method: 'POST',
-        body: JSON.stringify(cancellationData)
-      });
+      const response = await apiService.post(`/bookings/admin/${bookingId}/cancel`, cancellationData);
       
       return response;
       

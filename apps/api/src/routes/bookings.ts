@@ -213,14 +213,14 @@ router.get('/admin/bookings/:bookingReferenceId', sessionAuth, requireSessionRol
 // Process check-in (Session Auth)
 router.post('/:id/check-in', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), processCheckIn);
 
-// Process check-in (JWT Auth for Professional Dashboard)
-router.post('/admin/:id/check-in', authenticateToken, requireRole(['DEV', 'ADMIN', 'STAFF']), processCheckIn);
+// Process check-in (JWT Auth for Professional Dashboard - ใช้ session auth แทน)
+router.post('/admin/:id/check-in', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), processCheckIn);
 
 // Process check-out (Session Auth)
 router.post('/:id/check-out', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), processCheckOut);
 
-// Process check-out (JWT Auth for Professional Dashboard)
-router.post('/admin/:id/check-out', authenticateToken, requireRole(['DEV', 'ADMIN', 'STAFF']), processCheckOut);
+// Process check-out (JWT Auth for Professional Dashboard - ใช้ session auth แทน)
+router.post('/admin/:id/check-out', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), processCheckOut);
 
 // Today's arrivals
 router.get('/arrivals', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), getTodaysArrivals);
@@ -238,11 +238,11 @@ router.get('/admin/bookings/active', getActiveBookingByRoom);
 // BOOKING CANCELLATION ENDPOINTS
 // ============================================
 
-// Cancel booking (Session Auth)
-router.post('/:id/cancel', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), cancelBooking);
+// Cancel booking (Session Auth) - DEV and ADMIN only
+router.post('/:id/cancel', sessionAuth, requireSessionRole(['DEV', 'ADMIN']), cancelBooking);
 
-// Cancel booking (JWT Auth for Professional Dashboard)
-router.post('/admin/:id/cancel', authenticateToken, requireRole(['DEV', 'ADMIN', 'STAFF']), cancelBooking);
+// Cancel booking (JWT Auth for Professional Dashboard - ใช้ session auth แทน) - DEV and ADMIN only
+router.post('/admin/:id/cancel', sessionAuth, requireSessionRole(['DEV', 'ADMIN']), cancelBooking);
 
 // Get cancellation history for a booking
 router.get('/:id/cancellations', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), getCancellationHistory);

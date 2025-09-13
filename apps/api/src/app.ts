@@ -38,6 +38,8 @@ import enhancedAnalyticsRoutes from './routes/enhancedAnalytics';
 import checkinRoutes from './routes/checkinRoutes';
 import availabilityRoutes from './routes/availability';
 import guestDataRoutes from './routes/guestData';
+// Import booking history system
+import bookingHistoryRoutes from './routes/bookingHistoryRoutes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -63,6 +65,9 @@ export const prisma = new PrismaClient({
 
 // Create Express app
 const app = express();
+
+// Trust proxy for correct IP detection with rate limiting
+app.set('trust proxy', 1);
 
 // ============================================
 // ENHANCED SECURITY MIDDLEWARE
@@ -189,6 +194,9 @@ apiRouter.use('/emails', emailRoutes);
 // Check-in system routes (admin/staff only)
 apiRouter.use('/checkin', checkinRoutes);
 
+// Booking History System routes (admin/staff only)
+apiRouter.use('/booking-history', bookingHistoryRoutes);
+
 // Room management routes (admin/staff only) - handled by housekeeping routes
 
 // Admin password management routes
@@ -276,6 +284,9 @@ app.use(`/api/${process.env.API_VERSION || 'v1'}`, apiRouter);
 
 // Serve static files
 app.use(express.static('public'));
+
+// Serve Malai_info static files
+app.use('/Malai_info', express.static('public/Malai_info'));
 
 // Password reset pages
 app.get('/admin/reset-password', (req, res) => {

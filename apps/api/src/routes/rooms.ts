@@ -3,7 +3,7 @@
 // ============================================
 
 import express from 'express';
-import { requireRole, validateApiKey } from '../middleware/validateApiKey';
+// Removed validateApiKey import - using session-based authentication only
 import { sessionAuth, requireSessionRole } from '../middleware/sessionAuth';
 import { PrismaClient } from '@prisma/client';
 
@@ -203,11 +203,23 @@ router.get('/', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), asyn
       updatedAt: room.updatedAt.toISOString()
     }));
     
+    console.log(`📋 Formatted rooms sample:`, formattedRooms.length > 0 ? formattedRooms[0] : 'None');
+    
+    // Send as wrapped object for consistency with other APIs
     res.json({
       success: true,
-      message: `Rooms retrieved successfully${status ? ` (filtered by status: ${status})` : ''}`,
-      data: formattedRooms,
-      total: formattedRooms.length
+      message: 'Rooms retrieved successfully',
+      data: {
+        rooms: formattedRooms,
+        total: formattedRooms.length,
+        summary: {
+          available: formattedRooms.filter(r => r.status === 'available').length,
+          occupied: formattedRooms.filter(r => r.status === 'occupied').length,
+          maintenance: formattedRooms.filter(r => r.status === 'maintenance').length,
+          cleaning: formattedRooms.filter(r => r.status === 'cleaning').length,
+          total: formattedRooms.length
+        }
+      }
     });
   } catch (error) {
     console.error('❌ Error getting rooms:', error);
@@ -220,7 +232,7 @@ router.get('/', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), asyn
 });
 
 // Get room status overview (Admin/Staff/DEV)
-router.get('/status', requireRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
+router.get('/status', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
   try {
     console.log('🏠 GET /rooms/status - Getting room status overview');
     
@@ -392,11 +404,10 @@ router.get('/types', async (req, res) => {
 
     console.log(`📊 Total room types found: ${roomTypes.length}`);
     
-    res.json({
-      success: true,
-      message: 'Room types retrieved successfully',
-      data: roomTypes
-    });
+    console.log(`📋 Room types sample:`, roomTypes.length > 0 ? roomTypes[0].name : 'None');
+    
+    // Send as direct array for frontend compatibility
+    res.json(roomTypes);
   } catch (error) {
     console.error('❌ Error fetching room types:', error);
     res.status(500).json({
@@ -423,6 +434,51 @@ router.get('/type/:roomTypeId', async (req, res) => {
     // If dates provided, check for conflicts
     if (checkIn && checkOut) {
       console.log(`📅 Checking availability for dates: ${checkIn} to ${checkOut}`);
+      console.log(`📅 Date types: checkIn=${typeof checkIn}, checkOut=${typeof checkOut}`);
+      
+      // Function to parse date and handle multiple formats
+      const parseDate = (dateStr) => {
+        // Handle YYYYMMDD format
+        if (typeof dateStr === 'string' && dateStr.length === 8 && /^\d{8}$/.test(dateStr)) {
+          const year = dateStr.substring(0, 4);
+          const month = dateStr.substring(4, 6);
+          const day = dateStr.substring(6, 8);
+          return `${year}-${month}-${day}`;
+        }
+        // Return as-is for YYYY-MM-DD format
+        return dateStr;
+      };
+      
+      const checkInDateStr = parseDate(checkIn);
+      const checkOutDateStr = parseDate(checkOut);
+      
+      console.log(`📅 Formatted dates: ${checkInDateStr} to ${checkOutDateStr}`);
+      
+      // Parse dates properly and add time components
+      const checkInDate = new Date(`${checkInDateStr}T00:00:00.000Z`);
+      const checkOutDate = new Date(`${checkOutDateStr}T23:59:59.999Z`);
+      
+      console.log(`📅 Raw parsed: checkInDate=${checkInDate}, checkOutDate=${checkOutDate}`);
+      console.log(`📅 isNaN check: checkIn=${isNaN(checkInDate.getTime())}, checkOut=${isNaN(checkOutDate.getTime())}`);
+      
+      // Validate parsed dates
+      if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+        console.log('❌ Invalid date format provided');
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid date format. Use YYYY-MM-DD or YYYYMMDD format.',
+          debug: {
+            checkIn: checkIn,
+            checkOut: checkOut,
+            checkInDateStr: checkInDateStr,
+            checkOutDateStr: checkOutDateStr,
+            checkInDate: checkInDate.toString(),
+            checkOutDate: checkOutDate.toString()
+          }
+        });
+      }
+      
+      console.log(`📅 Parsed dates: ${checkInDate.toISOString()} to ${checkOutDate.toISOString()}`);
       
       const conflictingBookings = await prisma.booking.findMany({
         where: {
@@ -432,8 +488,8 @@ router.get('/type/:roomTypeId', async (req, res) => {
                 {
                   // Booking starts before checkOut and ends after checkIn
                   AND: [
-                    { checkinDate: { lt: new Date(checkOut as string) } },
-                    { checkoutDate: { gt: new Date(checkIn as string) } }
+                    { checkinDate: { lt: checkOutDate } },
+                    { checkoutDate: { gt: checkInDate } }
                   ]
                 }
               ]
@@ -501,7 +557,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Admin/Staff: Create new room
-router.post('/', requireRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
+router.post('/', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
   console.log('🏠 POST /rooms - Creating new room');
   console.log('📝 Room data received:', req.body);
   
@@ -619,7 +675,7 @@ router.post('/', requireRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
   }
 });
 
-router.put('/:id', requireRole(['DEV', 'ADMIN', 'STAFF']), (req, res) => {
+router.put('/:id', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), (req, res) => {
   res.json({
     success: true,
     message: 'Room updated',
@@ -627,7 +683,7 @@ router.put('/:id', requireRole(['DEV', 'ADMIN', 'STAFF']), (req, res) => {
 });
 
 // Update room status
-router.post('/:id/status', validateApiKey, requireRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
+router.post('/:id/status', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes, updated_by } = req.body;

@@ -16,8 +16,33 @@ const notificationService = getNotificationService();
  */
 export const getBookingsForCheckin = async (req: Request, res: Response) => {
   try {
-    const { date = new Date().toISOString().split('T')[0] } = req.query;
-    const selectedDate = new Date(date as string);
+    const { date } = req.query;
+    
+    // Safe date parsing with validation
+    let selectedDate: Date;
+    
+    if (date && typeof date === 'string') {
+      console.log(`📅 Received date parameter: "${date}"`);
+      
+      // Try to parse the date string
+      const parsedDate = new Date(date);
+      
+      // Check if the date is valid
+      if (isNaN(parsedDate.getTime())) {
+        console.warn(`⚠️ Invalid date format: "${date}", using current date`);
+        selectedDate = new Date();
+      } else {
+        selectedDate = parsedDate;
+      }
+    } else {
+      console.log('📅 No date parameter provided, using current date');
+      selectedDate = new Date();
+    }
+    
+    // Set to end of day for proper comparison
+    selectedDate.setHours(23, 59, 59, 999);
+    
+    console.log(`📅 Using selectedDate: ${selectedDate.toISOString()}`);
 
     const bookings = await prisma.booking.findMany({
       where: {
@@ -73,10 +98,18 @@ export const getBookingsForCheckin = async (req: Request, res: Response) => {
         
         const outstandingAmount = parseFloat(booking.finalAmount.toString()) - totalPaid;
 
+        // Create current date for overdue comparison (start of today)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Check if booking is overdue (checkin date is before today)
+        const checkinDate = new Date(booking.checkinDate);
+        checkinDate.setHours(0, 0, 0, 0);
+
         return {
           ...booking,
           outstandingAmount,
-          isOverdue: booking.checkinDate < selectedDate
+          isOverdue: checkinDate < today
         };
       })
     );

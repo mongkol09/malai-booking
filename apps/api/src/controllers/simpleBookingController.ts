@@ -27,6 +27,7 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
       roomData,
       dates,
       pricing,
+      paymentDetails,  // เพิ่ม paymentDetails
       specialRequests,
       source,
       paymentMethod,
@@ -37,6 +38,7 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
     const guestInfo = guestData || {};
     const roomInfo = roomData || {};
     const dateInfo = dates || {};
+    const paymentInfo = paymentDetails || {};
 
     // Validate required guest information
     const guestName = guestInfo?.name?.trim() || '';
@@ -98,9 +100,22 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
       numberOfNights: dateInfo?.nights || 1,
       
       // Pricing information
-      totalAmount: pricing?.total || pricing?.totalAmount || 1000,
-      paidAmount: pricing?.total || pricing?.totalAmount || 1000,
+      totalAmount: pricing?.total || pricing?.totalAmount || paymentInfo?.finalAmount || 1000,
+      paidAmount: pricing?.total || pricing?.totalAmount || paymentInfo?.finalAmount || 1000,
       currency: pricing?.currency || 'THB',
+      
+      // Payment Details (from dynamic calculation)
+      baseAmount: paymentInfo?.baseAmount || pricing?.base || 1000,
+      discountType: paymentInfo?.discountType || 'percentage',
+      discountAmount: paymentInfo?.discountAmount || 0,
+      discountPercentage: paymentInfo?.discountPercentage || 0,
+      serviceChargeRate: paymentInfo?.serviceChargeRate || 10,
+      serviceChargeAmount: paymentInfo?.serviceChargeAmount || 0,
+      taxRate: paymentInfo?.taxRate || 7,
+      taxAmount: paymentInfo?.taxAmount || 0,
+      commissionPercentage: paymentInfo?.commissionPercentage || 0,
+      commissionAmount: paymentInfo?.commissionAmount || 0,
+      additionalCharges: paymentInfo?.additionalCharges || 0,
       
       // Additional information
       specialRequests: specialRequests || '',

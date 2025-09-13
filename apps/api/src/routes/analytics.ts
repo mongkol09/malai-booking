@@ -14,12 +14,13 @@ import {
   getRoomOccupancyByType,
   getPaymentStatusOverview
 } from '../controllers/analyticsController';
-import { validateSimpleApiKey } from '../middleware/simpleApiKey';
+import { sessionAuth, requireSessionRole } from '../middleware/sessionAuth';
 
 const router = Router();
 
-// All analytics routes require API key authentication
-router.use(validateSimpleApiKey);
+// All analytics routes require JWT authentication (same as other routes)
+router.use(sessionAuth);
+router.use(requireSessionRole(['ADMIN', 'STAFF', 'DEV']));
 
 // ============================================
 // HOTEL KPI DASHBOARD ROUTES

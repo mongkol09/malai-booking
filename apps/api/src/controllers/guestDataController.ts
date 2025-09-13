@@ -166,6 +166,111 @@ export const getGuestDataStatus = async (req: Request, res: Response) => {
 };
 
 /**
+ * Get complete guest data for a booking
+ */
+export const getGuestDataComplete = async (req: Request, res: Response) => {
+  try {
+    const { bookingId } = req.params;
+    
+    console.log('👤 Getting complete guest data for booking:', bookingId);
+    
+    // Find the booking with guest data
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { 
+        guest: true,
+        room: true,
+        roomType: true
+      }
+    });
+    
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'Booking not found',
+          details: `No booking found with ID: ${bookingId}`
+        }
+      });
+    }
+    
+    // Format guest data including both DB fields and extended fields with defaults
+    const completeGuestData = {
+      // Basic info from database
+      id: booking.guest.id,
+      firstName: booking.guest.firstName,
+      lastName: booking.guest.lastName,
+      email: booking.guest.email,
+      phoneNumber: booking.guest.phoneNumber,
+      phone: booking.guest.phoneNumber, // alias for compatibility
+      country: booking.guest.country || 'ไทย',
+      idNumber: booking.guest.idNumber || '',
+      dateOfBirth: booking.guest.dateOfBirth ? booking.guest.dateOfBirth.toISOString().split('T')[0] : '',
+      gender: booking.guest.gender || '',
+      notes: booking.guest.notes || '',
+      title: booking.guest.title || 'Mr.',
+      nationality: booking.guest.nationality || 'Thai',
+      father_name: booking.guest.father_name || '',
+      occupation: booking.guest.occupation || '',
+      anniversary: booking.guest.anniversary ? booking.guest.anniversary.toISOString().split('T')[0] : '',
+      is_vip: booking.guest.is_vip || false,
+      customer_image_url: booking.guest.customer_image_url || '',
+      
+      // Extended fields (not in database - provide empty defaults for frontend)
+      address: '',
+      city: '',
+      state: '',
+      province: '',
+      postalCode: '',
+      zipCode: '',
+      passportNumber: booking.guest.idNumber || '', // Use idNumber as passportNumber
+      emergencyContact: '',
+      emergencyPhone: '',
+      dietaryRestrictions: '',
+      accessibilityNeeds: '',
+      
+      // Booking-related info
+      specialRequests: booking.specialRequests || '',
+      bookingType: '', // Add if available in booking model
+      bookingNumber: booking.bookingReferenceId || ''
+    };
+    
+    res.json({
+      success: true,
+      message: 'Guest data retrieved successfully',
+      data: {
+        guestData: completeGuestData,
+        booking: {
+          id: booking.id,
+          bookingReferenceId: booking.bookingReferenceId,
+          customerName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+          customerEmail: booking.guest.email,
+          customerPhone: booking.guest.phoneNumber,
+          roomNumber: booking.room.roomNumber,
+          roomType: booking.roomType.name,
+          checkInDate: booking.checkinDate.toISOString().split('T')[0],
+          checkOutDate: booking.checkoutDate.toISOString().split('T')[0],
+          status: booking.status.toLowerCase(),
+          totalAmount: Number(booking.totalPrice),
+          paidAmount: Number(booking.finalAmount),
+          specialRequests: booking.specialRequests
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting guest data:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to retrieve guest data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }
+    });
+  }
+};
+
+/**
  * Log guest data updates for ML analysis
  */
 async function logGuestDataUpdate(bookingId: string, guestData: any, staffId?: string) {

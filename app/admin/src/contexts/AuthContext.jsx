@@ -25,38 +25,54 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // ตรวจสอบ authentication status เมื่อเริ่มต้น
+  // ตรวจสอบ authentication status เมื่อเริ่มต้น (Session-based)
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         setIsLoading(true);
         
-        const token = authService.getToken();
+        // ตรวจสอบ user data ใน localStorage ก่อน (เพื่อให้ UI โหลดเร็ว)
         const userData = authService.getUser();
-
-        if (token && userData && authService.isTokenValid()) {
-          // Token ยังใช้ได้
+        if (userData) {
           setUser(userData);
           setIsAuthenticated(true);
-        } else if (token && userData) {
-          // Token หมดอายุ พยายาม refresh
-          try {
-            await authService.refreshToken();
-            setUser(userData);
-            setIsAuthenticated(true);
-          } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
-            // ถ้า refresh ไม่ได้ ให้ logout
-            authService.clearAuthData();
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } else {
-          // ไม่มี token หรือ user data
-          authService.clearAuthData();
-          setUser(null);
-          setIsAuthenticated(false);
         }
+
+        // ตรวจสอบ session status ใน background (หยุด loop โดยลบ recursive call)
+        // Disable background check to prevent infinite loop
+        // setTimeout(async () => {
+        //   try {
+        //     const sessionStatus = await authService.checkSessionStatus();
+        //     if (sessionStatus.success) {
+        //       // Session ยัง valid
+        //       setUser(sessionStatus.user);
+        //       setIsAuthenticated(true);
+        //     } else {
+        //       // Session หมดอายุ พยายาม refresh
+        //       try {
+        //         await authService.refreshSession();
+        //         // ถ้า refresh สำเร็จ ให้ตรวจสอบ session อีกครั้ง
+        //         const newSessionStatus = await authService.checkSessionStatus();
+        //         if (newSessionStatus.success) {
+        //           setUser(newSessionStatus.user);
+        //           setIsAuthenticated(true);
+        //         } else {
+        //           throw new Error('Session refresh failed');
+        //         }
+        //       } catch (refreshError) {
+        //         console.error('Session refresh failed:', refreshError);
+        //         // ถ้า refresh ไม่ได้ ให้ logout
+        //         authService.clearAuthData();
+        //         setUser(null);
+        //         setIsAuthenticated(false);
+        //       }
+        //     }
+        //   } catch (error) {
+        //     console.error('Background session check failed:', error);
+        //     // ไม่ต้องทำอะไร เพราะ user data อาจจะยัง valid อยู่
+        //   }
+        // }, 1000); // ตรวจสอบใน background หลัง 1 วินาที
+
       } catch (error) {
         console.error('Auth check failed:', error);
         authService.clearAuthData();

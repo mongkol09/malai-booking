@@ -107,7 +107,7 @@ export class ExternalNotificationService {
 
     try {
       await this.telegramBot.telegram.sendMessage(this.telegramChatId, message, {
-        parse_mode: 'Markdown'
+        parse_mode: 'HTML'
       });
       return true;
     } catch (error) {
@@ -195,6 +195,36 @@ export class ExternalNotificationService {
 ━━━━━━━━━━━━━━━━━━━━━━
 ⏰ อัพเดทเมื่อ: ${timestamp}`;
 
+      case 'BookingCancelled':
+        return `🚫 <b>แจ้งเตือน: ยกเลิกการจอง</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 <b>เลขที่การจอง:</b> ${data.bookingId || 'ไม่ระบุ'}
+👤 <b>ผู้เข้าพัก:</b> ${data.guestName || 'ไม่ระบุ'}
+📱 <b>โทรศัพท์:</b> ${data.guestPhone || 'ไม่ระบุ'}
+📧 <b>อีเมล:</b> ${data.guestEmail || 'ไม่ระบุ'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏨 <b>หมายเลขห้อง:</b> ${data.roomNumber || 'ไม่ระบุ'}
+🏠 <b>ประเภทห้อง:</b> ${data.roomType || 'ไม่ระบุ'}
+📅 <b>วันเข้าพัก:</b> ${data.checkInDate || 'ไม่ระบุ'}
+📅 <b>วันออก:</b> ${data.checkOutDate || 'ไม่ระบุ'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 <b>ยอดเงินเดิม:</b> ${data.formattedOriginalAmount || 'ไม่ระบุ'}
+💸 <b>ยอดคืน:</b> ${data.formattedRefund || '฿0'}
+💳 <b>ค่าปรับ:</b> ${data.formattedPenalty || '฿0'}
+📊 <b>ยอดชำระจริง:</b> ${data.formattedTotalPaid || 'ไม่ระบุ'}
+📉 <b>รายได้ที่สูญเสีย:</b> ${data.formattedRevenueLoss || '฿0'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 <b>เหตุผลยกเลิก:</b> ${data.cancellationReason || 'ไม่ระบุ'}
+👨‍💼 <b>ยกเลิกโดย:</b> ${data.cancelledBy || 'ระบบ'}
+📋 <b>หมายเหตุ:</b> ${data.internalNotes || 'ไม่มี'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱ <b>ระยะเวลาล่วงหน้า:</b> ${data.daysUntilCheckin ? `${data.daysUntilCheckin} วัน` : 'ไม่ระบุ'} ก่อนเข้าพัก
+📊 <b>ระยะเวลาจอง:</b> ${data.bookedDaysAgo ? `${data.bookedDaysAgo} วันที่แล้ว` : 'ไม่ระบุ'}
+🏨 <b>ระยะเวลาเข้าพัก:</b> ${data.stayDuration ? `${data.stayDuration} คืน` : 'ไม่ระบุ'}
+📈 <b>ยกเลิกวันนี้:</b> ${data.todayCancellations ? `${data.todayCancellations} รายการ` : '1 รายการ'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏰ <b>เวลายกเลิก:</b> ${data.formattedTime || timestamp}`;
+
       default:
         return `🔔 *การแจ้งเตือนใหม่*
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -269,6 +299,10 @@ export class ExternalNotificationService {
 
   public async notifyRoomStatusChange(roomData: any): Promise<boolean> {
     return this.sendNotification('RoomStatusChange', roomData);
+  }
+
+  public async notifyBookingCancelled(cancellationData: any): Promise<boolean> {
+    return this.sendNotification('BookingCancelled', cancellationData);
   }
 }
 

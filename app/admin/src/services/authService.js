@@ -3,7 +3,7 @@
 
 class AuthService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1';
     this.tokenKey = 'hotel_admin_token';
     this.refreshTokenKey = 'hotel_admin_refresh_token';
     this.userKey = 'hotel_admin_user';
@@ -17,10 +17,10 @@ class AuthService {
       'Content-Type': 'application/json',
     };
 
-    // เพิ่ม Authorization header ถ้ามี token (รองรับทั้ง JWT และ Session)
-    const token = this.getToken();
-    if (token) {
-      defaultHeaders.Authorization = `Bearer ${token}`;
+    // ไม่ส่ง Authorization header สำหรับ session-based auth
+    // ลบ Authorization header ถ้ามี (เพื่อป้องกัน conflict)
+    if (options.headers && options.headers.Authorization) {
+      delete options.headers.Authorization;
     }
 
     const config = {
@@ -144,24 +144,19 @@ class AuthService {
   // TOKEN VALIDATION & UTILITIES
   // ============================================
 
-  // ตรวจสอบว่า token ยัง valid หรือไม่
+  // ตรวจสอบว่า JWT token ยัง valid หรือไม่
   isTokenValid() {
     const token = this.getToken();
-    if (!token) return false;
+    if (!token) {
+      return false;
+    }
 
     try {
-      // ตรวจสอบรูปแบบ JWT token (ต้องมี 3 ส่วนคั่นด้วย ".")
-      const tokenParts = token.split('.');
-      if (tokenParts.length !== 3) {
-        console.warn('⚠️ Invalid token format - not a JWT token');
-        return false;
-      }
-
-      // Decode JWT token to check expiration
-      const payload = JSON.parse(atob(tokenParts[1]));
+      // ตรวจสอบ JWT token expiry (แบบ simple โดยไม่ verify signature)
+      const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Math.floor(Date.now() / 1000);
       
-      // ตรวจสอบว่า token หมดอายุหรือไม่ (เพิ่ม buffer 60 วินาที)
+      // ตรวจสอบว่า token ยังไม่หมดอายุ (เผื่อ buffer 60 วินาที)
       return payload.exp > (currentTime + 60);
     } catch (error) {
       console.error('Token validation failed:', error);
@@ -227,7 +222,7 @@ class AuthService {
   // AUTHENTICATION METHODS
   // ============================================
 
-  // เข้าสู่ระบบ
+  // เข้าสู่ระบบ (Session-based)
   async login(email, password) {
     try {
       const response = await this.request('/auth/login', {
@@ -237,22 +232,28 @@ class AuthService {
 
       if (response.success && response.data) {
         const { user, tokens } = response.data;
-        const { accessToken, refreshToken } = tokens;
         
-        // บันทึกข้อมูล authentication
-        this.setToken(accessToken);
-        this.setRefreshToken(refreshToken);
+        // บันทึกข้อมูล JWT tokens
+        if (tokens) {
+          this.setToken(tokens.accessToken);
+          if (tokens.refreshToken) {
+            this.setRefreshToken(tokens.refreshToken);
+          }
+        }
+        
+        // บันทึกข้อมูล user
         this.setUser(user);
 
-        console.log('✅ Token saved successfully:', {
-          token: accessToken ? `${accessToken.substring(0, 20)}...` : 'undefined',
+        console.log('✅ JWT login successful:', {
           user: user.email,
-          localStorage: !!localStorage.getItem(this.tokenKey)
+          hasToken: !!tokens?.accessToken,
+          hasRefreshToken: !!tokens?.refreshToken
         });
 
         return {
           success: true,
           user,
+          tokens,
           message: 'เข้าสู่ระบบสำเร็จ'
         };
       }
@@ -290,17 +291,12 @@ class AuthService {
     }
   }
 
-  // ออกจากระบบ
+  // ออกจากระบบ (Session-based)
   async logout() {
     try {
-      const refreshToken = this.getRefreshToken();
-      
-      if (refreshToken) {
-        await this.request('/auth/logout', {
-          method: 'POST',
-          body: JSON.stringify({ refreshToken }),
-        });
-      }
+      await this.request('/auth/logout', {
+        method: 'POST',
+      });
     } catch (error) {
       console.error('Logout request failed:', error);
       // ไม่ throw error เพราะ local logout ยังทำงานได้
@@ -312,11 +308,10 @@ class AuthService {
     return { success: true, message: 'ออกจากระบบสำเร็จ' };
   }
 
-  // รีเฟรช token
-  async refreshToken() {
+  // รีเฟรช JWT tokens
+  async refreshSession() {
     try {
       const refreshToken = this.getRefreshToken();
-      
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -326,15 +321,22 @@ class AuthService {
         body: JSON.stringify({ refreshToken }),
       });
 
-      if (response.success && response.data) {
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
+      if (response.success && response.data && response.data.tokens) {
+        const { tokens, user } = response.data;
         
-        this.setToken(accessToken);
-        if (newRefreshToken) {
-          this.setRefreshToken(newRefreshToken);
+        // อัพเดต tokens ใหม่
+        this.setToken(tokens.accessToken);
+        if (tokens.refreshToken) {
+          this.setRefreshToken(tokens.refreshToken);
+        }
+        
+        // อัพเดต user data ถ้ามี
+        if (user) {
+          this.setUser(user);
         }
 
-        return { success: true };
+        console.log('✅ Token refreshed successfully');
+        return { success: true, tokens };
       }
 
       throw new Error('Token refresh failed');
@@ -469,6 +471,33 @@ class AuthService {
   // ดึงข้อมูลผู้ใช้ปัจจุบัน
   getCurrentUser() {
     return this.getUser();
+  }
+
+  // ตรวจสอบสถานะ session
+  async checkSessionStatus() {
+    try {
+      const response = await this.request('/auth/session-info', {
+        method: 'GET',
+      });
+
+      if (response.success && response.data) {
+        return {
+          success: true,
+          user: response.data.user,
+          session: response.data.session
+        };
+      }
+
+      throw new Error('Session check failed');
+    } catch (error) {
+      console.error('Session status check failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ตรวจสอบ authentication แบบ sync (สำหรับ UI)
+  isAuthenticatedSync() {
+    return !!this.getUser();
   }
 }
 

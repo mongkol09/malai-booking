@@ -6,6 +6,13 @@ export const roomColumns = [
     {
       Header: 'Room Type',
       accessor: 'roomType',
+      Cell: ({ value }) => {
+        // Handle roomType object after database reset
+        if (typeof value === 'object' && value?.name) {
+          return value.name;
+        }
+        return value || 'ไม่ระบุ';
+      }
     },
     {
       Header: 'Floor',

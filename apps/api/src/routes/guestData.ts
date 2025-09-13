@@ -1,7 +1,7 @@
 import express from 'express';
 import { validateApiKey } from '../middleware/validateApiKey';
 import { sessionAuth, requireSessionRole } from '../middleware/sessionAuth';
-import { updateGuestData, getGuestDataStatus } from '../controllers/guestDataController';
+import { updateGuestData, getGuestDataStatus, getGuestDataComplete } from '../controllers/guestDataController';
 
 const router = express.Router();
 
@@ -11,6 +11,9 @@ router.use(validateApiKey);
 // Apply session authentication for admin operations
 router.use(sessionAuth);
 router.use(requireSessionRole(['DEV', 'ADMIN', 'STAFF']));
+
+// Get complete guest data for a booking
+router.get('/bookings/:bookingId/guest-data', getGuestDataComplete);
 
 // Update guest data for a booking
 router.put('/bookings/:bookingId/guest-data', updateGuestData);

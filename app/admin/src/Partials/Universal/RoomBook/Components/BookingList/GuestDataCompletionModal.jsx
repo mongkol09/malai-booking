@@ -84,10 +84,21 @@ const GuestDataCompletionModal = ({ show, onHide, booking, onSave }) => {
       setLoading(true);
       setError(null);
       
-      console.log('💾 Saving guest data:', guestData);
+      console.log('💾 Saving guest data for booking:', booking);
+      console.log('💾 Guest data to save:', guestData);
+      console.log('💾 Booking ID:', booking.id);
+      console.log('💾 Booking object keys:', Object.keys(booking));
       
-      // TODO: Call API to update guest data
+      // Validate form first
+      if (!validateForm()) {
+        setError('กรุณากรอกข้อมูลที่จำเป็น (ชื่อ, นามสกุล, อีเมล, เบอร์โทร)');
+        return;
+      }
+      
+      // Call API to update guest data
       const response = await bookingService.updateGuestData(booking.id, guestData);
+      
+      console.log('✅ API response:', response);
       
       if (response.success) {
         setSuccess(true);
@@ -103,12 +114,29 @@ const GuestDataCompletionModal = ({ show, onHide, booking, onSave }) => {
           onHide();
         }, 1500);
       } else {
-        throw new Error(response.message || 'Failed to update guest data');
+        console.warn('⚠️ API returned non-success response:', response);
+        throw new Error(response.message || response.error?.message || 'Failed to update guest data');
       }
       
     } catch (error) {
       console.error('❌ Error saving guest data:', error);
-      setError(error.message || 'Failed to save guest data');
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      
+      let errorMessage = 'Failed to save guest data';
+      if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

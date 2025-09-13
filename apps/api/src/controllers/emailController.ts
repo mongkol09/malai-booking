@@ -461,6 +461,10 @@ export const sendBookingConfirmationEmailDirect = async (booking: any, guest: an
       tax_amount: `฿${taxAmount.toLocaleString()}`,
       grand_total: `฿${totalAmount.toLocaleString()}`,
       
+      // Contact Information
+      guest_phone: guest.phoneNumber || guest.phone || '+66-XX-XXX-XXXX',
+      cuntomer_phone: { no: guest.phoneNumber || guest.phone || '+66-XX-XXX-XXXX' }, // Nested structure สำหรับ template
+      
       // Additional fields (backward compatibility)
       guest_email: guest.email,
       booking_id: booking.bookingReferenceId,

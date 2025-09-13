@@ -3,7 +3,7 @@
 import { authService } from './authService';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
-const API_KEY = process.env.REACT_APP_API_KEY || 'hotel-booking-api-key-2024';
+const API_KEY = process.env.REACT_APP_API_KEY || 'hbk_prod_2024_secure_f8e7d6c5b4a392817f4e3d2c1b0a98765432187654321';
 
 class ApiService {
   constructor() {
@@ -55,40 +55,60 @@ class ApiService {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
+    console.log(`🌐 API Request: ${options.method || 'GET'} ${endpoint}`);
+    
     const defaultHeaders = {
       'Content-Type': 'application/json',
-      'X-API-Key': this.apiKey,
+      // ลบ x-api-key เพราะ admin endpoints ใช้ JWT แล้ว
+      // 'x-api-key': this.apiKey,
     };
 
-    // ใช้ AuthService ในการตรวจสอบ token (เฉพาะกรณีที่ต้องการ JWT auth)
-    const token = this.getToken();
+    // ใช้ AuthService ในการตรวจสอบ token (JWT authentication)
+    const token = authService ? authService.getToken() : null;
+    console.log(`🔍 Token from AuthService: ${token ? 'Present (' + token.substring(0, 20) + '...)' : 'None'}`);
     
-    // สำหรับ API ที่ต้องการ JWT token validation
-    // หากไม่มี token หรือ token invalid ให้ใช้ X-API-Key เป็นหลัก
-    if (token && authService && typeof authService.isTokenValid === 'function') {
-      try {
-        if (authService.isTokenValid()) {
-          defaultHeaders['Authorization'] = `Bearer ${token}`;
-        } else {
-          console.warn('⚠️ Token is invalid, using X-API-Key authentication...');
-          // ไม่ต้อง throw error เพราะยังมี X-API-Key ใช้ได้
+    // เพิ่ม Authorization header ถ้ามี JWT token
+    if (token) {
+      // ตรวจสอบว่า token ยังใช้งานได้หรือไม่
+      if (authService && typeof authService.isTokenValid === 'function') {
+        try {
+          if (authService.isTokenValid()) {
+            defaultHeaders['Authorization'] = `Bearer ${token}`;
+            console.log('🔐 Using JWT token for authentication');
+          } else {
+            console.warn('⚠️ Token is invalid, will try to refresh...');
+            // Token หมดอายุ ให้ลองใช้ refresh token
+            await this.refreshTokenIfNeeded();
+            const newToken = authService.getToken();
+            if (newToken) {
+              defaultHeaders['Authorization'] = `Bearer ${newToken}`;
+              console.log('🔄 Using refreshed JWT token');
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ Token validation error:', error.message);
         }
-      } catch (error) {
-        console.warn('⚠️ Token validation error, using X-API-Key authentication:', error.message);
-        // ไม่ต้อง throw error เพราะยังมี X-API-Key ใช้ได้
+      } else {
+        // ถ้าไม่มี validation function ใช้ token ตรงๆ
+        defaultHeaders['Authorization'] = `Bearer ${token}`;
+        console.log('🔐 Using JWT token (no validation)');
       }
+    } else {
+      console.log('ℹ️ No JWT token available');
     }
+    
+    console.log('📋 Request headers:', defaultHeaders);
 
     const config = {
       ...options,
-      credentials: 'include', // ส่ง cookies สำหรับ session auth
+      // ลบ credentials: 'include' เพราะใช้ JWT แทน session cookies
       headers: {
         ...defaultHeaders,
         ...options.headers,
       },
     };
 
-    const maxRetries = 3;
+    const maxRetries = 2; // ลดจาก 3 เป็น 2 เพื่อลด traffic
     let attempt = 0;
 
     while (attempt < maxRetries) {
@@ -97,7 +117,7 @@ class ApiService {
         
         // Handle 429 (Too Many Requests) with exponential backoff
         if (response.status === 429) {
-          const retryAfter = response.headers.get('Retry-After') || Math.pow(2, attempt);
+          const retryAfter = response.headers.get('Retry-After') || Math.pow(2, attempt + 2); // เพิ่ม delay
           const delay = parseInt(retryAfter) * 1000;
           
           if (attempt < maxRetries - 1) {
@@ -106,7 +126,8 @@ class ApiService {
             attempt++;
             continue;
           } else {
-            throw new Error(`Rate limit exceeded. Please try again later.`);
+            console.error('❌ Rate limit exceeded - stopping retries');
+            throw new Error(`Rate limit exceeded. Please wait before trying again.`);
           }
         }
         
@@ -191,8 +212,9 @@ class ApiService {
 
   async refreshTokenIfNeeded() {
     try {
-      if (authService && typeof authService.refreshToken === 'function') {
-        return await authService.refreshToken();
+      if (authService && typeof authService.refreshSession === 'function') {
+        const result = await authService.refreshSession();
+        return result && result.success;
       }
       return false;
     } catch (error) {

@@ -265,6 +265,16 @@ model Booking {
   discountAmount          Decimal             @default(0.00) @map("discount_amount") @db.Decimal(12, 2)
   taxAmount               Decimal             @default(0.00) @map("tax_amount") @db.Decimal(12, 2)
   finalAmount             Decimal             @map("final_amount") @db.Decimal(12, 2)
+  
+  // NEW DYNAMIC PAYMENT DETAILS FIELDS
+  baseAmount              Decimal?            @map("base_amount") @db.Decimal(12, 2)
+  discountType            String?             @map("discount_type") // 'percentage' or 'fixed'
+  serviceChargeAmount     Decimal?            @default(0.00) @map("service_charge_amount") @db.Decimal(12, 2)
+  serviceChargeType       String?             @map("service_charge_type") // 'percentage' or 'fixed'
+  commissionAmount        Decimal?            @default(0.00) @map("commission_amount") @db.Decimal(12, 2)
+  commissionType          String?             @map("commission_type") // 'percentage' or 'fixed'
+  extraChargesAmount      Decimal?            @default(0.00) @map("extra_charges_amount") @db.Decimal(12, 2)
+  extraChargesType        String?             @map("extra_charges_type") // 'percentage' or 'fixed'
   status                  BookingStatus       @default(Confirmed)
   cancellationPolicyId    String?             @map("cancellation_policy_id")
   specialRequests         String?             @map("special_requests")

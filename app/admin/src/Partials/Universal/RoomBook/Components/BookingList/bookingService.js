@@ -1,7 +1,7 @@
 // Local bookingService for BookingCancelModal
 // This file contains only the methods needed for cancellation
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api/v1';
 
 class BookingService {
   constructor() {
@@ -13,23 +13,16 @@ class BookingService {
     return localStorage.getItem('hotel_admin_token') || sessionStorage.getItem('hotel_admin_token');
   }
 
-  // Make authenticated request
+  // Make authenticated request (Session-based)
   async request(endpoint, options = {}) {
-    const token = this.getAuthToken();
-    
-    console.log('🔐 BookingService - Token check:', {
-      hasToken: !!token,
-      tokenLength: token ? token.length : 0,
-      tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token'
-    });
+    console.log('🔐 BookingService - Session-based request');
     
     const config = {
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': 'hotel-booking-api-key-2024',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers
       },
+      credentials: 'include', // สำคัญ! เพื่อส่ง cookies สำหรับ session auth
       ...options
     };
 

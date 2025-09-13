@@ -41,7 +41,40 @@ export const getAllBookingsAdmin = async (req: Request, res: Response) => {
       specialRequests: booking.specialRequests,
       source: booking.source,
       createdAt: booking.createdAt.toISOString(),
-      updatedAt: booking.updatedAt.toISOString()
+      updatedAt: booking.updatedAt.toISOString(),
+      // Add complete guest data (only fields that exist in Guest model)
+      guest: {
+        id: booking.guest.id,
+        firstName: booking.guest.firstName,
+        lastName: booking.guest.lastName,
+        email: booking.guest.email,
+        phoneNumber: booking.guest.phoneNumber,
+        phone: booking.guest.phoneNumber, // alias for compatibility
+        title: booking.guest.title || 'Mr.',
+        nationality: booking.guest.nationality || 'Thai',
+        dateOfBirth: booking.guest.dateOfBirth ? booking.guest.dateOfBirth.toISOString().split('T')[0] : '',
+        gender: booking.guest.gender || '',
+        country: booking.guest.country || 'ไทย',
+        idNumber: booking.guest.idNumber || '',
+        notes: booking.guest.notes || '',
+        father_name: booking.guest.father_name || '',
+        occupation: booking.guest.occupation || '',
+        anniversary: booking.guest.anniversary ? booking.guest.anniversary.toISOString().split('T')[0] : '',
+        is_vip: booking.guest.is_vip || false,
+        customer_image_url: booking.guest.customer_image_url || '',
+        // For compatibility with frontend, add empty placeholders for fields not in DB
+        address: '', // Not in database schema
+        city: '', // Not in database schema
+        state: '', // Not in database schema
+        province: '', // Not in database schema
+        postalCode: '', // Not in database schema
+        zipCode: '', // Not in database schema
+        passportNumber: booking.guest.idNumber || '', // Use idNumber as passportNumber
+        emergencyContact: '', // Not in database schema
+        emergencyPhone: '', // Not in database schema
+        dietaryRestrictions: '', // Not in database schema
+        accessibilityNeeds: '' // Not in database schema
+      }
     }));
 
     res.json({

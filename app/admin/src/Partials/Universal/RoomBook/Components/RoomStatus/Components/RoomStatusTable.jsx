@@ -95,6 +95,9 @@ class RoomStatusTable extends Component {
         if (Array.isArray(roomsResponse)) {
           // Direct array response
           roomsData = roomsResponse;
+        } else if (roomsResponse.rooms && Array.isArray(roomsResponse.rooms)) {
+          // Response with rooms property (current API format)
+          roomsData = roomsResponse.rooms;
         } else if (roomsResponse.data && Array.isArray(roomsResponse.data)) {
           // Object with data property
           roomsData = roomsResponse.data;

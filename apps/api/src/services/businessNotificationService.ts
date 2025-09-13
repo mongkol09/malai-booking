@@ -100,19 +100,39 @@ export class BusinessNotificationService {
   static async notifyBookingCancellation(cancellationData: {
     bookingId: string;
     guestName: string;
+    guestEmail?: string;
+    guestPhone?: string;
     roomNumber: string;
-    cancellationReason: string;
+    roomType?: string;
+    checkInDate?: string;
+    checkOutDate?: string;
+    originalAmount?: number;
     refundAmount?: number;
+    penaltyAmount?: number;
+    cancellationReason: string;
     cancellationTime: string;
+    cancelledBy?: string;
+    internalNotes?: string;
+    // Enhanced business metrics
+    totalPaid?: number;
+    revenueLoss?: number;
+    daysUntilCheckin?: number;
+    bookedDaysAgo?: number;
+    stayDuration?: number;
+    todayCancellations?: number;
   }) {
     try {
       await notificationService.notifyAll('BookingCancelled', {
         ...cancellationData,
+        formattedOriginalAmount: cancellationData.originalAmount ? `฿${cancellationData.originalAmount.toLocaleString()}` : 'N/A',
         formattedRefund: cancellationData.refundAmount ? `฿${cancellationData.refundAmount.toLocaleString()}` : '฿0',
+        formattedPenalty: cancellationData.penaltyAmount ? `฿${cancellationData.penaltyAmount.toLocaleString()}` : '฿0',
+        formattedTotalPaid: cancellationData.totalPaid ? `฿${cancellationData.totalPaid.toLocaleString()}` : 'N/A',
+        formattedRevenueLoss: cancellationData.revenueLoss ? `฿${cancellationData.revenueLoss.toLocaleString()}` : '฿0',
         formattedTime: new Date(cancellationData.cancellationTime).toLocaleString('th-TH')
       });
       
-      console.log(`✅ Cancellation notification sent for: ${cancellationData.bookingId}`);
+      console.log(`✅ Enhanced cancellation notification sent for: ${cancellationData.bookingId}`);
     } catch (error) {
       console.error('❌ Failed to send cancellation notification:', error);
     }

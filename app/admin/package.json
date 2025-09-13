@@ -84,5 +84,6 @@
     "@types/react-dom": "^18.2.6",
     "ajv": "^7.2.4",
     "sass": "^1.69.0"
-  }
+  },
+  "proxy": "http://localhost:3000"
 }

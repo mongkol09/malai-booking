@@ -107,6 +107,11 @@ import Blog from "./Tuning/Application/Blog/Blog";
 import BlogDetail from "./Tuning/Application/BlogDetail/BlogDetail";
 import SearchPage from "./Tuning/Pages/SearchPage/SearchPage";
 import HolidayPricingManagement from "./components/HolidayPricingManagement";
+// NEW: Booking History Components
+import BookingHistory from "./components/BookingHistory/BookingHistory";
+import BookingAnalytics from "./components/BookingHistory/BookingAnalytics";
+import ExpiredBookings from "./components/BookingHistory/ExpiredBookings";
+import ArchiveManagement from "./components/BookingHistory/ArchiveManagement";
 
 const Routes = () => {
   return (
@@ -245,6 +250,12 @@ const Routes = () => {
       <Route exact path="/blog-detail" element={<BlogDetail/>} />
       <Route exact path="/search" element={<SearchPage/>} />
       <Route exact path="/holiday-pricing" element={<HolidayPricingManagement/>} />
+      
+      {/* NEW: Booking History Routes */}
+      <Route exact path="/booking-history" element={<BookingHistory/>} />
+      <Route exact path="/booking-analytics" element={<BookingAnalytics/>} />
+      <Route exact path="/expired-bookings" element={<ExpiredBookings/>} />
+      <Route exact path="/archive-management" element={<ArchiveManagement/>} />
       
     </ReactRoutes>
   );

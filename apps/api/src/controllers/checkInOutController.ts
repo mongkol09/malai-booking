@@ -662,28 +662,64 @@ export const updateRoomStatus = async (req: Request, res: Response) => {
     const { roomId } = req.params;
     const { status, notes } = req.body;
 
+    console.log(`🔄 updateRoomStatus called for room ${roomId}`);
+    console.log(`📊 Request body:`, req.body);
+    console.log(`🏷️ Original status: "${status}"`);
+
     if (!roomId) {
+      console.log('❌ Room ID missing');
       return res.status(400).json({
         success: false,
         message: 'Room ID is required'
       });
     }
 
-    if (!status || !Object.values(RoomStatus).includes(status)) {
+    // Map frontend status to Prisma enum values
+    const statusMapping: { [key: string]: RoomStatus } = {
+      'available': RoomStatus.Available,
+      'occupied': RoomStatus.Occupied,
+      'cleaning': RoomStatus.Cleaning,
+      'maintenance': RoomStatus.Maintenance,
+      'out-of-order': RoomStatus.OutOfOrder,
+      'dirty': RoomStatus.Dirty,
+      'reserved': RoomStatus.Reserved,
+      'checking-out': RoomStatus.CheckingOut,
+      'checking-in': RoomStatus.CheckingIn,
+      // Also support Prisma enum values directly
+      'Available': RoomStatus.Available,
+      'Occupied': RoomStatus.Occupied,
+      'Cleaning': RoomStatus.Cleaning,
+      'Maintenance': RoomStatus.Maintenance,
+      'OutOfOrder': RoomStatus.OutOfOrder,
+      'Dirty': RoomStatus.Dirty,
+      'Reserved': RoomStatus.Reserved,
+      'CheckingOut': RoomStatus.CheckingOut,
+      'CheckingIn': RoomStatus.CheckingIn,
+    };
+
+    const mappedStatus = statusMapping[status];
+    
+    if (!status || !mappedStatus) {
+      console.log(`❌ Invalid status: "${status}"`);
+      console.log('✅ Valid statuses:', Object.keys(statusMapping));
       return res.status(400).json({
         success: false,
-        message: 'Valid room status is required'
+        message: `Valid room status is required. Received: "${status}". Valid options: ${Object.keys(statusMapping).join(', ')}`
       });
     }
+
+    console.log(`✅ Mapped status: "${status}" -> "${mappedStatus}"`);
 
     const updatedRoom = await prisma.room.update({
       where: { id: roomId },
       data: {
-        status: status as RoomStatus,
+        status: mappedStatus,
         notes: notes || null,
         updatedAt: new Date()
       }
     });
+
+    console.log(`✅ Room status updated successfully: ${updatedRoom.roomNumber} -> ${updatedRoom.status}`);
 
     return res.json({
       success: true,

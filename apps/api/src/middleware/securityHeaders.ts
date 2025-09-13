@@ -102,13 +102,13 @@ export const securityHeaders = helmet({
   xssFilter: true
 });
 
-// Custom security headers
+// Custom security headers - Simplified for development
 export const customSecurityHeaders = (req: Request, res: Response, next: NextFunction): void => {
   // Remove server information
   res.removeHeader('X-Powered-By');
   res.removeHeader('Server');
 
-  // Add custom security headers
+  // Add minimal security headers
   res.set({
     // Prevent MIME type sniffing
     'X-Content-Type-Options': 'nosniff',
@@ -117,62 +117,15 @@ export const customSecurityHeaders = (req: Request, res: Response, next: NextFun
     'X-Frame-Options': 'DENY',
     
     // XSS Protection
-    'X-XSS-Protection': '1; mode=block',
-    
-    // Referrer Policy
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-    
-    // Permissions Policy
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(self), usb=(), magnetometer=(), gyroscope=(), accelerometer=()',
-    
-    // Cross-Origin policies
-    'Cross-Origin-Embedder-Policy': 'require-corp',
-    'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Resource-Policy': 'same-origin',
-    
-    // Cache Control for sensitive endpoints
-    'Cache-Control': req.path.includes('/api/auth') || req.path.includes('/api/payment') 
-      ? 'no-store, no-cache, must-revalidate, private' 
-      : 'public, max-age=3600',
-    
-    // Request ID for tracking
-    'X-Request-ID': req.headers['x-request-id'] || generateRequestId(),
-    
-    // API Version
-    'X-API-Version': '1.0.0',
-    
-    // Security timestamp
-    'X-Security-Timestamp': new Date().toISOString()
+    'X-XSS-Protection': '1; mode=block'
   });
 
   next();
 };
 
-// CORS configuration
+// CORS configuration - Simplified for development
 export const corsConfig = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://malai-resort.com',
-      'https://www.malai-resort.com',
-      'https://admin.malai-resort.com',
-      'https://api.malai-resort.com'
-    ];
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`🚨 CORS blocked origin: ${origin}`, {
-        timestamp: new Date().toISOString(),
-        userAgent: 'unknown'
-      });
-      callback(new Error('Not allowed by CORS'), false);
-    }
-  },
+  origin: true, // Allow all origins for development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
