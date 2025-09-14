@@ -28,7 +28,6 @@ class AutoArchiveService {
     this.cronJob = cron.schedule('0 2 * * *', async () => {
       await this.runAutoArchive();
     }, {
-      scheduled: true,
       timezone: 'Asia/Bangkok'
     });
 

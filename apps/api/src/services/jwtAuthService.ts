@@ -44,8 +44,8 @@ export interface AuthTokens {
 
 // Configuration
 const JWT_CONFIG = {
-  accessTokenExpiry: '2h',
-  refreshTokenExpiry: '7d',
+  accessTokenExpiry: '2h' as const,
+  refreshTokenExpiry: '7d' as const,
   accessTokenSecret: process.env.JWT_ACCESS_SECRET || 'your-access-secret-key',
   refreshTokenSecret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
   algorithm: 'HS256' as const,
@@ -221,7 +221,7 @@ export class JWTAuthService {
       };
       
       const signOptions: SignOptions = {
-        expiresIn: JWT_CONFIG.accessTokenExpiry as string,
+        expiresIn: JWT_CONFIG.accessTokenExpiry,
         issuer: JWT_CONFIG.issuer,
         audience: JWT_CONFIG.audience,
         algorithm: JWT_CONFIG.algorithm
@@ -230,7 +230,7 @@ export class JWTAuthService {
       const accessToken = jwt.sign(payload, JWT_CONFIG.accessTokenSecret, signOptions);
       
       const refreshSignOptions: SignOptions = {
-        expiresIn: JWT_CONFIG.refreshTokenExpiry as string,
+        expiresIn: JWT_CONFIG.refreshTokenExpiry,
         issuer: JWT_CONFIG.issuer,
         audience: JWT_CONFIG.audience,
         algorithm: JWT_CONFIG.algorithm
