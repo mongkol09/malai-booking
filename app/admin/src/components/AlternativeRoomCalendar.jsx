@@ -2,6 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import './AlternativeRoomCalendar.css';
 import LongStayConflictChecker from './LongStayConflictChecker';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
 // Default profile image
@@ -33,7 +41,7 @@ const AlternativeRoomCalendar = () => {
 
   // Show toast message
   const showToast = (message, type = 'info') => {
-    console.log(`${type.toUpperCase()}: ${message}`);
+    safeLog(`${type.toUpperCase()}: ${message}`);
     if (window.Swal) {
       window.Swal.fire({
         title: type === 'error' ? 'เกิดข้อผิดพลาด' : 'แจ้งเตือน',
@@ -54,7 +62,7 @@ const AlternativeRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/room-types`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -66,7 +74,7 @@ const AlternativeRoomCalendar = () => {
       const data = await response.json();
       if (data.success) {
         setRoomTypes(data.data);
-        console.log('🏨 Room types loaded:', data.data.length);
+        safeLog('🏨 Room types loaded:', data.data.length);
       }
     } catch (error) {
       console.error('❌ Error fetching room types:', error);
@@ -91,7 +99,7 @@ const AlternativeRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/monthly?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -105,7 +113,7 @@ const AlternativeRoomCalendar = () => {
         const dailyData = data.data.dailyAvailability || [];
         setAvailabilityData(dailyData);
         generateCalendarDays(year, month, dailyData);
-        console.log('📅 Monthly availability loaded:', dailyData.length, 'days');
+        safeLog('📅 Monthly availability loaded:', dailyData.length, 'days');
       } else {
         console.error('❌ API returned unsuccessful response:', data);
       }
@@ -200,7 +208,7 @@ const AlternativeRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/date-detail?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -259,7 +267,7 @@ const AlternativeRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/quick-search?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });

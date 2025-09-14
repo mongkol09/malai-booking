@@ -4,6 +4,14 @@ import ProfessionalCheckinDashboard from './ProfessionalCheckinDashboard';
 import SecureLogin from './SecureLogin';
 import authTokenService from '../services/authTokenService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const SecureProfessionalCheckinDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
@@ -25,12 +33,12 @@ const SecureProfessionalCheckinDashboard = () => {
         if (userData) {
           setUser(userData);
           setIsAuthenticated(true);
-          console.log('✅ User authenticated:', userData.email);
+          safeLog('✅ User authenticated:', userData.email);
         } else {
           setAuthError('Invalid user data');
         }
       } else {
-        console.log('🔒 No valid authentication found');
+        safeLog('🔒 No valid authentication found');
       }
     } catch (error) {
       console.error('❌ Auth check failed:', error);
@@ -41,9 +49,9 @@ const SecureProfessionalCheckinDashboard = () => {
   };
 
   const handleLoginSuccess = (userData) => {
-    console.log('🎉 Login success callback received:', userData);
-    console.log('🔍 User role:', userData?.role);
-    console.log('🔍 User userType:', userData?.userType);
+    safeLog('🎉 Login success callback received:', userData);
+    safeLog('🔍 User role:', userData?.role);
+    safeLog('🔍 User userType:', userData?.userType);
     
     setUser(userData);
     setIsAuthenticated(true);
@@ -51,15 +59,15 @@ const SecureProfessionalCheckinDashboard = () => {
     
     // Force re-check permissions
     setTimeout(() => {
-      console.log('🔄 Re-checking permissions...');
+      safeLog('🔄 Re-checking permissions...');
       if (checkPermissions()) {
-        console.log('✅ Permissions granted after login');
+        safeLog('✅ Permissions granted after login');
       } else {
-        console.log('❌ Permissions denied after login');
+        safeLog('❌ Permissions denied after login');
       }
     }, 100);
     
-    console.log('✅ Login successful, user authenticated');
+    safeLog('✅ Login successful, user authenticated');
   };
 
   const handleLogout = async () => {
@@ -71,7 +79,7 @@ const SecureProfessionalCheckinDashboard = () => {
       setIsAuthenticated(false);
       setAuthError('');
       
-      console.log('✅ Logout successful');
+      safeLog('✅ Logout successful');
     } catch (error) {
       console.error('❌ Logout error:', error);
       setAuthError('Logout failed: ' + error.message);
@@ -81,15 +89,15 @@ const SecureProfessionalCheckinDashboard = () => {
   };
 
   const checkPermissions = () => {
-    console.log('🔍 Checking permissions for user:', user);
+    safeLog('🔍 Checking permissions for user:', user);
     
     if (!user) {
-      console.log('❌ No user data available');
+      safeLog('❌ No user data available');
       return false;
     }
     
-    console.log('🔍 User role:', user.role);
-    console.log('🔍 User userType:', user.userType);
+    safeLog('🔍 User role:', user.role);
+    safeLog('🔍 User userType:', user.userType);
     
     // ตรวจสอบสิทธิ์การเข้าถึง Professional Dashboard
     const hasPermission = authTokenService.hasPermission('checkin_dashboard');
@@ -99,17 +107,17 @@ const SecureProfessionalCheckinDashboard = () => {
     const isDev = user.role === 'DEV';
     const isDevLower = user.role === 'dev';
     
-    console.log('🔍 Permission checks:');
-    console.log('  - hasPermission(checkin_dashboard):', hasPermission);
-    console.log('  - hasPermission(admin_panel):', hasAdminPanel);
-    console.log('  - isAdmin:', isAdmin);
-    console.log('  - isManager:', isManager);
-    console.log('  - isDev:', isDev);
-    console.log('  - isDevLower:', isDevLower);
+    safeLog('🔍 Permission checks:');
+    safeLog('  - hasPermission(checkin_dashboard):', hasPermission);
+    safeLog('  - hasPermission(admin_panel):', hasAdminPanel);
+    safeLog('  - isAdmin:', isAdmin);
+    safeLog('  - isManager:', isManager);
+    safeLog('  - isDev:', isDev);
+    safeLog('  - isDevLower:', isDevLower);
     
     const hasAccess = hasPermission || hasAdminPanel || isAdmin || isManager || isDev || isDevLower;
     
-    console.log('🔍 Final access decision:', hasAccess);
+    safeLog('🔍 Final access decision:', hasAccess);
     
     return hasAccess;
   };

@@ -5,6 +5,14 @@
 
 import authTokenService from './authTokenService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api/v1';
 
 class PinAuthService {
@@ -18,7 +26,7 @@ class PinAuthService {
    */
   async checkPinStatus() {
     try {
-      console.log('🔍 Checking PIN status...');
+      safeLog('🔍 Checking PIN status...');
       
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/auth/pin-status`, {
         method: 'GET'
@@ -29,7 +37,7 @@ class PinAuthService {
       }
 
       const result = await response.json();
-      console.log('📋 PIN Status:', result.data);
+      safeLog('📋 PIN Status:', result.data);
       
       return {
         success: true,
@@ -51,7 +59,7 @@ class PinAuthService {
    */
   async setupPin(pin, userId) {
     try {
-      console.log('🔐 Setting up PIN for user:', userId);
+      safeLog('🔐 Setting up PIN for user:', userId);
       
       // Validate PIN on client side first
       const validation = this.validatePin(pin);
@@ -76,7 +84,7 @@ class PinAuthService {
       const result = await response.json();
       
       if (result.success) {
-        console.log('✅ PIN setup successful');
+        safeLog('✅ PIN setup successful');
         // Clear any previous lockout data
         this.clearLockoutData();
         
@@ -107,7 +115,7 @@ class PinAuthService {
    */
   async verifyPin(pin, action, bookingData = null) {
     try {
-      console.log('🔐 Verifying PIN for action:', action);
+      safeLog('🔐 Verifying PIN for action:', action);
       
       // Check client-side lockout first
       const lockoutStatus = this.checkClientLockout();
@@ -134,7 +142,7 @@ class PinAuthService {
       const result = await response.json();
       
       if (result.success) {
-        console.log('✅ PIN verification successful');
+        safeLog('✅ PIN verification successful');
         // Clear failed attempts on success
         this.clearFailedAttempts();
         
@@ -171,7 +179,7 @@ class PinAuthService {
    */
   async changePin(currentPin, newPin) {
     try {
-      console.log('🔄 Changing PIN...');
+      safeLog('🔄 Changing PIN...');
       
       // Validate new PIN
       const validation = this.validatePin(newPin);
@@ -196,7 +204,7 @@ class PinAuthService {
       const result = await response.json();
       
       if (result.success) {
-        console.log('✅ PIN changed successfully');
+        safeLog('✅ PIN changed successfully');
         this.clearLockoutData();
         
         return {

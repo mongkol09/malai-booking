@@ -1,7 +1,14 @@
 const TelegramBot = require('node-telegram-bot-api');
+require('dotenv').config();
 
-// Telegram Bot Token จาก .env ของคุณ
-const token = '8090902784:AAHqVuSWGscl_CSG2ojmqF5A7NMmUFxAEA8';
+// Telegram Bot Token จาก .env
+const token = process.env.TELEGRAM_BOT_TOKEN;
+
+if (!token) {
+  console.error('❌ Please set TELEGRAM_BOT_TOKEN in your .env file');
+  process.exit(1);
+}
+
 const bot = new TelegramBot(token, { polling: true });
 
 console.log('🤖 Telegram Bot is running...');

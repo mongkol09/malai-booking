@@ -4,6 +4,14 @@
 
 import { apiService } from './apiService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 const roomStatusService = {
   // ===============================
   // ROOM STATUS API METHODS
@@ -11,7 +19,7 @@ const roomStatusService = {
   
   async getRoomStatuses() {
     try {
-      console.log('🏠 Fetching room statuses via ApiService...');
+      safeLog('🏠 Fetching room statuses via ApiService...');
       const response = await apiService.get('/rooms/status');
       return response.data || response;
     } catch (error) {
@@ -22,7 +30,7 @@ const roomStatusService = {
 
   async updateRoomStatus(roomId, statusData) {
     try {
-      console.log(`🔄 Updating room ${roomId} status via ApiService...`);
+      safeLog(`🔄 Updating room ${roomId} status via ApiService...`);
       const response = await apiService.post(`/rooms/${roomId}/status`, {
         status: statusData.status || statusData,
         notes: statusData.notes || '',
@@ -38,7 +46,7 @@ const roomStatusService = {
 
   async getRoomById(roomId) {
     try {
-      console.log(`🏠 Fetching room ${roomId} details via ApiService...`);
+      safeLog(`🏠 Fetching room ${roomId} details via ApiService...`);
       const response = await apiService.get(`/rooms/${roomId}`);
       return response.data || response;
     } catch (error) {
@@ -50,9 +58,9 @@ const roomStatusService = {
   // Get all rooms with their current status
   async getAllRoomsStatus() {
     try {
-      console.log('🏠 Getting all rooms status via ApiService...');
+      safeLog('🏠 Getting all rooms status via ApiService...');
       const response = await apiService.get('/rooms');
-      console.log('📊 Room status API response:', response);
+      safeLog('📊 Room status API response:', response);
       return response.data || response;
     } catch (error) {
       console.error('❌ Error getting rooms status:', error);
@@ -63,7 +71,7 @@ const roomStatusService = {
   // Get today's arrivals
   async getTodaysArrivals() {
     try {
-      console.log('📅 Getting today arrivals via ApiService...');
+      safeLog('📅 Getting today arrivals via ApiService...');
       const response = await apiService.get('/bookings/arrivals');
       return response.data || response;
     } catch (error) {
@@ -75,7 +83,7 @@ const roomStatusService = {
   // Get today's departures
   async getTodaysDepartures() {
     try {
-      console.log('📅 Getting today departures via ApiService...');
+      safeLog('📅 Getting today departures via ApiService...');
       const response = await apiService.get('/bookings/departures');
       return response.data || response;
     } catch (error) {

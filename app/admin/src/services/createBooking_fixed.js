@@ -1,10 +1,17 @@
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
   /**
    * Create new booking - FIXED VERSION WITH NESTED STRUCTURE
    */
   async createBooking(bookingData) {
     try {
-      console.log('📝 Creating new booking via ApiService...');
-      console.log('📋 Input booking data:', bookingData);
+      safeLog('📝 Creating new booking via ApiService...');
+      safeLog('📋 Input booking data:', bookingData);
       
       // Transform data to match simpleBookingController expectations
       const apiData = {
@@ -48,7 +55,7 @@
         status: 'confirmed'
       };
 
-      console.log('📋 Transformed booking data:', apiData);
+      safeLog('📋 Transformed booking data:', apiData);
       
       const response = await apiService.post('/bookings', apiData);
       return response.data || response;

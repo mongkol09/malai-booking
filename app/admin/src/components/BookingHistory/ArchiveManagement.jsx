@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import bookingHistoryApi from '../../services/bookingHistoryApi';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const ArchiveManagement = () => {
   const [archivedBookings, setArchivedBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +77,7 @@ const ArchiveManagement = () => {
       const result = await bookingHistoryApi.getAnalyticsStatistics();
       
       if (result.success && result.data) {
-        console.log('📊 Archive Statistics Response:', result.data);
+        safeLog('📊 Archive Statistics Response:', result.data);
         
         // Use the actual API response structure
         const totalArchived = result.data.total_archived || 0;

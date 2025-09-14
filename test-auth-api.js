@@ -2,6 +2,7 @@
 const axios = require('axios');
 
 const API_BASE = 'http://localhost:3001/api/v1';
+const API_KEY = process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK || 'dev-api-key-2024-development-only';
 
 async function testWithAuth() {
   try {

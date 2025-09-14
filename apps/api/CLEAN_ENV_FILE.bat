@@ -77,7 +77,7 @@ echo. >> .env.clean
 echo # ============================================ >> .env.clean
 echo # NOTIFICATION SERVICES >> .env.clean
 echo # ============================================ >> .env.clean
-echo TELEGRAM_BOT_TOKEN="8090902784:AAHqVuSWGscl_CSG2ojmqF5A7NMmUFxAEA8" >> .env.clean
+echo TELEGRAM_BOT_TOKEN="[REPLACE_WITH_YOUR_BOT_TOKEN]" >> .env.clean
 echo TELEGRAM_CHAT_ID="-1002579208700" >> .env.clean
 echo DISCORD_WEBHOOK_URL="" >> .env.clean
 echo SLACK_WEBHOOK_URL="" >> .env.clean

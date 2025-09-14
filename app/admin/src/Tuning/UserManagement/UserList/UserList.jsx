@@ -87,12 +87,12 @@ const UserList = () => {
 
   const loadUsers = async () => {
     try {
-      console.log('🔄 Loading users with filters:', filters);
+      console.log('🔄 Loading users...');
       setLoading(true);
       setError(null);
       
       const response = await userService.getAllUsers(filters);
-      console.log('📥 Users loaded:', response);
+      console.log('📥 Users loaded successfully');
       
       if (response && response.data && response.data.users) {
         console.log('✅ Setting users:', response.data.users.length, 'users');
@@ -116,14 +116,14 @@ const UserList = () => {
   };
 
   const handleUserUpdated = async (updatedUserData) => {
-    console.log('🔄 User updated, reloading users...', updatedUserData);
+    console.log('🔄 User updated, reloading users...');
     await loadUsers();
     setSelectedUser(null);
     console.log('✅ Users reloaded and modal closed');
   };
 
   const handleEditUser = (user) => {
-    console.log('🔧 Edit user clicked:', user);
+    console.log('🔧 Edit user clicked');
     
     // 🔒 DEV ROLE PROTECTION: Only DEV users can edit DEV accounts
     if (user.role === 'dev') {

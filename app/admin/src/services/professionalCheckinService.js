@@ -6,8 +6,23 @@
 
 import authTokenService from './authTokenService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 const API_BASE = 'http://localhost:3001/api/v1';
-const API_KEY = 'hotel-booking-api-key-2024';
+// Use environment variable only - no hardcoded secrets
+const API_KEY = process.env.REACT_APP_API_KEY;
+
+// Validate API Key
+if (!API_KEY) {
+  console.error('❌ REACT_APP_API_KEY not configured in environment variables');
+  throw new Error('API Key not configured - check .env file');
+}
 
 class ProfessionalCheckinService {
   
@@ -16,12 +31,12 @@ class ProfessionalCheckinService {
    */
   async getTodaysArrivals(date = null, includeTomorrow = false) {
     try {
-      console.log('📅 Fetching today\'s arrivals...');
+      safeLog('📅 Fetching today\'s arrivals...');
       
       // ใช้วันที่ที่ระบุ หรือวันนี้
       const targetDate = date || new Date().toISOString().split('T')[0];
       
-      console.log(`📅 Checking arrivals for: ${targetDate}`);
+      safeLog(`📅 Checking arrivals for: ${targetDate}`);
       
       // ✅ ใช้ checkin/bookings API แค่ครั้งเดียว
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/checkin/bookings?date=${targetDate}`, {
@@ -42,7 +57,7 @@ class ProfessionalCheckinService {
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = tomorrow.toISOString().split('T')[0];
         
-        console.log(`📅 Also fetching tomorrow: ${tomorrowStr}`);
+        safeLog(`📅 Also fetching tomorrow: ${tomorrowStr}`);
         
         const tomorrowResponse = await authTokenService.authenticatedRequest(`${API_BASE}/checkin/bookings?date=${tomorrowStr}`, {
           method: 'GET'
@@ -57,7 +72,7 @@ class ProfessionalCheckinService {
         ];
       }
       
-      console.log('✅ Today\'s arrivals fetched:', allArrivals.length, 'bookings');
+      safeLog('✅ Today\'s arrivals fetched:', allArrivals.length, 'bookings');
       
       return {
         success: true,
@@ -80,7 +95,7 @@ class ProfessionalCheckinService {
    */
   async getTodaysDepartures() {
     try {
-      console.log('📅 Fetching today\'s departures...');
+      safeLog('📅 Fetching today\'s departures...');
       
       // ใช้ authenticated request
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/bookings/departures`, {
@@ -92,7 +107,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log('✅ Today\'s departures fetched:', result.data?.length || 0, 'bookings');
+      safeLog('✅ Today\'s departures fetched:', result.data?.length || 0, 'bookings');
       
       return {
         success: true,
@@ -115,7 +130,7 @@ class ProfessionalCheckinService {
    */
   async getActiveBookings() {
     try {
-      console.log('🏨 Fetching active bookings...');
+      safeLog('🏨 Fetching active bookings...');
       
       // ✅ ใช้ checkin/bookings API แทน (มีข้อมูลครบถ้วน)
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/checkin/bookings`, {
@@ -127,7 +142,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log('✅ Active bookings fetched:', result.data?.length || 0, 'bookings');
+      safeLog('✅ Active bookings fetched:', result.data?.length || 0, 'bookings');
       
       return {
         success: true,
@@ -149,17 +164,17 @@ class ProfessionalCheckinService {
    * Process Check-in
    */
   async processCheckIn(bookingId, checkInData = {}) {
-    console.log('🎯 ===== PROFESSIONAL CHECKIN SERVICE =====');
-    console.log('📋 Input parameters:');
-    console.log('  - bookingId:', bookingId);
-    console.log('  - checkInData:', checkInData);
-    console.log('🌐 API Configuration:');
-    console.log('  - API_BASE:', API_BASE);
-    console.log('  - API_KEY:', API_KEY ? 'Present' : 'Missing');
-    console.log('  - Full endpoint:', `${API_BASE}/bookings/admin/${bookingId}/check-in`);
+    safeLog('🎯 ===== PROFESSIONAL CHECKIN SERVICE =====');
+    safeLog('📋 Input parameters:');
+    safeLog('  - bookingId:', bookingId);
+    safeLog('  - checkInData:', checkInData);
+    safeLog('🌐 API Configuration:');
+    safeLog('  - API_BASE:', API_BASE);
+    safeLog('  - API_KEY:', API_KEY ? 'Present' : 'Missing');
+    safeLog('  - Full endpoint:', `${API_BASE}/bookings/admin/${bookingId}/check-in`);
     
     try {
-      console.log('🚀 Starting API call...');
+      safeLog('🚀 Starting API call...');
       
       const payload = {
         checkinTime: new Date().toISOString(),
@@ -169,7 +184,7 @@ class ProfessionalCheckinService {
         assignedBy: 'professional-dashboard'
       };
       
-      console.log('📦 Request payload:', payload);
+      safeLog('📦 Request payload:', payload);
       
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/bookings/admin/${bookingId}/check-in`, {
         method: 'POST',
@@ -180,10 +195,10 @@ class ProfessionalCheckinService {
         body: JSON.stringify(payload)
       });
 
-      console.log('📡 Response received:');
-      console.log('  - Status:', response.status);
-      console.log('  - Status Text:', response.statusText);
-      console.log('  - OK:', response.ok);
+      safeLog('📡 Response received:');
+      safeLog('  - Status:', response.status);
+      safeLog('  - Status Text:', response.statusText);
+      safeLog('  - OK:', response.ok);
 
       if (!response.ok) {
         console.error('❌ API Response not OK, parsing error...');
@@ -192,13 +207,13 @@ class ProfessionalCheckinService {
         throw new Error(errorData.error?.message || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      console.log('✅ API Response OK, parsing result...');
+      safeLog('✅ API Response OK, parsing result...');
       const result = await response.json();
-      console.log('✅ Check-in API success:', result);
+      safeLog('✅ Check-in API success:', result);
       
       // Send check-in notification
       try {
-        console.log('📱 Sending check-in notification...');
+        safeLog('📱 Sending check-in notification...');
         await this.sendCheckinNotification(result.data);
       } catch (notificationError) {
         console.warn('⚠️ Check-in notification failed (but check-in succeeded):', notificationError.message);
@@ -225,7 +240,7 @@ class ProfessionalCheckinService {
    */
   async searchBookings(searchQuery, searchType = 'all') {
     try {
-      console.log('🔍 Searching bookings:', { searchQuery, searchType });
+      safeLog('🔍 Searching bookings:', { searchQuery, searchType });
       
       const params = new URLSearchParams({
         query: searchQuery,
@@ -245,7 +260,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log('✅ Search results:', result.data?.length || 0, 'bookings found');
+      safeLog('✅ Search results:', result.data?.length || 0, 'bookings found');
       
       return {
         success: true,
@@ -269,7 +284,7 @@ class ProfessionalCheckinService {
    */
   async getBookingByReference(bookingReference) {
     try {
-      console.log('📋 Fetching booking by reference:', bookingReference);
+      safeLog('📋 Fetching booking by reference:', bookingReference);
       
       const response = await fetch(`${API_BASE}/bookings/admin/bookings/${bookingReference}`, {
         method: 'GET',
@@ -284,7 +299,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log('✅ Booking fetched:', result.data?.bookingReferenceId);
+      safeLog('✅ Booking fetched:', result.data?.bookingReferenceId);
       
       return {
         success: true,
@@ -307,17 +322,17 @@ class ProfessionalCheckinService {
    * Process Check-out
    */
   async processCheckOut(bookingId, checkOutData = {}) {
-    console.log('🚪 ===== PROFESSIONAL CHECKOUT SERVICE =====');
-    console.log('📋 Input parameters:');
-    console.log('  - bookingId:', bookingId);
-    console.log('  - checkOutData:', checkOutData);
-    console.log('🌐 API Configuration:');
-    console.log('  - API_BASE:', API_BASE);
-    console.log('  - API_KEY:', API_KEY ? 'Present' : 'Missing');
-    console.log('  - Full endpoint:', `${API_BASE}/bookings/admin/${bookingId}/check-out`);
+    safeLog('🚪 ===== PROFESSIONAL CHECKOUT SERVICE =====');
+    safeLog('📋 Input parameters:');
+    safeLog('  - bookingId:', bookingId);
+    safeLog('  - checkOutData:', checkOutData);
+    safeLog('🌐 API Configuration:');
+    safeLog('  - API_BASE:', API_BASE);
+    safeLog('  - API_KEY:', API_KEY ? 'Present' : 'Missing');
+    safeLog('  - Full endpoint:', `${API_BASE}/bookings/admin/${bookingId}/check-out`);
     
     try {
-      console.log('🚀 Starting API call...');
+      safeLog('🚀 Starting API call...');
       
       const payload = {
         checkOutTime: new Date().toISOString(),
@@ -329,7 +344,7 @@ class ProfessionalCheckinService {
         ...checkOutData
       };
       
-      console.log('📦 Request payload:', payload);
+      safeLog('📦 Request payload:', payload);
 
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/bookings/admin/${bookingId}/check-out`, {
         method: 'POST',
@@ -340,10 +355,10 @@ class ProfessionalCheckinService {
         body: JSON.stringify(payload)
       });
 
-      console.log('📡 Response received:');
-      console.log('  - Status:', response.status);
-      console.log('  - Status Text:', response.statusText);
-      console.log('  - OK:', response.ok);
+      safeLog('📡 Response received:');
+      safeLog('  - Status:', response.status);
+      safeLog('  - Status Text:', response.statusText);
+      safeLog('  - OK:', response.ok);
 
       if (!response.ok) {
         console.error('❌ API Response not OK, parsing error...');
@@ -352,9 +367,9 @@ class ProfessionalCheckinService {
         throw new Error(errorData.error?.message || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      console.log('✅ API Response OK, parsing result...');
+      safeLog('✅ API Response OK, parsing result...');
       const result = await response.json();
-      console.log('✅ Check-out API success:', result);
+      safeLog('✅ Check-out API success:', result);
       
       // 🏠 Post Check-out Processing
       await this.handlePostCheckoutWorkflow(bookingId, result.data, payload);
@@ -380,25 +395,25 @@ class ProfessionalCheckinService {
    * ระบบจัดการหลัง Check-out เสร็จสิ้น
    */
   async handlePostCheckoutWorkflow(bookingId, bookingData, checkoutPayload) {
-    console.log('🏠 ===== POST CHECK-OUT WORKFLOW =====');
-    console.log('📋 Booking ID:', bookingId);
-    console.log('🏨 Booking Data:', bookingData);
+    safeLog('🏠 ===== POST CHECK-OUT WORKFLOW =====');
+    safeLog('📋 Booking ID:', bookingId);
+    safeLog('🏨 Booking Data:', bookingData);
     
     try {
       // Extract booking info from nested structure
-      console.log('🔍 Full booking data structure:', JSON.stringify(bookingData, null, 2));
+      safeLog('🔍 Full booking data structure:', JSON.stringify(bookingData, null, 2));
       
       const booking = bookingData.booking || bookingData;
       const roomInfo = booking.room || booking;
       const guestInfo = booking.guest || booking;
       
-      console.log('🔍 Extracted data:');
-      console.log('  - Booking:', booking?.id);
-      console.log('  - Room Info:', roomInfo);
-      console.log('  - Guest Info:', guestInfo);
-      console.log('  - Room Number:', roomInfo?.roomNumber);
-      console.log('  - Room ID:', roomInfo?.id);
-      console.log('  - Guest Name:', guestInfo?.firstName, guestInfo?.lastName);
+      safeLog('🔍 Extracted data:');
+      safeLog('  - Booking:', booking?.id);
+      safeLog('  - Room Info:', roomInfo);
+      safeLog('  - Guest Info:', guestInfo);
+      safeLog('  - Room Number:', roomInfo?.roomNumber);
+      safeLog('  - Room ID:', roomInfo?.id);
+      safeLog('  - Guest Name:', guestInfo?.firstName, guestInfo?.lastName);
       
       // 1. 🧹 จัดการสถานะห้องพัก - ต้องทำความสะอาด
       if (roomInfo?.roomNumber) {
@@ -439,7 +454,7 @@ class ProfessionalCheckinService {
         });
       }
       
-      console.log('✅ Post check-out workflow completed');
+      safeLog('✅ Post check-out workflow completed');
       
     } catch (error) {
       console.error('❌ Post check-out workflow error:', error);
@@ -452,7 +467,7 @@ class ProfessionalCheckinService {
    * อัปเดตสถานะห้องให้ต้องทำความสะอาด
    */
   async updateRoomCleaningStatus(roomInfo, cleaningInfo) {
-    console.log('🧹 Updating room cleaning status:', roomInfo, cleaningInfo);
+    safeLog('🧹 Updating room cleaning status:', roomInfo, cleaningInfo);
     
     try {
       // Use housekeeping API instead of rooms API
@@ -470,7 +485,7 @@ class ProfessionalCheckinService {
       });
       
       if (response.ok) {
-        console.log('✅ Room cleaning status updated via housekeeping API');
+        safeLog('✅ Room cleaning status updated via housekeeping API');
       }
     } catch (error) {
       console.error('❌ Failed to update room cleaning status:', error);
@@ -483,7 +498,7 @@ class ProfessionalCheckinService {
    * ส่งแจ้งเตือนการ check-in ให้ทีม housekeeping
    */
   async sendCheckinNotification(bookingData) {
-    console.log('📱 Sending check-in notification:', bookingData);
+    safeLog('📱 Sending check-in notification:', bookingData);
     
     try {
       // เตรียมข้อมูลสำหรับ notification
@@ -497,7 +512,7 @@ class ProfessionalCheckinService {
         specialRequests: bookingData.booking?.specialRequests || bookingData.specialRequests || ''
       };
 
-      console.log('📋 Check-in notification data:', checkinInfo);
+      safeLog('📋 Check-in notification data:', checkinInfo);
 
       // ส่งผ่าน Telegram Bot (Staff Bot)
       const message = `🏨 **แจ้งเตือนลูกค้าเช็คอิน**\n\n` +
@@ -512,7 +527,7 @@ class ProfessionalCheckinService {
 
       await this.sendNotification('checkin', checkinInfo);
       
-      console.log('✅ Check-in notification sent');
+      safeLog('✅ Check-in notification sent');
       
     } catch (error) {
       console.error('❌ Error sending check-in notification:', error);
@@ -525,7 +540,7 @@ class ProfessionalCheckinService {
    * ส่งแจ้งเตือนให้ทีมแม่บ้าน
    */
   async sendHousekeepingNotification(checkoutInfo) {
-    console.log('📱 Sending housekeeping notification:', checkoutInfo);
+    safeLog('📱 Sending housekeeping notification:', checkoutInfo);
     
     try {
       // ส่งผ่าน Telegram Bot (Staff Bot)
@@ -544,7 +559,7 @@ class ProfessionalCheckinService {
         type: 'room_cleaning'
       });
       
-      console.log('✅ Housekeeping notification sent');
+      safeLog('✅ Housekeeping notification sent');
     } catch (error) {
       console.error('❌ Failed to send housekeeping notification:', error);
     }
@@ -555,17 +570,17 @@ class ProfessionalCheckinService {
    * บันทึกสถิติการ Check-out
    */
   async recordCheckoutStats(bookingId, statsData) {
-    console.log('📊 Recording checkout statistics:', bookingId, statsData);
+    safeLog('📊 Recording checkout statistics:', bookingId, statsData);
     
     try {
       // ⚠️ Analytics API temporarily disabled due to auth issues
-      console.log('📊 Analytics recording disabled (would record):', {
+      safeLog('📊 Analytics recording disabled (would record):', {
         bookingId,
         stayDuration: statsData.duration,
         additionalCharges: statsData.additionalCharges,
         satisfactionStatus: statsData.satisfaction
       });
-      console.log('✅ Checkout statistics skipped (analytics disabled)');
+      safeLog('✅ Checkout statistics skipped (analytics disabled)');
       
       // Uncomment when analytics API is ready:
       /*
@@ -586,7 +601,7 @@ class ProfessionalCheckinService {
       });
       
       if (response.ok) {
-        console.log('✅ Checkout statistics recorded');
+        safeLog('✅ Checkout statistics recorded');
       }
       */
     } catch (error) {
@@ -600,7 +615,7 @@ class ProfessionalCheckinService {
    * ส่งแจ้งเตือนให้ผู้จัดการ
    */
   async sendManagerNotification(notificationData) {
-    console.log('🔔 Sending manager notification:', notificationData);
+    safeLog('🔔 Sending manager notification:', notificationData);
     
     try {
       const message = `📋 **แจ้งเตือนผู้จัดการ - Check-out พิเศษ**\n\n` +
@@ -618,7 +633,7 @@ class ProfessionalCheckinService {
         type: 'checkout_special'
       });
       
-      console.log('✅ Manager notification sent');
+      safeLog('✅ Manager notification sent');
     } catch (error) {
       console.error('❌ Failed to send manager notification:', error);
     }
@@ -644,7 +659,7 @@ class ProfessionalCheckinService {
    * ส่งแจ้งเตือนผ่าน API
    */
   async sendNotification(type, data) {
-    console.log(`📢 Sending ${type} notification:`, data);
+    safeLog(`📢 Sending ${type} notification:`, data);
     
     try {
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/notifications/send`, {
@@ -666,7 +681,7 @@ class ProfessionalCheckinService {
       });
       
       if (response.ok) {
-        console.log(`✅ ${type} notification sent successfully`);
+        safeLog(`✅ ${type} notification sent successfully`);
       } else {
         console.warn(`⚠️ ${type} notification failed:`, response.status);
       }
@@ -687,7 +702,7 @@ class ProfessionalCheckinService {
    * ระบบสำรองส่ง Telegram โดยตรง
    */
   async sendTelegramFallback(type, data) {
-    console.log('📱 Using Telegram fallback for:', type);
+    safeLog('📱 Using Telegram fallback for:', type);
     
     // ใช้ Staff Bot สำหรับ operational notifications
     const botToken = '8236751083:AAGOS9YE_VdOo-mBQ3cMQ9dr1DYRXdzbNgI';
@@ -706,7 +721,7 @@ class ProfessionalCheckinService {
     });
     
     if (telegramResponse.ok) {
-      console.log('✅ Telegram fallback sent successfully');
+      safeLog('✅ Telegram fallback sent successfully');
     }
   }
 
@@ -715,7 +730,7 @@ class ProfessionalCheckinService {
    */
   async updateRoomStatus(roomId, status, notes = '') {
     try {
-      console.log('🏠 Updating room status:', { roomId, status });
+      safeLog('🏠 Updating room status:', { roomId, status });
       
       const response = await fetch(`${API_BASE}/bookings/admin/rooms/${roomId}/status`, {
         method: 'POST',
@@ -735,7 +750,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log('✅ Room status updated successfully');
+      safeLog('✅ Room status updated successfully');
       
       return {
         success: true,
@@ -756,7 +771,7 @@ class ProfessionalCheckinService {
    */
   async getRoomStatus() {
     try {
-      console.log('🏠 Fetching room status...');
+      safeLog('🏠 Fetching room status...');
       
       const response = await fetch(`${API_BASE}/rooms/status`, {
         method: 'GET',
@@ -771,7 +786,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log('✅ Room status fetched:', result.data?.length || 0, 'rooms');
+      safeLog('✅ Room status fetched:', result.data?.length || 0, 'rooms');
       
       return {
         success: true,
@@ -793,7 +808,7 @@ class ProfessionalCheckinService {
    */
   async getDashboardStats() {
     try {
-      console.log('📊 Fetching dashboard stats...');
+      safeLog('📊 Fetching dashboard stats...');
       
       // Fetch multiple endpoints in parallel
       const [arrivalsResult, departuresResult, activeResult] = await Promise.all([
@@ -822,7 +837,7 @@ class ProfessionalCheckinService {
         pendingCheckout: departuresData.filter(b => b.status === 'InHouse').length
       };
 
-      console.log('✅ Dashboard stats calculated:', stats);
+      safeLog('✅ Dashboard stats calculated:', stats);
       
       return {
         success: true,
@@ -909,7 +924,7 @@ class ProfessionalCheckinService {
         case 'checkin':
           // ✅ ไม่ส่ง housekeeping notification สำหรับ checkin แล้ว
           // เพราะ backend notification service จัดการแล้ว
-          console.log('ℹ️ Check-in notification handled by backend service');
+          safeLog('ℹ️ Check-in notification handled by backend service');
           return { success: true, message: 'Backend handles check-in notifications' };
           break;
 
@@ -953,7 +968,7 @@ class ProfessionalCheckinService {
       }
 
       const result = await response.json();
-      console.log(`✅ ${type} notification sent successfully`);
+      safeLog(`✅ ${type} notification sent successfully`);
       
       return {
         success: true,

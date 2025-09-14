@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const CheckinDashboard = () => {
   const [roomsData, setRoomsData] = useState([]);
   const [bookingsData, setBookingsData] = useState([]);
@@ -18,7 +26,7 @@ const CheckinDashboard = () => {
       const response = await fetch('/api/checkin/bookings', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'X-API-Key': 'hotel-booking-api-key-2024'
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
         }
       });
       
@@ -111,7 +119,7 @@ const CheckinDashboard = () => {
   };
 
   const handleRoomSelect = (roomId) => {
-    console.log('Room selected:', roomId);
+    safeLog('Room selected:', roomId);
   };
 
   const handleApplyCheckin = async () => {
@@ -136,7 +144,7 @@ const CheckinDashboard = () => {
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                'X-API-Key': 'hotel-booking-api-key-2024'
+                'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
               },
               body: JSON.stringify({
                 roomId: room.id,

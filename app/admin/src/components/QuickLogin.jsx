@@ -1,6 +1,14 @@
 // Quick Login Component สำหรับ Emergency
 import React, { useState } from 'react';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const QuickLogin = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +38,7 @@ const QuickLogin = ({ onSuccess }) => {
         localStorage.setItem('hotel_admin_refresh_token', data.data.tokens.refreshToken);
         localStorage.setItem('hotel_admin_user', JSON.stringify(data.data.user));
 
-        console.log('✅ Quick login successful!');
+        safeLog('✅ Quick login successful!');
         if (onSuccess) {
           onSuccess();
         }

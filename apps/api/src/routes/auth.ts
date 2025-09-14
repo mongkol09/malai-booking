@@ -89,10 +89,10 @@ const passwordResetValidation = [
 
 /**
  * @route   POST /api/v1/auth/register
- * @desc    Register a new user
- * @access  Public
+ * @desc    Register a new user - DISABLED for security
+ * @access  Disabled
  */
-router.post('/register', registerValidation, validateRequest, registerUser);
+// router.post('/register', registerValidation, validateRequest, registerUser); // 🔒 DISABLED for admin security
 
 /**
  * @route   POST /api/v1/auth/login

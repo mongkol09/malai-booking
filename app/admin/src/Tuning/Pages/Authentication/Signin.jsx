@@ -34,7 +34,7 @@ const Signin = () => {
                         </Link>
                     </li>
                     <li className="col-12 text-center">
-                        <span className="text-muted d-flex d-sm-inline-flex">New to Malai <Link className="ms-2" to="/signup" title="">Sign up here</Link></span>
+                        <span className="text-muted d-flex d-sm-inline-flex">ระบบสำหรับผู้ดูแลเท่านั้น</span>
                     </li>
                 </ul>
             </form>

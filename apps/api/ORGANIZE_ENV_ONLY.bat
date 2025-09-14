@@ -86,7 +86,7 @@ echo. >> .env.organized
 echo # ============================================ >> .env.organized
 echo # NOTIFICATION SERVICES >> .env.organized
 echo # ============================================ >> .env.organized
-echo TELEGRAM_BOT_TOKEN="8090902784:AAHqVuSWGscl_CSG2ojmqF5A7NMmUFxAEA8" >> .env.organized
+echo TELEGRAM_BOT_TOKEN="[REPLACE_WITH_YOUR_BOT_TOKEN]" >> .env.organized
 echo TELEGRAM_CHAT_ID="-1002579208700" >> .env.organized
 echo DISCORD_WEBHOOK_URL="" >> .env.organized
 echo SLACK_WEBHOOK_URL="" >> .env.organized

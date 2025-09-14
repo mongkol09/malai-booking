@@ -3,9 +3,17 @@ import SimpleCalendarComponent from './SimpleCalendarComponent';
 import RoomTypeSelector from './RoomTypeSelector';
 import './AdminRoomAvailabilityDashboard.css';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 // Simple message function
 const showMessage = (message, type = 'info') => {
-  console.log(`${type.toUpperCase()}: ${message}`);
+  safeLog(`${type.toUpperCase()}: ${message}`);
   alert(`${message}`);
 };
 
@@ -61,7 +69,7 @@ const AdminRoomAvailabilityDashboard = () => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(bookingData)
@@ -130,7 +138,7 @@ const AdminRoomAvailabilityDashboard = () => {
         const response = await fetch(`${API_BASE}/admin/availability/room-types`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-API-Key': 'hotel-booking-api-key-2024'
+            'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
           }
         });
 

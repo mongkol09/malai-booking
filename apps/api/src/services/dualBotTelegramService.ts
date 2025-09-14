@@ -47,13 +47,13 @@ export class DualBotTelegramService {
 
   constructor() {
     // CEO Bot configuration
-    const ceoToken = process.env.TELEGRAM_BOT_TOKEN || '8090902784:AAHqVuSWGscl_CSG2ojmqF5A7NMmUFxAEA8';
-    this.ceoChatId = process.env.TELEGRAM_CHAT_ID || '-1002579208700';
+    const ceoToken = process.env.TELEGRAM_BOT_TOKEN || '';
+    this.ceoChatId = process.env.TELEGRAM_CHAT_ID || '-';
     this.ceoBot = new Telegraf(ceoToken);
 
     // Staff Bot configuration
-    const staffToken = process.env.STAFF_TELEGRAM_BOT_TOKEN || '8236751083:AAGOS9YE_VdOo-mBQ3cMQ9dr1DYRXdzbNgI';
-    this.staffChatId = process.env.STAFF_TELEGRAM_CHAT_ID || '-1002926114573';
+    const staffToken = process.env.STAFF_TELEGRAM_BOT_TOKEN || '';
+    this.staffChatId = process.env.STAFF_TELEGRAM_CHAT_ID || '';
     this.staffBot = new Telegraf(staffToken);
 
     console.log('🤖 Dual Bot Service initialized with Telegraf:');

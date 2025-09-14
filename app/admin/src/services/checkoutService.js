@@ -1,6 +1,14 @@
 import { apiService } from './apiService';
 import bookingService from './bookingService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 class CheckoutService {
   
   /**
@@ -8,7 +16,7 @@ class CheckoutService {
    */
   async getBookingForCheckout(bookingId) {
     try {
-      console.log(`🏨 Getting booking for checkout: ${bookingId}`);
+      safeLog(`🏨 Getting booking for checkout: ${bookingId}`);
       
       // ใช้ bookingService.getBookingById แทน
       const response = await bookingService.getBookingById(bookingId);
@@ -45,7 +53,7 @@ class CheckoutService {
    */
   async getActiveBookingByRoom(roomNumber) {
     try {
-      console.log(`🏨 Getting active booking by room: ${roomNumber}`);
+      safeLog(`🏨 Getting active booking by room: ${roomNumber}`);
       const response = await apiService.get(`/bookings/admin/bookings/active`, {
         params: { roomNumber }
       });
@@ -115,7 +123,7 @@ class CheckoutService {
    */
   async processCheckout(bookingId, checkoutData) {
     try {
-      console.log(`🏨 Processing checkout for booking: ${bookingId}`);
+      safeLog(`🏨 Processing checkout for booking: ${bookingId}`);
       
       // Get check-in data to include in checkout
       const checkinData = this.getStoredCheckinData(bookingId);
@@ -170,14 +178,14 @@ class CheckoutService {
    */
   async getOccupiedRooms() {
     try {
-      console.log('🏨 Getting occupied rooms');
+      safeLog('🏨 Getting occupied rooms');
       // ใช้ mock data สำหรับการทดสอบ
       const mockRooms = [
         { roomNumber: 'A1', roomType: 'Standard Room', status: 'occupied' },
         { roomNumber: 'B2', roomType: 'Deluxe Suite', status: 'occupied' }
       ];
       
-      console.log('✅ Using mock occupied rooms:', mockRooms);
+      safeLog('✅ Using mock occupied rooms:', mockRooms);
       return mockRooms;
     } catch (error) {
       console.error('❌ Failed to get occupied rooms:', error);

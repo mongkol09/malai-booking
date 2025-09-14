@@ -3,6 +3,14 @@
 
 import { apiService } from './apiService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 class RoomService {
   constructor() {
     // apiService จัดการ baseURL และ authentication เอง
@@ -11,7 +19,7 @@ class RoomService {
   // ใช้ apiService สำหรับ JWT-based requests
   async makeRequest(url, options = {}) {
     try {
-      console.log(`🏠 Room API Request: ${options.method || 'GET'} ${url}`);
+      safeLog(`🏠 Room API Request: ${options.method || 'GET'} ${url}`);
       
       const method = options.method?.toLowerCase() || 'get';
       let response;
@@ -28,7 +36,7 @@ class RoomService {
         throw new Error(`Unsupported method: ${method}`);
       }
       
-      console.log(`✅ Room API Response:`, response);
+      safeLog(`✅ Room API Response:`, response);
       return response;
     } catch (error) {
       console.error(`❌ Room API Error:`, error);
@@ -259,7 +267,7 @@ class RoomService {
    * Format room data for display in UI components
    */
   formatRoomForDisplay(room) {
-    console.log('🏠 Formatting room for display:', room.roomNumber, room);
+    safeLog('🏠 Formatting room for display:', room.roomNumber, room);
     
     const formatted = {
       id: room.id,
@@ -300,7 +308,7 @@ class RoomService {
       isOutOfOrder: room.status === 'OutOfOrder' || room.status === 'Maintenance'
     };
     
-    console.log('✅ Formatted room:', formatted);
+    safeLog('✅ Formatted room:', formatted);
     return formatted;
   }
 

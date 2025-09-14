@@ -3,6 +3,14 @@ import CheckInModal from './CheckInModal';
 import WalkInBookingModal from './WalkInBookingModal';
 import bookingService from '../services/bookingService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const CheckinDashboard = () => {
   const [roomsData, setRoomsData] = useState([]);
   const [groupedRooms, setGroupedRooms] = useState({});
@@ -24,7 +32,7 @@ const CheckinDashboard = () => {
   const fetchCheckinData = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Fetching checkin data...');
+      safeLog('🔄 Fetching checkin data...');
       
       // ใช้ bookingService แทนการเรียก API โดยตรง
       const [roomsData, bookingsData] = await Promise.all([
@@ -32,8 +40,8 @@ const CheckinDashboard = () => {
         bookingService.getTodaysArrivals()
       ]);
       
-      console.log('📊 Room data received:', roomsData);
-      console.log('📊 Bookings data received:', bookingsData);
+      safeLog('📊 Room data received:', roomsData);
+      safeLog('📊 Bookings data received:', bookingsData);
       
       if (roomsData && roomsData.success) {
         // Transform room data for display
@@ -65,8 +73,8 @@ const CheckinDashboard = () => {
         const grouped = groupRoomsByType(rooms);
         setGroupedRooms(grouped);
         
-        console.log('✅ Rooms data set successfully:', rooms.length, 'rooms');
-        console.log('📊 Grouped rooms:', grouped);
+        safeLog('✅ Rooms data set successfully:', rooms.length, 'rooms');
+        safeLog('📊 Grouped rooms:', grouped);
       } else {
         console.warn('⚠️ Invalid rooms response, trying bookings fallback...');
         // Fallback to bookings-based approach
@@ -83,11 +91,11 @@ const CheckinDashboard = () => {
 
   const fetchCheckinBookings = async () => {
     try {
-      console.log('📋 Fetching check-in bookings as fallback...');
+      safeLog('📋 Fetching check-in bookings as fallback...');
       // ใช้ bookingService.getTodaysArrivals() แทน
       const response = await bookingService.getTodaysArrivals();
       
-      console.log('📊 Bookings response:', response);
+      safeLog('📊 Bookings response:', response);
       
       if (response && response.success && response.data?.arrivals) {
         // Transform bookings data to room-centric view
@@ -114,7 +122,7 @@ const CheckinDashboard = () => {
           checkOutDate: booking.checkOutDate
         }));
         
-        console.log('✅ Transformed booking rooms:', rooms);
+        safeLog('✅ Transformed booking rooms:', rooms);
         setRoomsData(rooms);
         
         // Group rooms by room type for enhanced UI
@@ -173,13 +181,13 @@ const CheckinDashboard = () => {
 
   // Handle Walk-in booking
   const handleWalkInClick = (roomType) => {
-    console.log('🚶 Walk-in clicked for room type:', roomType);
+    safeLog('🚶 Walk-in clicked for room type:', roomType);
     setSelectedRoomTypeForWalkIn(roomType);
     setShowWalkInModal(true);
   };
 
   const handleWalkInSuccess = (result) => {
-    console.log('✅ Walk-in booking successful:', result);
+    safeLog('✅ Walk-in booking successful:', result);
     setShowWalkInModal(false);
     setSelectedRoomTypeForWalkIn(null);
     
@@ -191,7 +199,7 @@ const CheckinDashboard = () => {
   };
 
   const handleCheckinSuccess = (result) => {
-    console.log('Check-in successful:', result);
+    safeLog('Check-in successful:', result);
     // Refresh room data
     fetchCheckinData();
     // Show success message
@@ -204,13 +212,13 @@ const CheckinDashboard = () => {
       setSelectedRoom(room);
       setShowCheckinModal(true);
     } else {
-      console.log('Room not available for check-in:', room);
+      safeLog('Room not available for check-in:', room);
     }
   };
 
   const handleApplyCheckin = async () => {
     try {
-      console.log('🔄 Processing check-in for eligible rooms...');
+      safeLog('🔄 Processing check-in for eligible rooms...');
       
       // Find rooms that can be checked in
       const eligibleRooms = displayRooms.filter(room => 
@@ -229,7 +237,7 @@ const CheckinDashboard = () => {
       for (const room of eligibleRooms) {
         if (room.bookingId) {
           try {
-            console.log(`✅ Processing check-in for room ${room.roomNo} (booking: ${room.bookingId})`);
+            safeLog(`✅ Processing check-in for room ${room.roomNo} (booking: ${room.bookingId})`);
             
             await bookingService.processCheckIn(room.bookingId, {
               notes: 'Checked in via dashboard',
@@ -265,7 +273,7 @@ const CheckinDashboard = () => {
 
   // Enhanced filter logic
   const filteredRooms = roomsData.filter(room => {
-    console.log('🔍 Filtering room:', room.roomNo, 'assign:', room.assign);
+    safeLog('🔍 Filtering room:', room.roomNo, 'assign:', room.assign);
     // Room type filter
     if (selectedRoomType && room.roomType && !room.roomType.toLowerCase().includes(selectedRoomType.toLowerCase())) {
       return false;
@@ -296,9 +304,9 @@ const CheckinDashboard = () => {
     return true;
   });
 
-  console.log('📋 Total rooms data:', roomsData.length);
-  console.log('🎯 Filtered rooms:', filteredRooms.length);
-  console.log('🔧 Current filters:', { selectedRoomType, selectedStatus, selectedFloor, searchTerm });
+  safeLog('📋 Total rooms data:', roomsData.length);
+  safeLog('🎯 Filtered rooms:', filteredRooms.length);
+  safeLog('🔧 Current filters:', { selectedRoomType, selectedStatus, selectedFloor, searchTerm });
 
   if (loading) {
     return (

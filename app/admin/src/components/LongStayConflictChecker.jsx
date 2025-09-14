@@ -70,7 +70,7 @@ const LongStayConflictChecker = ({ roomTypes = [] }) => {
       const response = await fetch(`${API_BASE}/admin/availability/quick-search?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -151,7 +151,7 @@ const LongStayConflictChecker = ({ roomTypes = [] }) => {
         const response = await fetch(`${API_BASE}/admin/availability/date-detail?${params}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-API-Key': 'hotel-booking-api-key-2024',
+            'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
             'Content-Type': 'application/json'
           }
         });

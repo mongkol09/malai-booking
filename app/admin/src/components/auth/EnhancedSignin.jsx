@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const EnhancedSignin = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
@@ -84,7 +92,7 @@ const EnhancedSignin = () => {
       
       if (result.success) {
         // Login สำเร็จ - จะ redirect ใน useEffect
-        console.log('Login successful:', result.message);
+        safeLog('Login successful:', result.message);
       } else {
         setFormErrors({ submit: result.message });
       }
@@ -215,24 +223,15 @@ const EnhancedSignin = () => {
             </button>
           </li>
 
-          {/* Sign Up Link */}
+          {/* Sign Up Link - Disabled for security */}
           <li className="col-12 text-center">
             <span className="text-muted d-flex d-sm-inline-flex">
-              ใหม่กับ Malai? 
-              <Link className="ms-2" to="/signup" title="สมัครสมาชิก">
-                สมัครสมาชิกที่นี่
-              </Link>
+              {/* Admin signup disabled for security */}
+              ระบบสำหรับผู้ดูแลเท่านั้น
             </span>
           </li>
 
-          {/* Demo Credentials Info */}
-          <li className="col-12">
-            <div className="alert alert-info" role="alert">
-              <strong>ข้อมูลสำหรับทดสอบ:</strong><br />
-              อีเมล: admin@malai.com<br />
-              รหัสผ่าน: admin.malai
-            </div>
-          </li>
+          
 
         </ul>
       </form>

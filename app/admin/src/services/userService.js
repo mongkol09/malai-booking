@@ -1,3 +1,10 @@
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
 // User Management Service สำหรับ Hotel Admin Panel
 // เชื่อมต่อกับ Backend User Management APIs
 
@@ -48,7 +55,7 @@ class UserService {
       const isValid = payload.exp > (currentTime + 60);
       
       if (!isValid) {
-        console.log('Token expired, clearing auth data');
+        safeLog('Token expired, clearing auth data');
         this.clearAuthData();
       }
       
@@ -168,12 +175,12 @@ class UserService {
    * แก้ไขข้อมูลผู้ใช้ (Admin)
    */
   async updateUser(userId, userData) {
-    console.log('🔄 userService.updateUser called with:', { userId, userData });
+    safeLog('🔄 userService.updateUser called with:', { userId, userData });
     const response = await this.request(`/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
-    console.log('📥 userService.updateUser response:', response);
+    safeLog('📥 userService.updateUser response:', response);
     return response;
   }
 

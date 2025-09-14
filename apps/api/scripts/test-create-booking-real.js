@@ -1,7 +1,12 @@
 const axios = require('axios');
 
 const API_BASE = 'http://localhost:3001/api/v1';
-const API_KEY = 'hotel-booking-api-key-2024';
+// Use environment variable - no hardcoded secrets
+const API_KEY = process.env.API_KEY || (() => {
+  console.error('❌ API_KEY not found in environment variables');
+  console.log('💡 Set API_KEY in your .env file or run: export API_KEY="your-api-key"');
+  process.exit(1);
+})();
 
 async function testCreateBookingReal() {
   try {

@@ -3,6 +3,14 @@ import PinSetup from './PinSetup';
 import PinVerification from './PinVerification';
 import authTokenService from '../services/authTokenService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 /**
  * PinCheckWrapper - Handles PIN setup and verification logic
  * This component wraps other components and ensures proper PIN authentication
@@ -54,7 +62,7 @@ const PinCheckWrapper = ({ children, requirePinForActions = true }) => {
   };
 
   const handlePinSetupComplete = (pin) => {
-    console.log('✅ PIN setup completed successfully');
+    safeLog('✅ PIN setup completed successfully');
     setNeedsPinSetup(false);
     
     // Optionally store PIN locally for session (encrypted)
@@ -76,7 +84,7 @@ const PinCheckWrapper = ({ children, requirePinForActions = true }) => {
   };
 
   const handlePinVerificationSuccess = (result) => {
-    console.log('✅ PIN verification successful for action:', pendingAction?.action);
+    safeLog('✅ PIN verification successful for action:', pendingAction?.action);
     
     if (pendingAction?.resolve) {
       pendingAction.resolve(result);
@@ -88,7 +96,7 @@ const PinCheckWrapper = ({ children, requirePinForActions = true }) => {
   };
 
   const handlePinVerificationCancel = () => {
-    console.log('❌ PIN verification cancelled');
+    safeLog('❌ PIN verification cancelled');
     
     if (pendingAction?.reject) {
       pendingAction.reject(new Error('PIN verification cancelled by user'));

@@ -3,6 +3,7 @@
 // ============================================
 
 import express from 'express';
+import { validateApiKey, requireRole } from '../middleware/validateApiKey';
 import {
   getArchiveConfigs,
   upsertArchiveConfig,
@@ -11,6 +12,10 @@ import {
 } from '../controllers/archiveConfigController';
 
 const router = express.Router();
+
+// Apply authentication middleware to all routes
+router.use(validateApiKey);
+router.use(requireRole(['ADMIN', 'SUPER_ADMIN', 'STAFF']));
 
 // Get all archive configurations
 router.get('/', getArchiveConfigs);

@@ -27,7 +27,7 @@ const Lockscreen = () => {
 						<Link className="btn btn-lg w-100 btn-primary text-uppercase mb-2" to="/index" title="">SIGN IN</Link>
 					</li>
 					<li className="col-12 text-center">
-						<span className="text-muted">Don't have an account yet? <Link to="/signup">Sign up here</Link></span>
+						<span className="text-muted">ระบบสำหรับผู้ดูแลเท่านั้น</span>
 					</li>
 				</ul>
 			</form>

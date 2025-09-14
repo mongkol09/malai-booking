@@ -3,6 +3,14 @@ import Calendar from 'tui-calendar';
 import 'tui-calendar/dist/tui-calendar.css';
 import { toast } from 'react-toastify';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
 const RoomAvailabilityCalendar = () => {
@@ -26,7 +34,7 @@ const RoomAvailabilityCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/room-types`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -38,7 +46,7 @@ const RoomAvailabilityCalendar = () => {
       const data = await response.json();
       if (data.success) {
         setRoomTypes(data.data);
-        console.log('🏨 Room types loaded:', data.data.length);
+        safeLog('🏨 Room types loaded:', data.data.length);
       }
     } catch (error) {
       console.error('❌ Error fetching room types:', error);
@@ -62,7 +70,7 @@ const RoomAvailabilityCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/monthly?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -75,7 +83,7 @@ const RoomAvailabilityCalendar = () => {
       if (data.success) {
         setAvailabilityData(data.data.days || []);
         updateCalendarEvents(data.data.days || []);
-        console.log('📅 Monthly availability loaded:', data.data.days?.length || 0, 'days');
+        safeLog('📅 Monthly availability loaded:', data.data.days?.length || 0, 'days');
       }
     } catch (error) {
       console.error('❌ Error fetching monthly availability:', error);
@@ -201,7 +209,7 @@ const RoomAvailabilityCalendar = () => {
       calendarInstance.current.on('clickSchedule', function(e) {
         const schedule = e.schedule;
         if (schedule.raw) {
-          console.log('📊 Day details:', schedule.raw);
+          safeLog('📊 Day details:', schedule.raw);
           
           // Show detailed info
           const details = schedule.raw.roomTypes.map(rt => 
@@ -214,7 +222,7 @@ const RoomAvailabilityCalendar = () => {
         }
       });
 
-      console.log('📅 Calendar initialized');
+      safeLog('📅 Calendar initialized');
     }
 
     return () => {

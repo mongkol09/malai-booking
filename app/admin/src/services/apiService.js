@@ -2,8 +2,23 @@
 // ใช้ AuthService เป็น Primary Token Manager
 import { authService } from './authService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
-const API_KEY = process.env.REACT_APP_API_KEY || 'hbk_prod_2024_secure_f8e7d6c5b4a392817f4e3d2c1b0a98765432187654321';
+// Use environment variable only - no hardcoded secrets
+const API_KEY = process.env.REACT_APP_API_KEY;
+
+// Validate API Key
+if (!API_KEY) {
+  console.error('❌ REACT_APP_API_KEY not configured in environment variables');
+  throw new Error('API Key not configured - check .env file');
+}
 
 class ApiService {
   constructor() {
@@ -26,25 +41,25 @@ class ApiService {
   // ใช้ AuthService ในการจัดการ token ที่หมดอายุ
   clearInvalidTokens() {
     try {
-      console.log('🧹 Using AuthService to clear invalid tokens...');
+      safeLog('🧹 Using AuthService to clear invalid tokens...');
       
       // ใช้ AuthService เป็นหลักในการจัดการข้อมูล authentication
       if (authService && typeof authService.clearAuthData === 'function') {
         authService.clearAuthData();
-        console.log('✅ AuthService cleared authentication data');
+        safeLog('✅ AuthService cleared authentication data');
       } else {
         // Fallback: Manual cleanup
-        console.log('⚠️ AuthService not available, using manual cleanup...');
+        safeLog('⚠️ AuthService not available, using manual cleanup...');
         const tokenKeys = ['token', 'hotel_admin_token', 'hotel_admin_refresh_token', 'hotel_admin_user'];
         tokenKeys.forEach(key => {
           if (localStorage.getItem(key)) {
             localStorage.removeItem(key);
-            console.log(`🗑️ Removed: ${key}`);
+            safeLog(`🗑️ Removed: ${key}`);
           }
         });
       }
       
-      console.log('✅ Invalid tokens cleared successfully');
+      safeLog('✅ Invalid tokens cleared successfully');
       
     } catch (error) {
       console.error('❌ Failed to clear tokens via AuthService:', error);
@@ -55,7 +70,7 @@ class ApiService {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
-    console.log(`🌐 API Request: ${options.method || 'GET'} ${endpoint}`);
+    safeLog(`🌐 API Request: ${options.method || 'GET'} ${endpoint}`);
     
     const defaultHeaders = {
       'Content-Type': 'application/json',
@@ -65,7 +80,7 @@ class ApiService {
 
     // ใช้ AuthService ในการตรวจสอบ token (JWT authentication)
     const token = authService ? authService.getToken() : null;
-    console.log(`🔍 Token from AuthService: ${token ? 'Present (' + token.substring(0, 20) + '...)' : 'None'}`);
+    safeLog(`🔍 Token from AuthService: ${token ? 'Present' : 'None'}`);
     
     // เพิ่ม Authorization header ถ้ามี JWT token
     if (token) {
@@ -74,7 +89,7 @@ class ApiService {
         try {
           if (authService.isTokenValid()) {
             defaultHeaders['Authorization'] = `Bearer ${token}`;
-            console.log('🔐 Using JWT token for authentication');
+            safeLog('🔐 Using JWT token for authentication');
           } else {
             console.warn('⚠️ Token is invalid, will try to refresh...');
             // Token หมดอายุ ให้ลองใช้ refresh token
@@ -82,7 +97,7 @@ class ApiService {
             const newToken = authService.getToken();
             if (newToken) {
               defaultHeaders['Authorization'] = `Bearer ${newToken}`;
-              console.log('🔄 Using refreshed JWT token');
+              safeLog('🔄 Using refreshed JWT token');
             }
           }
         } catch (error) {
@@ -91,13 +106,13 @@ class ApiService {
       } else {
         // ถ้าไม่มี validation function ใช้ token ตรงๆ
         defaultHeaders['Authorization'] = `Bearer ${token}`;
-        console.log('🔐 Using JWT token (no validation)');
+        safeLog('🔐 Using JWT token (no validation)');
       }
     } else {
-      console.log('ℹ️ No JWT token available');
+      safeLog('ℹ️ No JWT token available');
     }
     
-    console.log('📋 Request headers:', defaultHeaders);
+    safeLog('📋 Request headers configured');
 
     const config = {
       ...options,
@@ -137,7 +152,7 @@ class ApiService {
           
           // ใช้ AuthService ในการจัดการ authentication failure
           if (authService && typeof authService.logout === 'function') {
-            console.log('🔄 Using AuthService logout...');
+            safeLog('🔄 Using AuthService logout...');
             await authService.logout();
           } else {
             // Fallback: Manual cleanup
@@ -146,7 +161,7 @@ class ApiService {
           
           // Re-enable auto-redirect now that token consistency is fixed
           if (typeof window !== 'undefined' && window.location) {
-            console.log('🔄 Redirecting to login page...');
+            safeLog('🔄 Redirecting to login page...');
             
             // Check if we're already on a login page
             const currentPath = window.location.pathname;

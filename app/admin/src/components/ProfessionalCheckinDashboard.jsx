@@ -4,6 +4,14 @@ import './ProfessionalCheckinDashboard.css';
 import professionalCheckinService from '../services/professionalCheckinService';
 import authTokenService from '../services/authTokenService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -57,7 +65,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
     try {
       setLoading(true);
       // Fetch real data from API
-      console.log('📅 Loading today\'s arrivals from API...');
+      safeLog('📅 Loading today\'s arrivals from API...');
       
       const result = await professionalCheckinService.getTodaysArrivals();
       
@@ -69,7 +77,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
         } else if (result.data && Array.isArray(result.data.bookings)) {
           bookingsData = result.data.bookings;
         } else {
-          console.log('⚠️ No valid bookings array found, using empty array');
+          safeLog('⚠️ No valid bookings array found, using empty array');
           bookingsData = [];
         }
         
@@ -79,11 +87,11 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
         );
         
         setTodayArrivals(transformedArrivals);
-        console.log('✅ Loaded', transformedArrivals.length, 'arrivals from API');
+        safeLog('✅ Loaded', transformedArrivals.length, 'arrivals from API');
         return;
       } else {
         console.error('❌ Failed to load arrivals:', result.error);
-        console.log('🔄 Falling back to mock data...');
+        safeLog('🔄 Falling back to mock data...');
       }
       
       // Fallback mock data
@@ -150,7 +158,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
       
       if (result.success) {
         setStats(result.data);
-        console.log('✅ Dashboard stats loaded:', result.data);
+        safeLog('✅ Dashboard stats loaded:', result.data);
       } else {
         console.error('❌ Failed to load stats:', result.error);
         
@@ -163,7 +171,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
         };
         
         setStats(fallbackStats);
-        console.log('🔄 Using fallback stats:', fallbackStats);
+        safeLog('🔄 Using fallback stats:', fallbackStats);
       }
     } catch (error) {
       console.error('❌ Error loading stats:', error);
@@ -188,7 +196,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
       setError(null);
       
       // Use real API search
-      console.log(`🔍 Searching ${searchType}:`, searchQuery);
+      safeLog(`🔍 Searching ${searchType}:`, searchQuery);
       
       const result = await professionalCheckinService.searchBookings(searchQuery, searchType);
       
@@ -199,7 +207,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
         );
         
         setSearchResults(transformedResults);
-        console.log('✅ Search completed:', transformedResults.length, 'results found');
+        safeLog('✅ Search completed:', transformedResults.length, 'results found');
       } else {
         console.error('❌ Search failed:', result.error);
         
@@ -211,7 +219,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
         );
         
         setSearchResults(mockResults);
-        console.log('🔄 Using fallback local search:', mockResults.length, 'results');
+        safeLog('🔄 Using fallback local search:', mockResults.length, 'results');
         
         // Show warning about using fallback search
         setError('การค้นหาออนไลน์ล้มเหลว ใช้การค้นหาในข้อมูลที่โหลดไว้แทน');
@@ -239,11 +247,11 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
   };
 
   const handleCheckIn = async (booking) => {
-    console.log('🔔 ===== CHECK-IN FUNCTION CALLED =====');
-    console.log('📋 Booking data received:', booking);
-    console.log('🆔 Booking ID:', booking.id);
-    console.log('👤 Guest Name:', booking.guestName);
-    console.log('📊 Status:', booking.status);
+    safeLog('🔔 ===== CHECK-IN FUNCTION CALLED =====');
+    safeLog('📋 Booking data received:', booking);
+    safeLog('🆔 Booking ID:', booking.id);
+    safeLog('👤 Guest Name:', booking.guestName);
+    safeLog('📊 Status:', booking.status);
 
     if (!booking || !booking.id) {
       console.error('❌ Invalid booking data:', booking);
@@ -252,29 +260,29 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
     }
 
     try {
-      console.log('🚀 Setting loading to true...');
+      safeLog('🚀 Setting loading to true...');
       setLoading(true);
-      console.log('🏨 Starting check-in process for:', booking);
+      safeLog('🏨 Starting check-in process for:', booking);
       
       // 🔐 Skip PIN verification for direct access (temporarily)
-      console.log('🔐 PIN verification skipped for testing');
+      safeLog('🔐 PIN verification skipped for testing');
       
       // Call real check-in API
-      console.log('📡 Calling processCheckIn API...');
+      safeLog('📡 Calling processCheckIn API...');
       const result = await professionalCheckinService.processCheckIn(booking.id, {
         notes: `Professional dashboard check-in at ${new Date().toLocaleString('th-TH')}`,
         specialRequests: booking.specialRequests,
         roomId: booking.roomId
       });
       
-      console.log('📡 API Response:', result);
+      safeLog('📡 API Response:', result);
       
       if (!result.success) {
         console.error('❌ API returned error:', result.error);
         throw new Error(result.error || 'Check-in failed');
       }
       
-      console.log('✅ Check-in API successful!');
+      safeLog('✅ Check-in API successful!');
       
       // Update local state after successful API call
       const updatedArrivals = todayArrivals.map(arrival => 
@@ -335,11 +343,11 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
 
   const handleCheckOut = async (booking) => {
     try {
-      console.log('🚪 Starting check-out for:', booking);
+      safeLog('🚪 Starting check-out for:', booking);
       
       // 🔐 Require PIN verification for check-out
       if (pinVerificationService) {
-        console.log('🔐 Requesting PIN verification for check-out...');
+        safeLog('🔐 Requesting PIN verification for check-out...');
         
         const verificationResult = await pinVerificationService.requestVerification(
           'CHECK_OUT',
@@ -352,7 +360,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
           }
         );
         
-        console.log('✅ PIN verification successful for check-out:', verificationResult);
+        safeLog('✅ PIN verification successful for check-out:', verificationResult);
       }
       
       // Confirm check-out
@@ -512,7 +520,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
       }).then((result) => {
         if (result.isConfirmed) {
           // TODO: Call API to update guest data
-          console.log('🔄 Updating guest data:', result.value);
+          safeLog('🔄 Updating guest data:', result.value);
           window.Swal.fire({
             title: '✅ บันทึกเรียบร้อย!',
             text: 'ข้อมูลลูกค้าได้รับการอัปเดตแล้ว',
@@ -588,12 +596,12 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
     printWindow.print();
     printWindow.close();
 
-    console.log('🖨️ Print check-in document for:', booking.bookingReference);
+    safeLog('🖨️ Print check-in document for:', booking.bookingReference);
   };
 
   const sendCleaningNotification = async (booking) => {
     try {
-      console.log('📱 Sending cleaning notification via Dual Bot System for room:', booking.roomNumber);
+      safeLog('📱 Sending cleaning notification via Dual Bot System for room:', booking.roomNumber);
       
       const notificationData = {
         roomNumber: booking.roomNumber,
@@ -620,7 +628,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
       }
       
       const result = await response.json();
-      console.log('✅ Cleaning notification sent successfully:', result);
+      safeLog('✅ Cleaning notification sent successfully:', result);
       
     } catch (error) {
       console.error('❌ Failed to send cleaning notification:', error);
@@ -630,14 +638,14 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
 
   const updateRoomCleaningStatus = async (roomNumber, status) => {
     try {
-      console.log('🧹 Updating room cleaning status:', { roomNumber, status });
+      safeLog('🧹 Updating room cleaning status:', { roomNumber, status });
       
       // Call API to update room status using authTokenService
       const response = await authTokenService.authenticatedRequest('http://localhost:3001/api/v1/housekeeping/room-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': 'hotel-booking-api-key-2024'
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
         },
         body: JSON.stringify({
           roomNumber,
@@ -651,7 +659,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
       }
       
       const result = await response.json();
-      console.log('✅ Room status updated successfully:', result);
+      safeLog('✅ Room status updated successfully:', result);
       
     } catch (error) {
       console.error('❌ Failed to update room status:', error);
@@ -866,7 +874,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                   </thead>
                   <tbody>
                     {(searchResults.length > 0 ? searchResults : todayArrivals).map((booking, index) => {
-                      console.log('📋 Booking status debug:', {
+                      safeLog('📋 Booking status debug:', {
                         ref: booking.bookingReference,
                         status: booking.status,
                         canCheckIn: booking.canCheckIn,
@@ -930,7 +938,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('👁️ VIEW BUTTON CLICKED!', booking.bookingReference);
+                                safeLog('👁️ VIEW BUTTON CLICKED!', booking.bookingReference);
                                 handleQuickSearch(booking);
                               }}
                               title="ดูรายละเอียด"
@@ -947,7 +955,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  console.log('✅ CHECK-IN BUTTON CLICKED!', booking.bookingReference, 'Status:', booking.status);
+                                  safeLog('✅ CHECK-IN BUTTON CLICKED!', booking.bookingReference, 'Status:', booking.status);
                                   handleCheckIn(booking);
                                 }}
                                 disabled={loading}
@@ -979,7 +987,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  console.log('🚪 CHECK-OUT BUTTON CLICKED!', booking.bookingReference, 'Status:', booking.status);
+                                  safeLog('🚪 CHECK-OUT BUTTON CLICKED!', booking.bookingReference, 'Status:', booking.status);
                                   handleCheckOut(booking);
                                 }}
                                 title={`เช็คเอาท์ (สถานะ: ${booking.status})`}

@@ -1,3 +1,10 @@
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
 /**
  * Secure Authentication Token Service
  * จัดการ authentication อย่างปลอดภัยสำหรับ Professional Dashboard
@@ -20,7 +27,7 @@ class AuthTokenService {
     const user = this.getUser();
     
     if (!token || !user) {
-      console.log('❌ No token or user found');
+      safeLog('❌ No token or user found');
       return false;
     }
 
@@ -42,7 +49,7 @@ class AuthTokenService {
       const currentTime = Date.now() / 1000;
       
       if (payload.exp && payload.exp < currentTime) {
-        console.log('🔒 Token expired, need refresh');
+        safeLog('🔒 Token expired, need refresh');
         return false;
       }
       
@@ -94,7 +101,7 @@ class AuthTokenService {
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.refreshTokenKey, refreshToken);
     localStorage.setItem(this.userKey, JSON.stringify(mappedUser));
-    console.log('✅ Authentication data saved for role:', mappedUser.role);
+    safeLog('✅ Authentication data saved for role:', mappedUser.role);
   }
 
   /**
@@ -104,7 +111,7 @@ class AuthTokenService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.refreshTokenKey);
     localStorage.removeItem(this.userKey);
-    console.log('🗑️ Authentication data cleared');
+    safeLog('🗑️ Authentication data cleared');
   }
 
   /**
@@ -115,7 +122,7 @@ class AuthTokenService {
     
     return {
       'Content-Type': 'application/json',
-      'X-API-Key': 'hotel-booking-api-key-2024',
+      'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
       ...(token && { 'Authorization': `Bearer ${token}` })
     };
   }
@@ -125,13 +132,13 @@ class AuthTokenService {
    */
   async login(username, password) {
     try {
-      console.log('🔐 Attempting secure login...');
+      safeLog('🔐 Attempting secure login...');
       
       const response = await fetch(`${this.baseURL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': 'hotel-booking-api-key-2024'
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
         },
         body: JSON.stringify({
           email: username.trim(),  // ✅ ใช้ email แทน username
@@ -158,7 +165,7 @@ class AuthTokenService {
           user
         );
         
-        console.log('✅ Login successful:', user.email);
+        safeLog('✅ Login successful:', user.email);
         return {
           success: true,
           user: user,
@@ -190,13 +197,13 @@ class AuthTokenService {
         throw new Error('No refresh token available');
       }
 
-      console.log('🔄 Refreshing token...');
+      safeLog('🔄 Refreshing token...');
       
       const response = await fetch(`${this.baseURL}/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': 'hotel-booking-api-key-2024'
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
         },
         body: JSON.stringify({
           refreshToken: refreshToken
@@ -214,8 +221,8 @@ class AuthTokenService {
         const newToken = result.data.token || result.data.tokens?.accessToken;
         const newRefreshToken = result.data.refreshToken || result.data.tokens?.refreshToken;
         
-        console.log('🔍 Refresh response structure:', result.data);
-        console.log('🔑 Extracted tokens:', { newToken: newToken ? 'Present' : 'Missing', newRefreshToken: newRefreshToken ? 'Present' : 'Missing' });
+        safeLog('🔍 Refresh response structure:', result.data);
+        safeLog('🔑 Extracted tokens:', { newToken: newToken ? 'Present' : 'Missing', newRefreshToken: newRefreshToken ? 'Present' : 'Missing' });
         
         // Validate new token format before saving
         if (typeof newToken === 'string' && newToken.split('.').length === 3) {
@@ -226,7 +233,7 @@ class AuthTokenService {
             result.data.user || this.getUser()
           );
           
-          console.log('✅ Token refreshed successfully');
+          safeLog('✅ Token refreshed successfully');
           return {
             success: true,
             token: newToken
@@ -255,15 +262,15 @@ class AuthTokenService {
    * ทำ authenticated request
    */
   async authenticatedRequest(url, options = {}) {
-    console.log('🔐 ===== AUTHENTICATED REQUEST =====');
-    console.log('🌐 URL:', url);
-    console.log('📋 Options:', options);
+    safeLog('🔐 ===== AUTHENTICATED REQUEST =====');
+    safeLog('🌐 URL:', url);
+    safeLog('📋 Options:', options);
     
     try {
       // ตรวจสอบ token ก่อน
-      console.log('🔍 Checking token validity...');
+      safeLog('🔍 Checking token validity...');
       if (!this.hasValidToken()) {
-        console.log('❌ Token invalid, attempting refresh...');
+        safeLog('❌ Token invalid, attempting refresh...');
         // พยายาม refresh token
         const refreshResult = await this.refreshToken();
         
@@ -271,34 +278,34 @@ class AuthTokenService {
           console.error('❌ Token refresh failed');
           throw new Error('Authentication failed - please login again');
         }
-        console.log('✅ Token refreshed successfully');
+        safeLog('✅ Token refreshed successfully');
       } else {
-        console.log('✅ Token is valid');
+        safeLog('✅ Token is valid');
       }
 
       // ทำ request พร้อม authentication headers
       const authHeaders = this.getAuthHeaders();
-      console.log('🔑 Auth headers:', authHeaders);
+      safeLog('🔑 Auth headers:', authHeaders);
       
       const finalHeaders = {
         ...authHeaders,
         ...options.headers
       };
-      console.log('📋 Final headers:', finalHeaders);
+      safeLog('📋 Final headers:', finalHeaders);
       
-      console.log('🚀 Making fetch request...');
+      safeLog('🚀 Making fetch request...');
       const response = await fetch(url, {
         ...options,
         headers: finalHeaders
       });
       
-      console.log('📡 Fetch response received:');
-      console.log('  - Status:', response.status);
-      console.log('  - OK:', response.ok);
+      safeLog('📡 Fetch response received:');
+      safeLog('  - Status:', response.status);
+      safeLog('  - OK:', response.ok);
 
       // ถ้า unauthorized ลองเรียก refresh token อีกรอบ
       if (response.status === 401) {
-        console.log('🔄 Token expired, attempting refresh...');
+        safeLog('🔄 Token expired, attempting refresh...');
         
         const refreshResult = await this.refreshToken();
         
@@ -344,7 +351,7 @@ class AuthTokenService {
     } finally {
       // ลบ data ใน client เสมอ
       this.clearAuthData();
-      console.log('✅ Logout completed');
+      safeLog('✅ Logout completed');
     }
   }
 
@@ -354,16 +361,16 @@ class AuthTokenService {
   hasPermission(permission) {
     const user = this.getUser();
     
-    console.log('🔍 hasPermission called for:', permission);
-    console.log('🔍 Current user:', user);
+    safeLog('🔍 hasPermission called for:', permission);
+    safeLog('🔍 Current user:', user);
     
     if (!user) {
-      console.log('❌ No user found');
+      safeLog('❌ No user found');
       return false;
     }
     
     if (!user.permissions) {
-      console.log('❌ No permissions array found, assuming DEV has all permissions');
+      safeLog('❌ No permissions array found, assuming DEV has all permissions');
       // DEV role should have all permissions even without explicit permissions array
       return user.role === 'DEV' || user.role === 'dev' || user.role === 'admin';
     }
@@ -379,10 +386,10 @@ class AuthTokenService {
                          user.role === 'DEV' ||
                          user.role === 'dev';
 
-    console.log('🔍 Permission check results:');
-    console.log('  - hasRole:', hasRole);
-    console.log('  - hasPermission:', hasPermission);
-    console.log('  - final result:', hasRole && hasPermission);
+    safeLog('🔍 Permission check results:');
+    safeLog('  - hasRole:', hasRole);
+    safeLog('  - hasPermission:', hasPermission);
+    safeLog('  - final result:', hasRole && hasPermission);
 
     return hasRole && hasPermission;
   }
@@ -391,7 +398,7 @@ class AuthTokenService {
    * สร้าง demo login สำหรับ development (ต้องลบในการใช้งานจริง)
    */
   async demoLogin() {
-    console.log('🚨 DEMO LOGIN - FOR DEVELOPMENT ONLY');
+    safeLog('🚨 DEMO LOGIN - FOR DEVELOPMENT ONLY');
     
     // สร้าง mock user data สำหรับ demo
     const mockUser = {

@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import authTokenService from '../services/authTokenService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const SecureLogin = ({ onLoginSuccess }) => {
   const [credentials, setCredentials] = useState({
     username: '',
@@ -37,7 +45,7 @@ const SecureLogin = ({ onLoginSuccess }) => {
       const result = await authTokenService.login(credentials.username, credentials.password);
       
       if (result.success) {
-        console.log('✅ Login successful:', result.user.email);
+        safeLog('✅ Login successful:', result.user.email);
         onLoginSuccess(result.user);
       } else {
         setError(result.error || 'เข้าสู่ระบบไม่สำเร็จ');
@@ -55,11 +63,11 @@ const SecureLogin = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-      console.log('🚨 Using DEMO login - FOR DEVELOPMENT ONLY');
+      safeLog('🚨 Using DEMO login - FOR DEVELOPMENT ONLY');
       const result = await authTokenService.demoLogin();
       
       if (result.success) {
-        console.log('✅ Demo login successful');
+        safeLog('✅ Demo login successful');
         onLoginSuccess(result.user);
       } else {
         setError('Demo login failed');

@@ -1,3 +1,10 @@
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
 // Authentication Service สำหรับ Hotel Admin Panel
 // เชื่อมต่อกับ Backend Authentication APIs อย่างปลอดภัย
 
@@ -125,16 +132,16 @@ class AuthService {
         'accessToken'           // Another possible token key
       ];
       
-      console.log('🧹 Clearing all authentication data...');
+      safeLog('🧹 Clearing all authentication data...');
       
       tokenKeys.forEach(key => {
         if (localStorage.getItem(key)) {
           localStorage.removeItem(key);
-          console.log(`🗑️ Cleared: ${key}`);
+          safeLog(`🗑️ Cleared: ${key}`);
         }
       });
       
-      console.log('✅ All authentication data cleared successfully');
+      safeLog('✅ All authentication data cleared successfully');
     } catch (error) {
       console.error('Failed to clear auth data:', error);
     }
@@ -180,7 +187,7 @@ class AuthService {
   // Force clear all tokens (for troubleshooting)
   forceClearAllTokens() {
     try {
-      console.log('🚨 Force clearing ALL tokens and data...');
+      safeLog('🚨 Force clearing ALL tokens and data...');
       
       // Clear localStorage completely (only auth-related keys)
       const allKeys = Object.keys(localStorage);
@@ -194,7 +201,7 @@ class AuthService {
       
       authRelatedKeys.forEach(key => {
         localStorage.removeItem(key);
-        console.log(`🗑️ Force removed: ${key}`);
+        safeLog(`🗑️ Force removed: ${key}`);
       });
       
       // Also clear sessionStorage
@@ -207,10 +214,10 @@ class AuthService {
       
       sessionAuthKeys.forEach(key => {
         sessionStorage.removeItem(key);
-        console.log(`🗑️ Force removed from session: ${key}`);
+        safeLog(`🗑️ Force removed from session: ${key}`);
       });
       
-      console.log('💥 Force clear completed!');
+      safeLog('💥 Force clear completed!');
       return true;
     } catch (error) {
       console.error('❌ Force clear failed:', error);
@@ -244,7 +251,7 @@ class AuthService {
         // บันทึกข้อมูล user
         this.setUser(user);
 
-        console.log('✅ JWT login successful:', {
+        safeLog('✅ JWT login successful:', {
           user: user.email,
           hasToken: !!tokens?.accessToken,
           hasRefreshToken: !!tokens?.refreshToken
@@ -335,7 +342,7 @@ class AuthService {
           this.setUser(user);
         }
 
-        console.log('✅ Token refreshed successfully');
+        safeLog('✅ Token refreshed successfully');
         return { success: true, tokens };
       }
 

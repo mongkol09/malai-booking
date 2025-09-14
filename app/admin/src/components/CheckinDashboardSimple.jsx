@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import bookingService from '../services/bookingService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const CheckinDashboardSimple = () => {
   const [roomsData, setRoomsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,14 +22,14 @@ const CheckinDashboardSimple = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('🔄 Starting to fetch rooms data...');
+      safeLog('🔄 Starting to fetch rooms data...');
       
       // Test basic room status API
       const roomsResponse = await bookingService.getRoomStatus();
-      console.log('📊 Raw rooms response:', roomsResponse);
+      safeLog('📊 Raw rooms response:', roomsResponse);
       
       if (roomsResponse && roomsResponse.success && roomsResponse.data) {
-        console.log('✅ Rooms data is valid, transforming...');
+        safeLog('✅ Rooms data is valid, transforming...');
         
         // Simple transformation
         const rooms = roomsResponse.data.map((room, index) => ({
@@ -35,7 +43,7 @@ const CheckinDashboardSimple = () => {
           canAssign: room.canAssign || false
         }));
         
-        console.log('🎯 Transformed rooms:', rooms);
+        safeLog('🎯 Transformed rooms:', rooms);
         setRoomsData(rooms);
       } else {
         console.error('❌ Invalid rooms response structure');
@@ -47,7 +55,7 @@ const CheckinDashboardSimple = () => {
           { id: '2', roomNo: 'Room 102', roomNumber: '102', status: 'Available', assign: 'Ready', roomType: 'Deluxe' },
           { id: '3', roomNo: 'Room 103', roomNumber: '103', status: 'Occupied', assign: 'Occupied', roomType: 'Suite' }
         ];
-        console.log('🔄 Using mock data:', mockRooms);
+        safeLog('🔄 Using mock data:', mockRooms);
         setRoomsData(mockRooms);
       }
     } catch (error) {
@@ -60,7 +68,7 @@ const CheckinDashboardSimple = () => {
         { id: '2', roomNo: 'Room 102', roomNumber: '102', status: 'Available', assign: 'Ready', roomType: 'Deluxe' },
         { id: '3', roomNo: 'Room 103', roomNumber: '103', status: 'Occupied', assign: 'Occupied', roomType: 'Suite' }
       ];
-      console.log('🔄 Using mock data due to error:', mockRooms);
+      safeLog('🔄 Using mock data due to error:', mockRooms);
       setRoomsData(mockRooms);
     } finally {
       setLoading(false);

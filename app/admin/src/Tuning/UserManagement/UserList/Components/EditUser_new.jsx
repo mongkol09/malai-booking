@@ -46,7 +46,7 @@ const EditUser = ({ user, onUserUpdated, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('📝 EditUser form submitted with data:', formData);
+        console.log('📝 EditUser form submitted');
     
     setLoading(true);
     setErrors({});

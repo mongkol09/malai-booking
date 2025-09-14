@@ -1,20 +1,31 @@
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
 // Temporary API Service สำหรับ BookingHistory components
 // ใช้ API Key แทน JWT เพื่อหลีกเลี่ยงปัญหา localStorage
 
 class BookingHistoryApiService {
   constructor() {
     this.baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
-    // Temporary hardcode to bypass .env cache issues
-    this.apiKey = 'hbk_prod_2024_secure_f8e7d6c5b4a392817f4e3d2c1b0a98765432187654321';
+    // Use environment variable only - no hardcoded secrets
+    this.apiKey = process.env.REACT_APP_API_KEY;
     
-    // Debug API Key
-    console.log('🔧 BookingHistoryApi Config:', {
+    // Validate API Key
+    if (!this.apiKey) {
+      console.error('❌ REACT_APP_API_KEY not configured in environment variables');
+      throw new Error('API Key not configured - check .env file');
+    }
+    
+    // Debug API Key - secure logging
+    safeLog('🔧 BookingHistoryApi Config:', {
       baseURL: this.baseURL,
       apiKeyExists: !!this.apiKey,
       apiKeyLength: this.apiKey.length,
-      apiKeyPrefix: this.apiKey.substring(0, 10) + '...',
-      envApiKey: process.env.REACT_APP_API_KEY?.substring(0, 10) + '...',
-      hardcodedKey: this.apiKey.substring(0, 10) + '...'
+      configured: true
     });
   }
 
@@ -22,12 +33,10 @@ class BookingHistoryApiService {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}/api/v1${endpoint}`;
     
-    console.log('🌐 API Request:', {
+    safeLog('🌐 API Request:', {
       url,
-      apiKey: this.apiKey.substring(0, 10) + '...',
-      headers: {
-        'X-API-Key': this.apiKey ? 'Present' : 'Missing'
-      }
+      method: options.method || 'GET',
+      authenticated: !!this.apiKey
     });
     
     const config = {

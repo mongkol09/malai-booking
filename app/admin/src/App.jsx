@@ -48,7 +48,7 @@ const AppContent = () => {
 
   const authTitleMapping = {
     "/signin": "Signin",
-    "/signup": "Signup",
+    // "/signup": "Signup", // 🔒 DISABLED: Admin signup disabled for security
     "/password-reset": "PasswordReset",
     "/two-step": "TwoStep",
     "/lockscreen": "Lockscreen",

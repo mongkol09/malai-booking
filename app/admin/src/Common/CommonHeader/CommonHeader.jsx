@@ -52,7 +52,7 @@ const CommonHeader = ( {toggleSidebar} ) => {
                 {/* <!--[ Start:: Brand Logo icon ]--> */}
                 <Link to="/" className="brand-icon text-decoration-none d-flex align-items-center" title="Malai Admin Template">
                     <img
-                        src="/Malai_info/malailogo.png"
+                        src="/MALAI_LOGO.png"
                         alt="Malai Logo"
                         className="brand-logo"
                         style={{ height: '40px', width: 'auto' }}

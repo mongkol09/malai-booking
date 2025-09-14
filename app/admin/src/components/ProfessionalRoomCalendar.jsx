@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './ProfessionalRoomCalendar.css';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
 const ProfessionalRoomCalendar = () => {
@@ -57,7 +65,7 @@ const ProfessionalRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/room-types`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -103,7 +111,7 @@ const ProfessionalRoomCalendar = () => {
         dateTo = new Date();
       }
       
-      console.log('📅 Fetching data for:', dateFrom.toISOString().split('T')[0], 'to', dateTo.toISOString().split('T')[0]);
+      safeLog('📅 Fetching data for:', dateFrom.toISOString().split('T')[0], 'to', dateTo.toISOString().split('T')[0]);
       
       const params = new URLSearchParams({
         year: dateFrom.getFullYear().toString(),
@@ -115,30 +123,30 @@ const ProfessionalRoomCalendar = () => {
       }
 
       const apiUrl = `${API_BASE}/admin/availability/monthly?${params}`;
-      console.log('🌐 API Request:', apiUrl);
+      safeLog('🌐 API Request:', apiUrl);
 
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
 
-      console.log('📡 Response status:', response.status, response.statusText);
+      safeLog('📡 Response status:', response.status, response.statusText);
 
       if (!response.ok) {
         throw new Error('Failed to fetch availability data');
       }
 
       const data = await response.json();
-      console.log('📊 API Response:', data);
+      safeLog('📊 API Response:', data);
       
       if (data.success) {
         // Handle different API response structures
         let dailyData = data.data.dailyAvailability || data.data.days || [];
         
-        console.log('📅 Daily data:', dailyData.length, 'days');
+        safeLog('📅 Daily data:', dailyData.length, 'days');
         
         // Apply advanced filters
         dailyData = applyAdvancedFilters(dailyData, activeFilters);
@@ -193,7 +201,7 @@ const ProfessionalRoomCalendar = () => {
 
   // Generate calendar view based on current view mode
   const generateCalendarView = (availabilityData, startDate) => {
-    console.log('🗓️ Generating calendar view:', currentView, 'with', availabilityData.length, 'days');
+    safeLog('🗓️ Generating calendar view:', currentView, 'with', availabilityData.length, 'days');
     
     const days = [];
     const baseDate = new Date(startDate);
@@ -242,7 +250,7 @@ const ProfessionalRoomCalendar = () => {
       }
     }
 
-    console.log('📅 Generated', days.length, 'calendar days');
+    safeLog('📅 Generated', days.length, 'calendar days');
     setCalendarDays(days);
   };
 
@@ -403,7 +411,7 @@ const ProfessionalRoomCalendar = () => {
 
   // Handle day click
   const handleDayClick = (day) => {
-    console.log('📅 Day clicked:', day);
+    safeLog('📅 Day clicked:', day);
     
     if (!day.isCurrentMonth) {
       showToast('เลือกวันที่ในเดือนปัจจุบันเท่านั้น', 'info');
@@ -469,7 +477,7 @@ const ProfessionalRoomCalendar = () => {
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
-      console.log('🚀 Loading initial data...');
+      safeLog('🚀 Loading initial data...');
       await fetchRoomTypes();
       
       // Set initial date range

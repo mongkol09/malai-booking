@@ -4,6 +4,14 @@ import 'tui-calendar/dist/tui-calendar.css';
 import './TemplateBasedRoomCalendar.css';
 import { Link } from 'react-router-dom';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 // Default profile image (fallback if image not found)
 const defaultProfileImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI4IiB5PSI4Ij4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIgMTRDOC4xMzQwMSAxNCA1IDE3LjEzNCA1IDIxSDEySDJDMTIgMTcuMTM0IDE1Ljg2NiAxNCAxOSAxNEgxMloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4=';
 
@@ -33,7 +41,7 @@ const TemplateBasedRoomCalendar = () => {
 
   // Show toast message
   const showToast = (message, type = 'info') => {
-    console.log(`${type.toUpperCase()}: ${message}`);
+    safeLog(`${type.toUpperCase()}: ${message}`);
     if (window.Swal) {
       window.Swal.fire({
         title: type === 'error' ? 'เกิดข้อผิดพลาด' : 'แจ้งเตือน',
@@ -54,7 +62,7 @@ const TemplateBasedRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/room-types`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -66,7 +74,7 @@ const TemplateBasedRoomCalendar = () => {
       const data = await response.json();
       if (data.success) {
         setRoomTypes(data.data);
-        console.log('🏨 Room types loaded:', data.data.length);
+        safeLog('🏨 Room types loaded:', data.data.length);
       }
     } catch (error) {
       console.error('❌ Error fetching room types:', error);
@@ -79,7 +87,7 @@ const TemplateBasedRoomCalendar = () => {
     try {
       // Skip if no room types loaded yet
       if (roomTypes.length === 0) {
-        console.log('Skipping today stats - no room types loaded');
+        safeLog('Skipping today stats - no room types loaded');
         return;
       }
       
@@ -140,7 +148,7 @@ const TemplateBasedRoomCalendar = () => {
       const response = await fetch(`${API_BASE}/admin/availability/monthly?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -153,8 +161,8 @@ const TemplateBasedRoomCalendar = () => {
       if (data.success) {
         const dailyData = data.data.dailyAvailability || [];
         setAvailabilityData(dailyData);
-        console.log('📅 Monthly availability loaded:', dailyData.length, 'days');
-        console.log('📊 Sample data:', dailyData[0]);
+        safeLog('📅 Monthly availability loaded:', dailyData.length, 'days');
+        safeLog('📊 Sample data:', dailyData[0]);
         
         // Update calendar with new data
         updateCalendarEvents(dailyData);
@@ -195,12 +203,12 @@ const TemplateBasedRoomCalendar = () => {
         params.append('roomTypeId', roomTypeId);
       }
 
-      console.log('Fetching date details with params:', params.toString());
+      safeLog('Fetching date details with params:', params.toString());
 
       const response = await fetch(`${API_BASE}/admin/availability/date-detail?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'X-API-Key': 'hotel-booking-api-key-2024',
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK,
           'Content-Type': 'application/json'
         }
       });
@@ -228,19 +236,19 @@ const TemplateBasedRoomCalendar = () => {
   // Convert availability data to calendar events
   const updateCalendarEvents = (days) => {
     if (!calendarInstance.current) {
-      console.log('❌ Cannot update calendar: missing calendar instance');
+      safeLog('❌ Cannot update calendar: missing calendar instance');
       return;
     }
 
     if (!days || days.length === 0) {
-      console.log('❌ Cannot update calendar: no data provided');
+      safeLog('❌ Cannot update calendar: no data provided');
       return;
     }
 
     try {
       // Clear existing events
       calendarInstance.current.clear();
-      console.log('🗑️ Cleared existing calendar events', days.length, 'days to process');
+      safeLog('🗑️ Cleared existing calendar events', days.length, 'days to process');
 
       // Create events for each day
       const events = days.map(day => {
@@ -300,14 +308,14 @@ const TemplateBasedRoomCalendar = () => {
         return event;
       });
 
-      console.log(`📅 Creating ${events.length} calendar events`);
+      safeLog(`📅 Creating ${events.length} calendar events`);
 
       // Add events to calendar
       if (events.length > 0) {
         calendarInstance.current.createSchedules(events);
-        console.log('✅ Calendar events created successfully');
+        safeLog('✅ Calendar events created successfully');
       } else {
-        console.log('⚠️ No events to create');
+        safeLog('⚠️ No events to create');
       }
       
     } catch (error) {
@@ -441,7 +449,7 @@ const TemplateBasedRoomCalendar = () => {
           // Fetch detailed information for this date
           const details = await fetchDateDetails(date, selectedRoomType);
           
-          console.log('📊 Day details:', schedule.raw);
+          safeLog('📊 Day details:', schedule.raw);
           
           const roomTypeDetails = schedule.raw.roomTypes.map(rt => 
             `• ${rt.name}: ${rt.availableRooms}/${rt.totalRooms} ห้องว่าง ${rt.availableRooms === 0 ? '(เต็ม)' : ''}`
@@ -462,7 +470,7 @@ const TemplateBasedRoomCalendar = () => {
         e.preventDefault();
       });
 
-      console.log('📅 Template Calendar initialized');
+      safeLog('📅 Template Calendar initialized');
     }
 
     return () => {

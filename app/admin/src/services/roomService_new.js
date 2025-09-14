@@ -3,6 +3,14 @@
 
 import { authService } from './authService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 class RoomService {
   constructor() {
     this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
@@ -11,12 +19,12 @@ class RoomService {
   // ใช้ authService สำหรับ session-based requests
   async makeRequest(url, options = {}) {
     try {
-      console.log(`🏠 Room API Request: ${options.method || 'GET'} ${url}`);
+      safeLog(`🏠 Room API Request: ${options.method || 'GET'} ${url}`);
       
       // ใช้ authService.request เพื่อการจัดการ session และ token
       const response = await authService.request(url, options);
       
-      console.log(`✅ Room API Response:`, response);
+      safeLog(`✅ Room API Response:`, response);
       return response;
     } catch (error) {
       console.error(`❌ Room API Error:`, error);

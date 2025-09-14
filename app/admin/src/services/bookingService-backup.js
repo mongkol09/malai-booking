@@ -4,6 +4,14 @@
 
 import { apiService } from './apiService';
 
+// Safe logging utility - only logs in development
+const safeLog = (message, data) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(message, data);
+  }
+};
+
+
 const bookingService = {
   // ===============================
   // ADMIN BOOKING MANAGEMENT
@@ -14,7 +22,7 @@ const bookingService = {
    */
   async getAllBookings(filters = {}) {
     try {
-      console.log('📋 Fetching all bookings via ApiService...');
+      safeLog('📋 Fetching all bookings via ApiService...');
       const response = await apiService.get('/bookings/admin/all', { params: filters });
       return response.data || response;
     } catch (error) {
@@ -28,7 +36,7 @@ const bookingService = {
    */
   async searchBookings(query) {
     try {
-      console.log(`🔍 Searching bookings: "${query}" via ApiService...`);
+      safeLog(`🔍 Searching bookings: "${query}" via ApiService...`);
       const response = await apiService.get('/bookings/admin/bookings/search', {
         params: { query }
       });
@@ -44,7 +52,7 @@ const bookingService = {
    */
   async getBookingByQR(bookingReferenceId) {
     try {
-      console.log(`📱 Getting booking by QR: ${bookingReferenceId} via ApiService...`);
+      safeLog(`📱 Getting booking by QR: ${bookingReferenceId} via ApiService...`);
       const response = await apiService.get(`/bookings/admin/bookings/${bookingReferenceId}`);
       return response.data || response;
     } catch (error) {
@@ -58,7 +66,7 @@ const bookingService = {
    */
   async getBookingById(bookingId) {
     try {
-      console.log(`📋 Getting booking by ID: ${bookingId} via ApiService...`);
+      safeLog(`📋 Getting booking by ID: ${bookingId} via ApiService...`);
       // TODO: เมื่อ GET /bookings/:id แก้ไขแล้ว ให้เปลี่ยนเป็น:
       // const response = await apiService.get(`/bookings/${bookingId}`);
       
@@ -80,7 +88,7 @@ const bookingService = {
    */
   async getPaymentDetails(paymentId) {
     try {
-      console.log(`💳 Getting payment details: ${paymentId} via ApiService...`);
+      safeLog(`💳 Getting payment details: ${paymentId} via ApiService...`);
       const response = await apiService.get(`/payments/${paymentId}`);
       return response.data || response;
     } catch (error) {
@@ -94,7 +102,7 @@ const bookingService = {
    */
   async getPaymentAuditTrail(paymentId) {
     try {
-      console.log(`🔍 Getting payment audit trail: ${paymentId} via ApiService...`);
+      safeLog(`🔍 Getting payment audit trail: ${paymentId} via ApiService...`);
       const response = await apiService.get(`/payments/${paymentId}/audit-trail`);
       return response.data || response;
     } catch (error) {
@@ -112,7 +120,7 @@ const bookingService = {
    */
   async processCheckIn(bookingId, checkInData = {}) {
     try {
-      console.log(`🏨 Processing check-in for booking ${bookingId} via ApiService...`);
+      safeLog(`🏨 Processing check-in for booking ${bookingId} via ApiService...`);
       const response = await apiService.post(`/bookings/${bookingId}/check-in`, {
         ...checkInData,
         checkedInBy: apiService.getCurrentUser()?.id || 'admin',
@@ -130,7 +138,7 @@ const bookingService = {
    */
   async processCheckOut(bookingId, checkOutData = {}) {
     try {
-      console.log(`🚪 Processing check-out for booking ${bookingId} via ApiService...`);
+      safeLog(`🚪 Processing check-out for booking ${bookingId} via ApiService...`);
       const response = await apiService.post(`/bookings/${bookingId}/check-out`, {
         ...checkOutData,
         checkedOutBy: apiService.getCurrentUser()?.id || 'admin',
@@ -148,7 +156,7 @@ const bookingService = {
    */
   async createWalkInBooking(walkInData) {
     try {
-      console.log('🚶 Creating walk-in booking via ApiService...', walkInData);
+      safeLog('🚶 Creating walk-in booking via ApiService...', walkInData);
       const response = await apiService.post('/bookings/walk-in', {
         ...walkInData,
         createdBy: apiService.getCurrentUser()?.id || 'admin',
@@ -170,14 +178,14 @@ const bookingService = {
    */
   async getTodaysArrivals() {
     try {
-      console.log('📅 Getting today arrivals via ApiService...');
+      safeLog('📅 Getting today arrivals via ApiService...');
       const response = await apiService.get('/checkin/bookings', {
         headers: {
-          'X-API-Key': 'hotel-booking-api-key-2024'
+          'X-API-Key': process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_KEY_FALLBACK
         }
       });
       
-      console.log('📊 Raw arrivals response:', response);
+      safeLog('📊 Raw arrivals response:', response);
       
       if (response && response.success && response.data) {
         // Transform the data for check-in dashboard
@@ -219,7 +227,7 @@ const bookingService = {
    */
   async getTodaysDepartures() {
     try {
-      console.log('📅 Getting today departures via ApiService...');
+      safeLog('📅 Getting today departures via ApiService...');
       const response = await apiService.get('/bookings/departures');
       return response.data || response;
     } catch (error) {
@@ -233,7 +241,7 @@ const bookingService = {
    */
   async getActiveBookingByRoom(roomNumber) {
     try {
-      console.log(`🏠 Getting active booking for room ${roomNumber} via ApiService...`);
+      safeLog(`🏠 Getting active booking for room ${roomNumber} via ApiService...`);
       const response = await apiService.get('/bookings/admin/bookings/active', {
         params: { roomNumber }
       });
@@ -253,10 +261,10 @@ const bookingService = {
    */
   async getRoomStatus() {
     try {
-      console.log('🏨 Getting rooms status via ApiService...');
+      safeLog('🏨 Getting rooms status via ApiService...');
       const response = await apiService.get('/rooms/status');
       
-      console.log('📊 Raw rooms response:', response);
+      safeLog('📊 Raw rooms response:', response);
       
       if (response && response.success && response.data) {
         // Transform room data for check-in dashboard
@@ -298,7 +306,7 @@ const bookingService = {
    */
   async updateRoomStatus(roomId, statusData) {
     try {
-      console.log(`🔄 Updating room ${roomId} status via ApiService...`);
+      safeLog(`🔄 Updating room ${roomId} status via ApiService...`);
       const response = await apiService.post(`/bookings/admin/rooms/${roomId}/status`, {
         status: statusData.status || statusData,
         notes: statusData.notes || '',
@@ -477,7 +485,7 @@ const bookingService = {
   // ยกเลิกการจอง (รอ API)
   async cancelBooking(bookingId, cancellationData) {
     try {
-      console.log('🚫 Canceling booking...', { bookingId, cancellationData });
+      safeLog('🚫 Canceling booking...', { bookingId, cancellationData });
       
       // TODO: ใช้ POST /admin/bookings/:id/cancel เมื่อ API พร้อม
       const response = await this.request(`/admin/bookings/${bookingId}/cancel`, {
@@ -496,7 +504,7 @@ const bookingService = {
   // ขอเงินคืน (รอ API)
   async requestRefund(bookingId, refundData) {
     try {
-      console.log('💰 Requesting refund...', { bookingId, refundData });
+      safeLog('💰 Requesting refund...', { bookingId, refundData });
       
       // TODO: ใช้ POST /admin/bookings/:id/refund เมื่อ API พร้อม
       const response = await this.request(`/admin/bookings/${bookingId}/refund`, {
@@ -521,7 +529,7 @@ const bookingService = {
    */
   async getRoomTypes() {
     try {
-      console.log('🏠 Fetching room types via ApiService...');
+      safeLog('🏠 Fetching room types via ApiService...');
       const response = await apiService.get('/rooms/types');
       return response.data || response;
     } catch (error) {
@@ -545,7 +553,7 @@ const bookingService = {
         url += `?${params.toString()}`;
       }
       
-      console.log(`🚪 Fetching available rooms: ${url}`);
+      safeLog(`🚪 Fetching available rooms: ${url}`);
       const response = await apiService.get(url);
       return response.data || response;
     } catch (error) {
@@ -568,7 +576,7 @@ const bookingService = {
       
       const reference = `BK${year}${month}${day}${random}`;
       
-      console.log(`🎫 Generated booking reference: ${reference}`);
+      safeLog(`🎫 Generated booking reference: ${reference}`);
       return {
         success: true,
         data: { bookingReference: reference }
@@ -584,7 +592,7 @@ const bookingService = {
    */
   async calculateDynamicPrice(roomTypeId, checkInDate, checkOutDate, adults = 1, children = 0) {
     try {
-      console.log('💰 Calculating dynamic price via ApiService...');
+      safeLog('💰 Calculating dynamic price via ApiService...');
       
       // Calculate lead time days
       const checkIn = new Date(checkInDate);
@@ -670,7 +678,7 @@ const bookingService = {
    */
   async createBooking(bookingData) {
     try {
-      console.log('📝 Creating new booking via ApiService...');
+      safeLog('📝 Creating new booking via ApiService...');
       
       // Transform data to match API expectations
       const apiData = {

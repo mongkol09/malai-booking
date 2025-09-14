@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import bookingService from '../services/bookingService';
 
+// Safe logging utility - only logs in development
+const safeLog = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+
 const WalkInBookingModal = ({ isOpen, onClose, roomData, onSuccess }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -175,7 +183,7 @@ const WalkInBookingModal = ({ isOpen, onClose, roomData, onSuccess }) => {
         remarks: bookingDetails.specialRequests || paymentInfo.remarks || 'Walk-in booking created via admin panel'
       };
       
-      console.log('🚶 Walk-in booking data prepared:', walkInBookingData);
+      safeLog('🚶 Walk-in booking data prepared:', walkInBookingData);
       
       // Create booking via bookingService
       const result = await bookingService.createWalkInBooking(walkInBookingData);

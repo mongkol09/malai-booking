@@ -5,7 +5,12 @@
 
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
+// Use environment variable only - no hardcoded fallback
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.error('❌ JWT_SECRET not found in environment variables');
+  console.log('💡 Set JWT_SECRET in your .env file');
+  process.exit(1);
+})();
 
 function testJWTVerification() {
   console.log('🔧 Testing JWT Verification...\n');

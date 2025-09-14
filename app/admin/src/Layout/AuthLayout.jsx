@@ -22,7 +22,7 @@ const AuthLayout = () => {
 
     const authTitleMapping = {
         "/signin": "Signin",
-        "/signup": "Signup",
+        // "/signup": "Signup", // 🔒 DISABLED: Admin signup disabled for security
         "/password-reset": "PasswordReset",
         "/two-step": "TwoStep",
         "/lockscreen": "Lockscreen",
@@ -33,7 +33,7 @@ const AuthLayout = () => {
 
     const authComponents = {
         Signin: <EnhancedSignin />,
-        Signup: <EnhancedSignup />,
+        // Signup: <EnhancedSignup />, // 🔒 DISABLED: Admin signup disabled for security
         PasswordReset: <PasswordReset />,
         TwoStep: <TwoStep />,
         Lockscreen: <Lockscreen />,
@@ -46,17 +46,19 @@ const AuthLayout = () => {
             <main className="container-fluid px-0">
 
                 {/* <!-- start: project logo --> */}
-                <div className="px-xl-5 px-4 auth-header" data-bs-theme="none">
-                    <Link to="/index" className="brand-icon text-decoration-none d-flex align-items-center" title="Malai Admin Template">
-                        <img
-                            src="/Malai_info/malailogo.png"
-                            alt="Malai Logo"
-                            className="brand-logo"
-                            style={{ height: '40px', width: 'auto' }}
-                        />
-                    </Link>
-                    <div className="d-flex align-items-center">
-                        <span className="fw-bold ps-2 fs-5 text-gradient">Malai</span>
+                <div className="px-xl-5 px-4 auth-header d-flex justify-content-center" data-bs-theme="none">
+                    <div className="d-flex flex-column align-items-center text-center">
+                        <Link to="/index" className="brand-icon text-decoration-none d-flex align-items-center" title="Malai Admin Template">
+                            <img
+                                src="/MALAI_LOGO.png"
+                                alt="Malai Logo"
+                                className="brand-logo"
+                                style={{ height: '250px', width: 'auto' }}
+                            />
+                        </Link>
+                        <div className="d-flex align-items-center mt-2">
+                            <span className="fw-bold fs-4 text-gradient">Malai Wellness Khaoyai</span>
+                        </div>
                     </div>
                 </div>
 

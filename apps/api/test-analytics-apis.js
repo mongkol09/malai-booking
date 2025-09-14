@@ -7,7 +7,12 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:3001/api/v1';
-const API_KEY = process.env.API_KEY || 'dev-api-key-2024';
+// Use environment variable only - no hardcoded fallback
+const API_KEY = process.env.API_KEY || (() => {
+  console.error('❌ API_KEY not found in environment variables');
+  console.log('💡 Set API_KEY in your .env file');
+  process.exit(1);
+})();
 
 console.log('🏨 Malai Khaoyai Resort - Analytics API Testing');
 console.log('='.repeat(60));

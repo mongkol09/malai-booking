@@ -136,7 +136,7 @@ const TuningSidebar = ({iconColor}) => {
                 </Link>
                 <ul className="collapse list-unstyled" id="Authentication">
                     <li><NavLink to="/signin">Sign in</NavLink></li>
-                    <li><NavLink to="/signup">Sign up</NavLink></li>
+                    {/* <li><NavLink to="/signup">Sign up</NavLink></li> */} {/* Disabled for security */}
                     <li><NavLink to="/password-reset">Password reset</NavLink></li>
                     <li><NavLink to="/two-step">2-Step Authentication</NavLink></li>
                     <li><NavLink to="/lockscreen">Lockscreen</NavLink></li>

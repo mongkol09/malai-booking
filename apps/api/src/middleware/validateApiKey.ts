@@ -5,6 +5,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/auth';
 
+// Safe logging function - only logs in development mode
+const safeLog = (...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
@@ -33,12 +40,11 @@ export const validateApiKey = async (
         process.env.API_KEY_INTERNAL, // Internal API key
         process.env.API_KEY_ANALYTICS, // Analytics API key
         process.env.API_KEY_ADMIN, // Admin API key
-        'hotel-booking-api-key-2024', // Legacy compatibility
-        'dev-api-key-2024' // Legacy dev key
+        // Legacy key removed - all frontend now uses environment variables
       ].filter(Boolean); // Remove undefined values
       
-      console.log('🔍 Validating API key:', apiKey.substring(0, 20) + '...');
-      console.log('🔑 Valid keys count:', validApiKeys.length);
+      safeLog('🔍 Validating API key:', apiKey.substring(0, 20) + '...');
+      safeLog('🔑 Valid keys count:', validApiKeys.length);
       
       if (validApiKeys.includes(apiKey)) {
         // Create mock user for API key authentication
@@ -48,7 +54,7 @@ export const validateApiKey = async (
           userType: 'ADMIN',
           sessionId: 'api-session-123'
         };
-        console.log('🔑 API Key authentication successful');
+        safeLog('🔑 API Key authentication successful');
         next();
         return;
       } else {
@@ -63,19 +69,8 @@ export const validateApiKey = async (
       }
     }
 
-    // Development bypass - if NODE_ENV is development and using dev API key
-    if (process.env.NODE_ENV === 'development' && req.headers['x-api-key'] === 'dev-api-key-2024') {
-      // Create mock user for development
-      req.user = {
-        userId: 'dev-admin-123',
-        email: 'admin@hotel.dev',
-        userType: 'ADMIN',
-        sessionId: 'dev-session-123'
-      };
-      console.log('🔧 Development mode: Using mock authentication');
-      next();
-      return;
-    }
+    // Development bypass - removed for production security
+    // Old bypass logic disabled for security
 
     const authHeader = req.headers.authorization;
     
@@ -97,12 +92,15 @@ export const validateApiKey = async (
       const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
       
-      console.log('🔍 Token decoded:', {
-        userId: decoded.userId,
-        email: decoded.email,
-        userType: decoded.userType,
-        sessionId: decoded.sessionId
-      });
+      // Only log sensitive data in development
+      if (process.env.NODE_ENV === 'development') {
+        safeLog('🔍 Token decoded:', {
+          userId: decoded.userId,
+          email: decoded.email,
+          userType: decoded.userType,
+          sessionId: decoded.sessionId
+        });
+      }
       
       // Attach user info to request
       req.user = {
@@ -112,11 +110,11 @@ export const validateApiKey = async (
         sessionId: decoded.sessionId
       };
       
-      console.log(`✅ Direct token authentication successful for ${decoded.email}`);
+      safeLog(`✅ Direct token authentication successful for ${decoded.email}`);
       next();
       return;
     } catch (tokenError) {
-      console.log('❌ Direct token failed, trying session-based verification...');
+      safeLog('❌ Direct token failed, trying session-based verification...');
     }
 
     // Fallback to original session-based verification
@@ -163,16 +161,29 @@ export const requireRole = (allowedRoles: string[]) => {
 
     const userType = req.user.userType;
     
-    // DEV role has access to everything
+    // DEV role access - controlled by environment flag
     if (userType === 'DEV') {
-      console.log(`✅ DEV access granted for ${req.user.email}`);
-      next();
-      return;
+      // Check if DEV bypass is explicitly allowed in environment
+      if (process.env.ALLOW_DEV_BYPASS === 'true') {
+        safeLog(`✅ DEV access granted for ${req.user.email} (bypass enabled)`);
+        next();
+        return;
+      } else {
+        safeLog(`❌ DEV access denied for ${req.user.email} (bypass disabled)`);
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'DEV bypass disabled in production',
+            code: 'DEV_BYPASS_DISABLED',
+          },
+        });
+        return;
+      }
     }
 
     // Check if user role is in allowed roles
     if (!allowedRoles.includes(userType)) {
-      console.log(`❌ Access denied for role: ${userType}, required: ${allowedRoles.join(', ')}`);
+      safeLog(`❌ Access denied for role: ${userType}, required: ${allowedRoles.join(', ')}`);
       res.status(403).json({
         success: false,
         error: {
@@ -185,7 +196,7 @@ export const requireRole = (allowedRoles: string[]) => {
       return;
     }
 
-    console.log(`✅ Access granted for role: ${userType}`);
+    safeLog(`✅ Access granted for role: ${userType}`);
 
     next();
   };
