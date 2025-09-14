@@ -84,6 +84,7 @@ const getStatusColor = (status) => {
         case 'checked_in':
             return 'text-bg-primary';
         case 'checked_out':
+        case 'completed':              // เพิ่ม: รองรับ completed status
             return 'text-bg-secondary';
         default:
             return 'text-bg-warning';

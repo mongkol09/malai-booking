@@ -137,17 +137,18 @@ const RoomBooking = () => {
       }
       
       // Subtotal after discount
-      const subtotal = baseAmount - discountAmount;
+      const subtotal = Math.max(0, baseAmount - discountAmount);
       
       // Calculate service charge
       const serviceChargeAmount = subtotal * (Number(formData.serviceChargeRate) / 100);
       
-      // Calculate tax (VAT)
-      const taxAmount = subtotal * (Number(formData.taxRate) / 100);
+      // Calculate tax (VAT) - now applied to subtotal + service charge
+      const taxableAmount = subtotal + serviceChargeAmount;
+      const taxAmount = taxableAmount * (Number(formData.taxRate) / 100);
       
       // Calculate commission
       let commissionAmount = 0;
-      if (Number(formData.commissionPercentage) > 0) {
+      if (Number(formData.commissionPercentage || 0) > 0) {
         commissionAmount = subtotal * (Number(formData.commissionPercentage) / 100);
       } else {
         commissionAmount = Number(formData.commissionAmount) || 0;
@@ -451,7 +452,7 @@ const RoomBooking = () => {
 🏨 ห้อง: ${selectedRoomType?.name || ''} 
 📅 เข้าพัก: ${formData.checkInDate}
 📅 ออก: ${formData.checkOutDate}
-💰 ราคา: ฿${formData.totalAmount?.toLocaleString() || 'N/A'}
+💰 ราคารวม: ฿${(formData.finalAmount || formData.totalAmount)?.toLocaleString() || 'N/A'}
 
 💡 หมายเหตุ: สามารถเพิ่มข้อมูลลูกค้าเพิ่มเติมได้ที่หน้า Booking List`;
 

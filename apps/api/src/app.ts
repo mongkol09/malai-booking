@@ -40,6 +40,11 @@ import availabilityRoutes from './routes/availability';
 import guestDataRoutes from './routes/guestData';
 // Import booking history system
 import bookingHistoryRoutes from './routes/bookingHistoryRoutes';
+// Import archive configuration system
+import archiveConfigRoutes from './routes/archiveConfig';
+// Import auto-archive system
+import autoArchiveRoutes from './routes/autoArchive';
+import AutoArchiveService from './services/AutoArchiveService';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -197,6 +202,12 @@ apiRouter.use('/checkin', checkinRoutes);
 // Booking History System routes (admin/staff only)
 apiRouter.use('/booking-history', bookingHistoryRoutes);
 
+// Archive Configuration System routes (admin/staff only)
+apiRouter.use('/archive-config', archiveConfigRoutes);
+
+// Auto-Archive System routes (admin/staff only)
+apiRouter.use('/auto-archive', autoArchiveRoutes);
+
 // Room management routes (admin/staff only) - handled by housekeeping routes
 
 // Admin password management routes
@@ -253,10 +264,10 @@ apiRouter.post('/admin/reset-user-password/:id', validateApiKey, async (req, res
 });
 
 // Payment verification routes (includes webhook endpoint)
-app.use(`/api/${process.env.API_VERSION || 'v1'}/payments`, paymentVerificationRoutes);
+apiRouter.use('/payments', paymentVerificationRoutes);
 
 // Guest data management routes
-app.use(`/api/${process.env.API_VERSION || 'v1'}/admin`, guestDataRoutes);
+apiRouter.use('/admin', guestDataRoutes);
 
 // Telegram housekeeping routes
 import telegramHousekeepingRoutes from './routes/telegramHousekeeping';
@@ -264,18 +275,18 @@ import telegramHousekeepingRoutes from './routes/telegramHousekeeping';
 import pinAuthRoutes from './routes/pinAuth';
 import adminPinRoutes from './routes/adminPinRoutes';
 import pinAnalyticsRoutes from './routes/pinAnalyticsRoutes';
-app.use(`/api/${process.env.API_VERSION || 'v1'}/housekeeping`, telegramHousekeepingRoutes);
 
-// PIN authentication routes
-app.use(`/api/${process.env.API_VERSION || 'v1'}/auth`, pinAuthRoutes);
+// Housekeeping routes
+apiRouter.use('/housekeeping', telegramHousekeepingRoutes);
 
-// Admin PIN management routes
-app.use(`/api/${process.env.API_VERSION || 'v1'}/admin`, adminPinRoutes);
+// PIN authentication routes (mount to auth)
+apiRouter.use('/auth', pinAuthRoutes);
 
-// PIN analytics routes
-app.use(`/api/${process.env.API_VERSION || 'v1'}/admin`, pinAnalyticsRoutes);
+// Admin PIN routes  
+apiRouter.use('/admin', adminPinRoutes);
+apiRouter.use('/admin', pinAnalyticsRoutes);
 
-// Mount API router
+// Mount API router with proper base path
 app.use(`/api/${process.env.API_VERSION || 'v1'}`, apiRouter);
 
 // ============================================
@@ -346,6 +357,10 @@ const httpServer = createServer(app);
 
 // Initialize WebSocket service
 const webSocketService = initializeWebSocket(httpServer);
+
+// Initialize Auto-Archive Service
+const autoArchiveService = new AutoArchiveService();
+autoArchiveService.start();
 
 httpServer.listen(PORT, () => {
   console.log(`🚀 Hotel Booking API Server running on http://${HOST}:${PORT}`);

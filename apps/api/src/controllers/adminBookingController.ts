@@ -10,8 +10,26 @@ export const getAllBookingsAdmin = async (req: Request, res: Response) => {
   try {
     console.log('📋 Fetching all bookings from database for admin...');
     
-    // Get all bookings with related data
+    // Check if we should include cancelled bookings (optional query parameter)
+    const includeCancelled = req.query.includeCancelled === 'true';
+    
+    // Filter conditions
+    const whereCondition: any = {
+      isArchived: false // Always exclude archived bookings
+    };
+    
+    // Hide cancelled and NoShow bookings by default
+    if (!includeCancelled) {
+      whereCondition.status = {
+        notIn: ['Cancelled', 'NoShow']
+      };
+    }
+    
+    console.log('🔍 Filter conditions:', whereCondition);
+    
+    // Get filtered bookings with related data
     const bookings = await prisma.booking.findMany({
+      where: whereCondition,
       include: {
         guest: true,
         room: true,
@@ -22,7 +40,7 @@ export const getAllBookingsAdmin = async (req: Request, res: Response) => {
       }
     });
 
-    console.log(`📊 Found ${bookings.length} bookings in database`);
+    console.log(`📊 Found ${bookings.length} active bookings in database (includeCancelled: ${includeCancelled})`);
 
     // Format bookings for frontend
     const formattedBookings = bookings.map(booking => ({

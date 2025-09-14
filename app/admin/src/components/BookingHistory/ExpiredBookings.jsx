@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import authService from '../../services/authService';
 
 const ExpiredBookings = () => {
+  const { user, isAuthenticated } = useAuth();
   const [expiredBookings, setExpiredBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [archiveCandidates, setArchiveCandidates] = useState([]);
 
-  // Get token from localStorage
+  // Get token using AuthService
   const getToken = () => {
-    return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+    return authService.getToken();
   };
 
   // Fetch expired bookings and archive candidates
   const fetchExpiredBookings = async () => {
     try {
       setLoading(true);
-      const token = getToken();
       
+      // Check authentication first
+      if (!isAuthenticated) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      const token = getToken();
       if (!token) {
         console.error('No authentication token found');
         return;

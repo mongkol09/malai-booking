@@ -1,0 +1,200 @@
+[
+  {
+    "id": "b7fdf178-8bec-4e4a-8a69-7d315c38cad7",
+    "name": "Cinnamon Room",
+    "description": "ห้องซินนามอน - ห้องพักหรูพร้อมสิ่งอำนวยความสะดวกครบครัน",
+    "baseRate": "15000",
+    "capacityAdults": 2,
+    "capacityChildren": 0,
+    "imageUrl": "cinnamon-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "Mini Bar",
+      "TV"
+    ],
+    "sizeSqm": "35",
+    "bedType": "King Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.970Z",
+    "updatedAt": "2025-09-12T21:30:09.970Z"
+  },
+  {
+    "id": "e1c0a769-860a-41c2-876a-a6c39b4390af",
+    "name": "Basil Room",
+    "description": "ห้องโหระพา - ห้องพักสุดหรูในบรรยากาศธรรมชาติ",
+    "baseRate": "15000",
+    "capacityAdults": 2,
+    "capacityChildren": 0,
+    "imageUrl": "basil-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "Balcony",
+      "TV"
+    ],
+    "sizeSqm": "30",
+    "bedType": "King Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.972Z",
+    "updatedAt": "2025-09-12T21:30:09.972Z"
+  },
+  {
+    "id": "e8d559c8-d570-491c-8029-2899def1c01b",
+    "name": "Cardamom Room",
+    "description": "ห้องกะเทย - ห้องพักพรีเมียมที่ผสมผสานความหรูหราและความสบาย",
+    "baseRate": "15000",
+    "capacityAdults": 2,
+    "capacityChildren": 0,
+    "imageUrl": "cardamom-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "Mini Bar",
+      "TV",
+      "Balcony"
+    ],
+    "sizeSqm": "32",
+    "bedType": "King Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.973Z",
+    "updatedAt": "2025-09-12T21:30:09.973Z"
+  },
+  {
+    "id": "294d6c35-119a-4613-b5f0-19f3a9df4edd",
+    "name": "Clove Room",
+    "description": "ห้องกานพลู - ห้องพักหรูระดับพรีเมียม",
+    "baseRate": "15000",
+    "capacityAdults": 2,
+    "capacityChildren": 0,
+    "imageUrl": "clove-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "TV"
+    ],
+    "sizeSqm": "28",
+    "bedType": "King Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.974Z",
+    "updatedAt": "2025-09-12T21:30:09.974Z"
+  },
+  {
+    "id": "0570052c-f725-4d1d-bd9c-d678919bb4ad",
+    "name": "Ginger Room",
+    "description": "ห้องขิง - ห้องพักสไตล์โมเดิร์นผสมผสานวัฒนธรรมไทย",
+    "baseRate": "7500",
+    "capacityAdults": 1,
+    "capacityChildren": 0,
+    "imageUrl": "ginger-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "TV"
+    ],
+    "sizeSqm": "25",
+    "bedType": "Queen Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.975Z",
+    "updatedAt": "2025-09-12T21:30:09.975Z"
+  },
+  {
+    "id": "e7ebb83f-3ea3-4765-8dda-b54adf6f43e7",
+    "name": "Rose Room",
+    "description": "ห้องกุหลาบ - ห้องพักสุดหรูในบรรยากาศโรแมนติก",
+    "baseRate": "15000",
+    "capacityAdults": 2,
+    "capacityChildren": 0,
+    "imageUrl": "rose-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "Mini Bar",
+      "TV"
+    ],
+    "sizeSqm": "30",
+    "bedType": "King Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.975Z",
+    "updatedAt": "2025-09-12T21:30:09.975Z"
+  },
+  {
+    "id": "fdc3d48a-57c2-47ec-8ce1-9a27f1ce8eb7",
+    "name": "Kaffir Lime Room",
+    "description": "ห้องมะกรูด - ห้องพักขนาดกะทัดรัดแต่ครบครัน",
+    "baseRate": "7500",
+    "capacityAdults": 1,
+    "capacityChildren": 0,
+    "imageUrl": "kaffir-lime-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "TV"
+    ],
+    "sizeSqm": "22",
+    "bedType": "Queen Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.976Z",
+    "updatedAt": "2025-09-12T21:30:09.976Z"
+  },
+  {
+    "id": "c96a76b9-5258-4279-af16-6be63e1c3593",
+    "name": "Lemongrass Room",
+    "description": "ห้องตะไคร้ - ห้องพักสำหรับนักเดินทางเดี่ยว",
+    "baseRate": "7500",
+    "capacityAdults": 1,
+    "capacityChildren": 0,
+    "imageUrl": "lemongrass-room-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "TV"
+    ],
+    "sizeSqm": "22",
+    "bedType": "Queen Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.977Z",
+    "updatedAt": "2025-09-12T21:30:09.977Z"
+  },
+  {
+    "id": "85ddf8cc-d518-4e3b-8637-fe586c9cc014",
+    "name": "Malai Private",
+    "description": "เพนท์เฮาส์สมุนไพรไทย - ห้องพักหรูระดับสูงสุดพร้อมวิวพาโนราม่า",
+    "baseRate": "28900",
+    "capacityAdults": 4,
+    "capacityChildren": 2,
+    "imageUrl": "thai-herbs-penthouse-1.jpg",
+    "amenities": [
+      "Air Conditioning",
+      "Private Bathroom",
+      "Wi-Fi",
+      "Mini Bar",
+      "TV",
+      "Balcony",
+      "Kitchen",
+      "Living Room"
+    ],
+    "sizeSqm": "85",
+    "bedType": "King Bed + Sofa Bed",
+    "floorPlanId": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:30:09.978Z",
+    "updatedAt": "2025-09-12T21:30:09.978Z"
+  }
+]

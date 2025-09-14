@@ -20,38 +20,6 @@ const router = express.Router();
 // Apply API key validation to all routes
 router.use(validateApiKey);
 
-// Try JWT first, fallback to session auth
-router.use((req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    // JWT authentication
-    verifyAdminToken(req, res, next);
-  } else {
-    // Session authentication fallback
-    sessionAuth(req, res, next);
-  }
-});
-
-// Role validation for both auth types
-router.use((req, res, next) => {
-  if ((req as any).user?.userId) {
-    // JWT user format (from verifyAdminToken)
-    console.log('🔍 JWT user detected:', (req as any).user);
-    // Allow DEV, ADMIN, STAFF roles
-    const userRole = (req as any).user.userType || (req as any).user.role;
-    if (!['DEV', 'ADMIN', 'STAFF'].includes(userRole)) {
-      return res.status(403).json({
-        success: false,
-        error: { message: 'Insufficient permissions', code: 'INSUFFICIENT_PERMISSIONS' }
-      });
-    }
-    next();
-  } else {
-    // Session user format
-    requireSessionRole(['DEV', 'ADMIN', 'STAFF'])(req, res, next);
-  }
-});
-
 // Send single room cleaning notification
 router.post('/cleaning-notification', sendCleaningNotification);
 

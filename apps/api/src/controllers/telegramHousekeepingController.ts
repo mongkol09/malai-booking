@@ -24,20 +24,30 @@ export const sendCleaningNotification = async (req: Request, res: Response) => {
       specialInstructions = ''
     } = req.body;
 
+    // Validate and provide defaults for required fields
+    const safeData = {
+      roomNumber: roomNumber || 'Unknown',
+      roomType: roomType || 'Standard',
+      guestName: guestName || 'ลูกค้า',
+      checkOutTime: checkOutTime || new Date().toLocaleTimeString('th-TH'),
+      priority: priority || 'normal',
+      specialInstructions: specialInstructions || ''
+    };
+
     console.log('📱 Sending housekeeping notification via Dual Bot System:', {
-      roomNumber,
-      roomType,
-      priority
+      roomNumber: safeData.roomNumber,
+      roomType: safeData.roomType,
+      priority: safeData.priority
     });
 
     // Use new Dual Bot Service for Staff notifications
     const notificationData = {
-      roomNumber,
-      roomType,
-      guestName,
-      checkOutTime,
-      priority: priority as 'high' | 'medium' | 'normal',
-      specialInstructions
+      roomNumber: safeData.roomNumber,
+      roomType: safeData.roomType,
+      guestName: safeData.guestName,
+      checkOutTime: safeData.checkOutTime,
+      priority: safeData.priority as 'high' | 'medium' | 'normal',
+      specialInstructions: safeData.specialInstructions
     };
 
     const result = await dualBotService.sendHousekeepingNotification(notificationData);
@@ -47,7 +57,7 @@ export const sendCleaningNotification = async (req: Request, res: Response) => {
       // Fallback to legacy method if Dual Bot fails
       console.log('⚠️ Dual Bot failed, falling back to legacy method...');
       
-      const priorityEmoji = priority === 'high' ? '🔴' : priority === 'medium' ? '🟡' : '🟢';
+      const priorityEmoji = safeData.priority === 'high' ? '🔴' : safeData.priority === 'medium' ? '🟡' : '🟢';
       const timestamp = new Date().toLocaleString('th-TH', {
         timeZone: 'Asia/Bangkok',
         year: 'numeric',
@@ -60,17 +70,17 @@ export const sendCleaningNotification = async (req: Request, res: Response) => {
       const message = `
 🧹 *แจ้งเตือนทำความสะอาดห้อง*
 
-${priorityEmoji} *ห้อง: ${roomNumber}*
-🏠 ประเภทห้อง: ${roomType}
-👤 ลูกค้า: ${guestName}
-🚪 เช็คเอาท์: ${checkOutTime}
+${priorityEmoji} *ห้อง: ${safeData.roomNumber}*
+🏠 ประเภทห้อง: ${safeData.roomType}
+👤 ลูกค้า: ${safeData.guestName}
+🚪 เช็คเอาท์: ${safeData.checkOutTime}
 ⏰ เวลาแจ้งเตือน: ${timestamp}
-📊 ระดับความสำคัญ: ${priority === 'high' ? 'สูง' : priority === 'medium' ? 'ปานกลาง' : 'ปกติ'}
+📊 ระดับความสำคัญ: ${safeData.priority === 'high' ? 'สูง' : safeData.priority === 'medium' ? 'ปานกลาง' : 'ปกติ'}
 
-${specialInstructions ? `📝 *คำแนะนำพิเศษ:*\n${specialInstructions}\n` : ''}
+${safeData.specialInstructions ? `📝 *คำแนะนำพิเศษ:*\n${safeData.specialInstructions}\n` : ''}
 ✅ กรุณาทำความสะอาดห้องและอัปเดตสถานะเมื่อเสร็จสิ้น
 
-#RoomCleaning #Room${roomNumber} #${priority}Priority
+#RoomCleaning #Room${safeData.roomNumber} #${safeData.priority}Priority
       `.trim();
 
       // Send to Telegram (legacy method)

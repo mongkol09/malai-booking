@@ -1,38 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import bookingHistoryApi from '../../services/bookingHistoryApi';
 
 const BookingAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get token from localStorage
-  const getToken = () => {
-    return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
-  };
-
-  // Fetch analytics data
+  // Fetch analytics data using API service
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const token = getToken();
       
-      if (!token) {
-        console.error('No authentication token found');
-        return;
-      }
-
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/v1/booking-history/analytics/statistics`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await bookingHistoryApi.getAnalyticsStatistics();
       
       if (result.success) {
         setAnalytics(result.data);

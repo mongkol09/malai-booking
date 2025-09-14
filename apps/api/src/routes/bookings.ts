@@ -121,6 +121,9 @@ router.get('/:id', (req, res) => {
 // Get all bookings for admin (Session Authentication + Role Required)
 router.get('/admin/all', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), getAllBookingsAdmin);
 
+// Testing route with API Key authentication (for development/testing only)
+router.get('/admin/all-apikey', authenticateToken, getAllBookingsAdmin);
+
 // Alias for test compatibility
 router.get('/admin/list', sessionAuth, requireSessionRole(['DEV', 'ADMIN', 'STAFF']), (req: SessionAuthenticatedRequest, res) => {
   console.log('📋 Getting admin bookings list (alias for /admin/all)');

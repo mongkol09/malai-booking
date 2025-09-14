@@ -162,16 +162,20 @@ export class DualBotTelegramService {
     priority: 'high' | 'medium' | 'normal';
     specialInstructions?: string;
   }): Promise<boolean> {
+    // Safe handling of potentially undefined data
+    const safeGuestName = data.guestName || 'ลูกค้า';
+    const firstName = safeGuestName.includes(' ') ? safeGuestName.split(' ')[0] : safeGuestName;
+    
     const notification: OperationalNotification = {
       type: 'housekeeping',
       data: {
-        roomNumber: data.roomNumber,
-        guestName: data.guestName.split(' ')[0] || 'ลูกค้า', // First name only
+        roomNumber: data.roomNumber || 'Unknown',
+        guestName: firstName,
         action: 'ทำความสะอาด',
         time: new Date(),
-        priority: data.priority,
+        priority: data.priority || 'normal',
         specialNotes: data.specialInstructions,
-        roomType: data.roomType
+        roomType: data.roomType || 'Standard'
       }
     };
 
@@ -189,11 +193,15 @@ export class DualBotTelegramService {
     vip: boolean;
     specialRequests?: string;
   }): Promise<boolean> {
+    // Safe handling of potentially undefined data
+    const safeGuestName = data.guestName || 'ลูกค้า';
+    const firstName = safeGuestName.includes(' ') ? safeGuestName.split(' ')[0] : safeGuestName;
+    
     const notification: OperationalNotification = {
       type: 'checkin',
       data: {
-        roomNumber: data.roomNumber,
-        guestName: data.guestName.split(' ')[0] || 'ลูกค้า', // First name only
+        roomNumber: data.roomNumber || 'Unknown',
+        guestName: firstName,
         action: 'เข้าพัก',
         time: new Date(),
         priority: data.vip ? 'high' : 'normal',

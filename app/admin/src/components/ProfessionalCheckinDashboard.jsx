@@ -6,6 +6,8 @@ import authTokenService from '../services/authTokenService';
 
 const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
   const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('reference'); // reference, name, phone, qr
   const [todayArrivals, setTodayArrivals] = useState([]);
@@ -24,22 +26,22 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
     loadStats();
   }, []);
 
-  // ✅ Real-time search effect
+  // ✅ Real-time search effect with improved debouncing
   useEffect(() => {
     // Clear previous timeout
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
 
-    // Only search if there's a query
-    if (searchQuery.trim().length > 0) {
+    // Only search if there's a meaningful query
+    if (searchQuery.trim().length >= 3) {
       const timeout = setTimeout(() => {
         handleSearch();
-      }, 500); // 500ms delay for real-time search
+      }, 800); // Increased delay to 800ms to reduce API calls
       
       setSearchTimeout(timeout);
-    } else {
-      // Clear search results if no query
+    } else if (searchQuery.trim().length === 0) {
+      // Clear search results immediately when query is empty
       setSearchResults([]);
     }
 
@@ -182,7 +184,9 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
     if (!searchQuery.trim()) return;
     
     try {
-      setLoading(true);
+      setSearchLoading(true);
+      setError(null);
+      
       // Use real API search
       console.log(`🔍 Searching ${searchType}:`, searchQuery);
       
@@ -208,11 +212,24 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
         
         setSearchResults(mockResults);
         console.log('🔄 Using fallback local search:', mockResults.length, 'results');
+        
+        // Show warning about using fallback search
+        setError('การค้นหาออนไลน์ล้มเหลว ใช้การค้นหาในข้อมูลที่โหลดไว้แทน');
       }
     } catch (error) {
       console.error('❌ Search error:', error);
+      setError(`เกิดข้อผิดพลาดในการค้นหา: ${error.message}`);
+      
+      // Fallback to local search even on error
+      const mockResults = todayArrivals.filter(booking => 
+        booking.bookingReference.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        booking.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        booking.phone.includes(searchQuery)
+      );
+      setSearchResults(mockResults);
+      
     } finally {
-      setLoading(false);
+      setSearchLoading(false);
     }
   };
 
@@ -647,6 +664,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
       pending: { variant: 'warning', text: 'รอเช็คอิน', icon: '⏳' },
       checked_in: { variant: 'success', text: 'เช็คอินแล้ว', icon: '✅' },
       checked_out: { variant: 'info', text: 'เช็คเอาท์แล้ว', icon: '🚪' },
+      completed: { variant: 'secondary', text: 'เสร็จสิ้น', icon: '🏁' },   // เพิ่ม completed
       late: { variant: 'danger', text: 'มาสาย', icon: '🔴' },
       no_show: { variant: 'secondary', text: 'ไม่มาพัก', icon: '❌' }
     };
@@ -691,6 +709,18 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
             </div>
           </div>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Row className="mb-3">
+            <Col>
+              <Alert variant="warning" dismissible onClose={() => setError(null)}>
+                <Alert.Heading>เกิดข้อผิดพลาด</Alert.Heading>
+                <p className="mb-0">{error}</p>
+              </Alert>
+            </Col>
+          </Row>
+        )}
 
         {/* Quick Stats */}
         <Row className="mb-4">
@@ -774,9 +804,9 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                   <Button 
                     variant="primary" 
                     onClick={handleSearch}
-                    disabled={loading || !searchQuery.trim()}
+                    disabled={searchLoading || !searchQuery.trim()}
                   >
-                    {loading ? <Spinner animation="border" size="sm" /> : <i className="bi bi-search"></i>}
+                    {searchLoading ? <Spinner animation="border" size="sm" /> : <i className="bi bi-search"></i>}
                   </Button>
                 </InputGroup>
               </Col>
@@ -835,7 +865,7 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(searchResults.length > 0 ? searchResults : todayArrivals).map((booking) => {
+                    {(searchResults.length > 0 ? searchResults : todayArrivals).map((booking, index) => {
                       console.log('📋 Booking status debug:', {
                         ref: booking.bookingReference,
                         status: booking.status,
@@ -843,8 +873,11 @@ const ProfessionalCheckinDashboard = ({ pinVerificationService }) => {
                         canCheckOut: booking.canCheckOut
                       });
                       
+                      // Create unique key using multiple fields to avoid duplicates
+                      const uniqueKey = `${booking.id || 'unknown'}-${booking.bookingReference || 'ref'}-${index}`;
+                      
                       return (
-                      <tr key={booking.id} className={selectedBooking?.id === booking.id ? 'table-primary' : ''}>
+                      <tr key={uniqueKey} className={selectedBooking?.id === booking.id ? 'table-primary' : ''}>
                         <td>
                           <strong className="text-primary">{booking.bookingReference}</strong>
                           {booking.vip && <Badge bg="warning" className="ms-2">VIP</Badge>}

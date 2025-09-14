@@ -360,7 +360,12 @@ export const verifyAccessToken = async (token: string): Promise<JWTPayload | nul
       }
     });
 
-    if (!session || !session.user.isActive) {
+    if (!session) {
+      return null;
+    }
+
+    // Check if user is active (if user has isActive field)
+    if (session.user.isActive !== undefined && !session.user.isActive) {
       return null;
     }
 

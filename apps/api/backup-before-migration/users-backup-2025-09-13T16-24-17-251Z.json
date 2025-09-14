@@ -1,0 +1,24 @@
+[
+  {
+    "id": "e75a1482-4b69-47c8-b7fd-f69c3ab4e9d3",
+    "email": "system@hotel.com",
+    "userType": "ADMIN",
+    "firstName": "System",
+    "lastName": "User",
+    "phoneNumber": null,
+    "isActive": true,
+    "createdAt": "2025-09-12T21:05:52.858Z",
+    "updatedAt": "2025-09-12T21:05:52.858Z"
+  },
+  {
+    "id": "42efd44f-cc54-41e7-8735-fa1b9f378e4b",
+    "email": "mongkol03su@gmail.com",
+    "userType": "DEV",
+    "firstName": "Dev",
+    "lastName": "User",
+    "phoneNumber": "0000000000",
+    "isActive": true,
+    "createdAt": "2025-09-12T20:53:07.896Z",
+    "updatedAt": "2025-09-12T21:23:35.152Z"
+  }
+]

@@ -439,13 +439,18 @@ export const sendBookingConfirmationEmailDirect = async (booking: any, guest: an
     const checkinDate = new Date(booking.checkinDate);
     const checkoutDate = new Date(booking.checkoutDate);
     const nights = Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)) || 1;
-    const finalAmount = parseFloat(booking.finalAmount?.toString() || '0');
-    const roomPricePerNight = Math.round(finalAmount / nights);
     
-    // คำนวณภาษี (7% ของยอดรวม)
-    const totalAmount = finalAmount;
-    const taxAmount = Math.round(totalAmount * 0.07);
-    const accommodationFee = totalAmount - taxAmount;
+    // ใช้ข้อมูล Payment Breakdown จาก Database
+    const finalAmount = parseFloat(booking.finalAmount?.toString() || '0');
+    const totalPrice = parseFloat(booking.totalPrice?.toString() || '0'); // Room Rate เดิม
+    const taxAmount = parseFloat(booking.taxAmount?.toString() || '0');
+    const serviceChargeAmount = parseFloat(booking.serviceChargeAmount?.toString() || '0');
+    const discountAmount = parseFloat(booking.discountAmount?.toString() || '0');
+    const extraChargesAmount = parseFloat(booking.extraChargesAmount?.toString() || '0');
+    const commissionAmount = parseFloat(booking.commissionAmount?.toString() || '0');
+    
+    // คำนวณราคาต่อคืนจาก Room Rate หลัก
+    const roomPricePerNight = Math.round(totalPrice / nights);
     
     const templateData = {
       // Reservation Details
@@ -456,10 +461,15 @@ export const sendBookingConfirmationEmailDirect = async (booking: any, guest: an
       checkout_date: checkoutDate.toLocaleDateString('th-TH'),
       booking_reference: booking.bookingReferenceId,
       
-      // Payment Details  
+      // Payment Breakdown Details
       room_price_per_night: `฿${roomPricePerNight.toLocaleString()}`,
+      room_total: `฿${totalPrice.toLocaleString()}`, // Base room rate
+      service_charge: `฿${serviceChargeAmount.toLocaleString()}`,
       tax_amount: `฿${taxAmount.toLocaleString()}`,
-      grand_total: `฿${totalAmount.toLocaleString()}`,
+      discount_amount: `฿${discountAmount.toLocaleString()}`,
+      extra_charges: `฿${extraChargesAmount.toLocaleString()}`,
+      commission_amount: `฿${commissionAmount.toLocaleString()}`,
+      grand_total: `฿${finalAmount.toLocaleString()}`,
       
       // Contact Information
       guest_phone: guest.phoneNumber || guest.phone || '+66-XX-XXX-XXXX',
@@ -471,7 +481,7 @@ export const sendBookingConfirmationEmailDirect = async (booking: any, guest: an
       room_number: booking.room?.roomNumber || 'จะแจ้งให้ทราบ',
       num_adults: numAdults,
       num_children: numChildren,
-      total_amount: `฿${totalAmount.toLocaleString()}`,
+      total_amount: `฿${finalAmount.toLocaleString()}`,
       hotel_name: 'Malai Khaoyai Resort',
       current_date: new Date().toLocaleDateString('th-TH')
     };

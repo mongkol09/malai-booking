@@ -14,19 +14,16 @@ class ProfessionalCheckinService {
   /**
    * ดึงรายการ bookings วันนี้ที่ต้อง check-in
    */
-  async getTodaysArrivals(date = null) {
+  async getTodaysArrivals(date = null, includeTomorrow = false) {
     try {
       console.log('📅 Fetching today\'s arrivals...');
       
-      // ใช้วันที่ที่ระบุ หรือวันนี้ + พรุ่งนี้
+      // ใช้วันที่ที่ระบุ หรือวันนี้
       const targetDate = date || new Date().toISOString().split('T')[0];
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
       
-      console.log(`📅 Checking arrivals for: ${targetDate} and ${tomorrowStr}`);
+      console.log(`📅 Checking arrivals for: ${targetDate}`);
       
-      // ✅ ใช้ checkin/bookings API ที่ส่งข้อมูลถูกต้อง
+      // ✅ ใช้ checkin/bookings API แค่ครั้งเดียว
       const response = await authTokenService.authenticatedRequest(`${API_BASE}/checkin/bookings?date=${targetDate}`, {
         method: 'GET'
       });
@@ -37,18 +34,28 @@ class ProfessionalCheckinService {
 
       const result = await response.json();
       
-      // Also fetch tomorrow's arrivals
-      const tomorrowResponse = await authTokenService.authenticatedRequest(`${API_BASE}/checkin/bookings?date=${tomorrowStr}`, {
-        method: 'GET'
-      });
+      let allArrivals = result.data || [];
       
-      const tomorrowResult = tomorrowResponse.ok ? await tomorrowResponse.json() : { data: [] };
-      
-      // Combine today and tomorrow arrivals
-      const allArrivals = [
-        ...(result.data || []),
-        ...(tomorrowResult.data || [])
-      ];
+      // เรียก tomorrow เฉพาะเมื่อจำเป็น
+      if (includeTomorrow) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        
+        console.log(`📅 Also fetching tomorrow: ${tomorrowStr}`);
+        
+        const tomorrowResponse = await authTokenService.authenticatedRequest(`${API_BASE}/checkin/bookings?date=${tomorrowStr}`, {
+          method: 'GET'
+        });
+        
+        const tomorrowResult = tomorrowResponse.ok ? await tomorrowResponse.json() : { data: [] };
+        
+        // รวม today + tomorrow
+        allArrivals = [
+          ...allArrivals,
+          ...(tomorrowResult.data || [])
+        ];
+      }
       
       console.log('✅ Today\'s arrivals fetched:', allArrivals.length, 'bookings');
       
@@ -848,7 +855,8 @@ class ProfessionalCheckinService {
     const statusMap = {
       'Confirmed': 'pending',
       'InHouse': 'checked_in',
-      'CheckedOut': 'checked_out',
+      'CheckedOut': 'completed',      // แก้ไข: checked_out → completed
+      'Completed': 'completed',       // เพิ่ม: รองรับ status ใหม่
       'Cancelled': 'cancelled',
       'NoShow': 'no_show'
     };

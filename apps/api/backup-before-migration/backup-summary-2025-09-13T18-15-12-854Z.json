@@ -1,0 +1,18 @@
+{
+  "backupDate": "2025-09-13T18:15:12.913Z",
+  "backupReason": "Before adding archive system to bookings",
+  "totalRecords": {
+    "bookings": 0,
+    "guests": 0,
+    "rooms": 0,
+    "roomTypes": 0,
+    "users": 0,
+    "payments": 0
+  },
+  "criticalBooking": {
+    "id": "1ca95546-d9b7-450f-b2c2-a8fbe58e8689",
+    "referenceId": "BK24957122",
+    "status": "Found and backed up",
+    "guest": "NOT FOUND"
+  }
+}

@@ -24,8 +24,20 @@ export const getBookingsForCheckin = async (req: Request, res: Response) => {
     if (date && typeof date === 'string') {
       console.log(`📅 Received date parameter: "${date}"`);
       
-      // Try to parse the date string
-      const parsedDate = new Date(date);
+      let parsedDate: Date;
+      
+      // Handle different date formats
+      if (date.match(/^\d{8}$/)) {
+        // Format: YYYYMMDD (e.g., "20250914")
+        const year = date.slice(0, 4);
+        const month = date.slice(4, 6);
+        const day = date.slice(6, 8);
+        parsedDate = new Date(`${year}-${month}-${day}`);
+        console.log(`📅 Parsed YYYYMMDD format: ${year}-${month}-${day}`);
+      } else {
+        // Try to parse as-is (e.g., "2025-09-14")
+        parsedDate = new Date(date);
+      }
       
       // Check if the date is valid
       if (isNaN(parsedDate.getTime())) {
@@ -33,6 +45,7 @@ export const getBookingsForCheckin = async (req: Request, res: Response) => {
         selectedDate = new Date();
       } else {
         selectedDate = parsedDate;
+        console.log(`✅ Valid date parsed: ${selectedDate.toISOString()}`);
       }
     } else {
       console.log('📅 No date parameter provided, using current date');

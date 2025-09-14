@@ -70,6 +70,17 @@ const TuningSidebar = ({iconColor}) => {
                     <span className="mx-3">Holiday Pricing</span>
                 </NavLink>
             </li>
+            <li>
+                <NavLink to="/archive-settings" aria-label="Archive Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="svg-stroke" width="24" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
+                        <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10"></path>
+                        <path d="M10 12l4 0"></path>
+                    </svg>
+                    <span className="mx-3">Archive Settings</span>
+                </NavLink>
+            </li>
             <li className="py-2 mt-2">
                 <h6 className="fl-title title-font ps-2 small text-uppercase text-muted" style={{"--dynamic-color": "var(--theme-color1)"}}>User Management</h6>
                 <ul className="list-unstyled">

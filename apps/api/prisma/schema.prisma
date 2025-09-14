@@ -57,6 +57,11 @@ model User {
   walkInGuests          WalkInGuest[]     @relation("WalkInHandledBy")
   bookingCancellations  BookingCancellation[] @relation("BookingCancelledBy")
   paymentRefunds        PaymentRefund[]   @relation("PaymentRefundProcessedBy")
+  archivedBookings      Booking[]         @relation("BookingArchivedBy")
+  
+  // ARCHIVE SYSTEM RELATIONS
+  createdArchiveConfigs ArchiveConfig[]   @relation("ArchiveConfigCreator")
+  archiveLogs           ArchiveLog[]      @relation("ArchiveLogPerformer")
 
   @@map("users")
 }
@@ -298,6 +303,21 @@ model Booking {
   lateCheckoutTime      DateTime?  @map("late_checkout_time")
   roomAssignedAt        DateTime?  @map("room_assigned_at")
   walkInGuest           Boolean    @default(false) @map("walk_in_guest")
+  
+  // ARCHIVE SYSTEM FIELDS
+  isArchived            Boolean    @default(false) @map("is_archived")
+  archivedAt            DateTime?  @map("archived_at")
+  archivedReason        String?    @map("archived_reason")
+  archivedBy            String?    @map("archived_by")
+  
+  // PERFORMANCE OPTIMIZATION FIELDS (Derived/Denormalized)
+  guestName             String?    @map("guest_name")
+  guestEmail            String?    @map("guest_email")
+  guestPhone            String?    @map("guest_phone")
+  roomNumber            String?    @map("room_number")
+  roomTypeName          String?    @map("room_type_name")
+  stayNights            Int?       @map("stay_nights")
+  
   bookingType             BookingType?        @relation(fields: [bookingTypeId], references: [id])
   cancellationPolicy      CancellationPolicy? @relation(fields: [cancellationPolicyId], references: [id])
   guest                   Guest               @relation(fields: [guestId], references: [id])
@@ -309,6 +329,7 @@ model Booking {
   assignedByUser        User?      @relation("BookingAssignedBy", fields: [assignedBy], references: [id])
   checkinByUser         User?      @relation("BookingCheckinBy", fields: [checkinBy], references: [id])
   checkoutByUser        User?      @relation("BookingCheckoutBy", fields: [checkoutBy], references: [id])
+  archivedByUser        User?      @relation("BookingArchivedBy", fields: [archivedBy], references: [id])
   currentRoomBooking    Room[]     @relation("CurrentRoomBooking")
   statusHistoryBooking  RoomStatusHistory[] @relation("RoomStatusBooking")
   checkinSessions       CheckinSession[]
@@ -324,6 +345,15 @@ model Booking {
   files                   FileManager[]
   cancellations           BookingCancellation[]
   refunds                 PaymentRefund[]
+  archiveLogs             ArchiveLog[]          @relation("BookingArchiveLog")
+
+  // PERFORMANCE INDEXES
+  @@index([isArchived, status])
+  @@index([isArchived, checkinDate])
+  @@index([isArchived, status, checkinDate])
+  @@index([guestEmail, isArchived])
+  @@index([roomNumber, isArchived])
+  @@index([bookingReferenceId, isArchived])
 
   @@map("bookings")
 }
@@ -1985,4 +2015,43 @@ model DailyAvailability {
 
   @@unique([roomId, date])
   @@map("daily_availability")
+}
+
+// ============================================
+// ARCHIVE CONFIGURATION SYSTEM
+// ============================================
+
+model ArchiveConfig {
+  id                    String   @id @default(uuid()) @map("archive_config_id")
+  status                String   // 'Cancelled', 'CheckedOut', 'NoShow', 'Completed'
+  hideFromActiveList    Boolean  @default(true) @map("hide_from_active_list")
+  archiveAfterDays      Int      @default(7) @map("archive_after_days")
+  isActive              Boolean  @default(true) @map("is_active")
+  autoArchiveEnabled    Boolean  @default(false) @map("auto_archive_enabled")
+  description           String?  // Human-readable description
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdBy             String?  @map("created_by")
+  
+  // Relations
+  createdByUser         User?    @relation("ArchiveConfigCreator", fields: [createdBy], references: [id])
+  
+  @@unique([status]) // One config per status
+  @@map("archive_configs")
+}
+
+model ArchiveLog {
+  id                    String   @id @default(uuid()) @map("archive_log_id")
+  bookingId             String   @map("booking_id")
+  action                String   // 'ARCHIVED', 'RESTORED', 'AUTO_ARCHIVED'
+  reason                String   // Archive reason
+  performedBy           String?  @map("performed_by") // userId or 'SYSTEM'
+  performedAt           DateTime @default(now()) @map("performed_at")
+  metadata              Json?    // Additional data (original status, etc.)
+  
+  // Relations
+  booking               Booking  @relation("BookingArchiveLog", fields: [bookingId], references: [id])
+  performedByUser       User?    @relation("ArchiveLogPerformer", fields: [performedBy], references: [id])
+  
+  @@map("archive_logs")
 }

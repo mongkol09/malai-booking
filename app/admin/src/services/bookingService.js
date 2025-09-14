@@ -357,6 +357,7 @@ const bookingService = {
       case 'in-house':
         return 'text-bg-success';
       case 'completed':
+      case 'checked_out':             // รองรับ checked_out legacy
         return 'text-bg-secondary';
       case 'cancelled':
         return 'text-bg-danger';
@@ -794,12 +795,16 @@ const bookingService = {
           arrivalFrom: bookingData.arrivalFrom || ''
         },
         pricing: {
-          total: parseFloat(bookingData.totalAmount) || 0,
+          total: parseFloat(bookingData.finalAmount) || parseFloat(bookingData.totalAmount) || 0,
           currency: 'THB',
           breakdown: {
             roomRate: parseFloat(bookingData.totalAmount) || 0,
-            taxes: 0,
-            fees: 0
+            discount: parseFloat(bookingData.discountAmount) || 0,
+            serviceCharge: parseFloat(bookingData.serviceChargeAmount) || 0,
+            tax: parseFloat(bookingData.taxAmount) || 0,
+            additionalCharges: parseFloat(bookingData.additionalCharges) || 0,
+            commission: parseFloat(bookingData.commissionAmount) || 0,
+            finalAmount: parseFloat(bookingData.finalAmount) || parseFloat(bookingData.totalAmount) || 0
           }
         },
         specialRequests: bookingData.remarks || '',

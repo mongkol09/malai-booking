@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import authService from '../../services/authService';
 
 const BookingHistory = () => {
+  const { user, isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expiredCount, setExpiredCount] = useState(0);
@@ -19,17 +22,23 @@ const BookingHistory = () => {
     totalPages: 0
   });
 
-  // Get token from localStorage
+  // Get token using AuthService
   const getToken = () => {
-    return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+    return authService.getToken();
   };
 
   // Fetch booking history from API
   const fetchBookingHistory = async () => {
     try {
       setLoading(true);
-      const token = getToken();
       
+      // Check authentication first
+      if (!isAuthenticated) {
+        console.error('User not authenticated');
+        return;
+      }
+
+      const token = getToken();
       if (!token) {
         console.error('No authentication token found');
         return;
@@ -42,6 +51,7 @@ const BookingHistory = () => {
         }
       });
 
+      // Use authService for API calls with proper URL
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/v1/booking-history/?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`,

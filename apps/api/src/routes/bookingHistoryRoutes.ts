@@ -4,7 +4,6 @@ import BookingHistoryService, {
   BookingHistoryFilters, 
   PaginationOptions 
 } from '../services/bookingHistoryService';
-import { authenticateToken } from '../middleware/auth';
 import { requireAdmin, requireStaff } from '../middleware/enhancedAuth';
 
 const router = express.Router();
@@ -86,7 +85,7 @@ function requirePermission(action: string) {
 // ============================================
 // MIDDLEWARE - All routes require authentication
 // ============================================
-router.use(authenticateToken);
+// Note: Authentication is handled by validateApiKey middleware in app.ts
 
 // ============================================
 // HEALTH & INFO ENDPOINTS (Must come before /:id route!)

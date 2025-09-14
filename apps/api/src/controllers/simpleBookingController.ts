@@ -99,23 +99,23 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
       checkoutDate: new Date(dateInfo?.checkOut || dateInfo?.checkout || '2025-08-20'),
       numberOfNights: dateInfo?.nights || 1,
       
-      // Pricing information
-      totalAmount: pricing?.total || pricing?.totalAmount || paymentInfo?.finalAmount || 1000,
-      paidAmount: pricing?.total || pricing?.totalAmount || paymentInfo?.finalAmount || 1000,
+      // Pricing information - ใช้ finalAmount จาก breakdown ถ้ามี
+      totalAmount: pricing?.breakdown?.roomRate || pricing?.total || pricing?.totalAmount || 1000,
+      paidAmount: pricing?.breakdown?.finalAmount || pricing?.total || paymentInfo?.finalAmount || 1000,
       currency: pricing?.currency || 'THB',
       
       // Payment Details (from dynamic calculation)
-      baseAmount: paymentInfo?.baseAmount || pricing?.base || 1000,
+      baseAmount: pricing?.breakdown?.roomRate || paymentInfo?.baseAmount || pricing?.base || 1000,
       discountType: paymentInfo?.discountType || 'percentage',
-      discountAmount: paymentInfo?.discountAmount || 0,
+      discountAmount: pricing?.breakdown?.discount || paymentInfo?.discountAmount || 0,
       discountPercentage: paymentInfo?.discountPercentage || 0,
       serviceChargeRate: paymentInfo?.serviceChargeRate || 10,
-      serviceChargeAmount: paymentInfo?.serviceChargeAmount || 0,
+      serviceChargeAmount: pricing?.breakdown?.serviceCharge || paymentInfo?.serviceChargeAmount || 0,
       taxRate: paymentInfo?.taxRate || 7,
-      taxAmount: paymentInfo?.taxAmount || 0,
+      taxAmount: pricing?.breakdown?.tax || paymentInfo?.taxAmount || 0,
       commissionPercentage: paymentInfo?.commissionPercentage || 0,
-      commissionAmount: paymentInfo?.commissionAmount || 0,
-      additionalCharges: paymentInfo?.additionalCharges || 0,
+      commissionAmount: pricing?.breakdown?.commission || paymentInfo?.commissionAmount || 0,
+      additionalCharges: pricing?.breakdown?.additionalCharges || paymentInfo?.additionalCharges || 0,
       
       // Additional information
       specialRequests: specialRequests || '',
@@ -277,6 +277,16 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
         numChildren: 0,
         totalPrice: bookingData.totalAmount,
         finalAmount: bookingData.paidAmount,
+        
+        // Payment Breakdown Details
+        baseAmount: bookingData.baseAmount,
+        discountType: bookingData.discountType,
+        discountAmount: bookingData.discountAmount,
+        serviceChargeAmount: bookingData.serviceChargeAmount,
+        taxAmount: bookingData.taxAmount,
+        commissionAmount: bookingData.commissionAmount,
+        extraChargesAmount: bookingData.additionalCharges,
+        
         status: 'Confirmed',
         specialRequests: bookingData.specialRequests,
         source: bookingData.bookingSource
@@ -338,7 +348,7 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
         guestName: bookingData.guestName,
         checkinDate: bookingData.checkinDate.toISOString().split('T')[0],
         checkoutDate: bookingData.checkoutDate.toISOString().split('T')[0],
-        totalPrice: Number(bookingData.totalAmount),
+        totalPrice: Number(bookingData.paidAmount), // ใช้ finalAmount แทน totalAmount
         status: realBooking.status
       });
       console.log('✅ Booking notification sent successfully');
@@ -377,8 +387,16 @@ export const createSimpleBooking = async (req: Request, res: Response): Promise<
         },
         
         pricing: {
-          totalAmount: bookingData.totalAmount,
-          paidAmount: bookingData.paidAmount,
+          roomRate: bookingData.totalAmount,
+          finalAmount: bookingData.paidAmount,
+          breakdown: {
+            baseAmount: bookingData.baseAmount,
+            discountAmount: bookingData.discountAmount,
+            serviceChargeAmount: bookingData.serviceChargeAmount,
+            taxAmount: bookingData.taxAmount,
+            commissionAmount: bookingData.commissionAmount,
+            additionalCharges: bookingData.additionalCharges
+          },
           currency: bookingData.currency
         },
         

@@ -112,6 +112,8 @@ import BookingHistory from "./components/BookingHistory/BookingHistory";
 import BookingAnalytics from "./components/BookingHistory/BookingAnalytics";
 import ExpiredBookings from "./components/BookingHistory/ExpiredBookings";
 import ArchiveManagement from "./components/BookingHistory/ArchiveManagement";
+// NEW: Archive Settings Panel
+import ArchiveSettingsPanel from "./components/ArchiveSettingsPanel";
 
 const Routes = () => {
   return (
@@ -256,6 +258,9 @@ const Routes = () => {
       <Route exact path="/booking-analytics" element={<BookingAnalytics/>} />
       <Route exact path="/expired-bookings" element={<ExpiredBookings/>} />
       <Route exact path="/archive-management" element={<ArchiveManagement/>} />
+      
+      {/* NEW: Archive Settings */}
+      <Route exact path="/archive-settings" element={<ArchiveSettingsPanel/>} />
       
     </ReactRoutes>
   );

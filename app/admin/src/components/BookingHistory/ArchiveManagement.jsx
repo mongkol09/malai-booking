@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import bookingHistoryApi from '../../services/bookingHistoryApi';
 
 const ArchiveManagement = () => {
   const [archivedBookings, setArchivedBookings] = useState([]);
@@ -19,22 +20,11 @@ const ArchiveManagement = () => {
     manualArchived: 0
   });
 
-  // Get token from localStorage
-  const getToken = () => {
-    return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
-  };
-
   // Fetch archived bookings
   const fetchArchivedBookings = async (page = 1) => {
     try {
       setLoading(true);
-      const token = getToken();
       
-      if (!token) {
-        console.error('No authentication token found');
-        return;
-      }
-
       // Build query parameters
       const params = new URLSearchParams({
         page: page.toString(),
@@ -58,18 +48,7 @@ const ArchiveManagement = () => {
         params.append('date_to', dateRange.end);
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/v1/booking-history/?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await bookingHistoryApi.getBookingHistory(`?${params}`);
       
       if (result.success) {
         setArchivedBookings(result.data);
@@ -87,34 +66,44 @@ const ArchiveManagement = () => {
   // Fetch archive statistics
   const fetchArchiveStatistics = async () => {
     try {
-      const token = getToken();
+      const result = await bookingHistoryApi.getAnalyticsStatistics();
       
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/v1/booking-history/analytics`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
+      if (result.success && result.data) {
+        console.log('📊 Archive Statistics Response:', result.data);
         
-        if (result.success) {
-          // Calculate archive-specific statistics
-          const archivedData = result.data.recentActivity.filter(item => 
-            item.activity_type === 'archived'
-          );
-          
-          setStatistics({
-            totalArchived: archivedData.length,
-            totalRevenue: archivedData.reduce((sum, item) => sum + (item.revenue || 0), 0),
-            autoArchived: archivedData.filter(item => item.archive_reason === 'AUTO_EXPIRED').length,
-            manualArchived: archivedData.filter(item => item.archive_reason !== 'AUTO_EXPIRED').length
-          });
-        }
+        // Use the actual API response structure
+        const totalArchived = result.data.total_archived || 0;
+        const byReason = result.data.by_reason || [];
+        const recentActivity = result.data.recent_activity || [];
+        
+        // Calculate statistics from actual response
+        const totalRevenue = byReason.reduce((sum, item) => sum + (item.total_value || 0), 0);
+        
+        setStatistics({
+          totalArchived: totalArchived,
+          totalRevenue: totalRevenue,
+          autoArchived: byReason.find(r => r.reason === 'AUTO_EXPIRED')?.count || 0,
+          manualArchived: byReason.filter(r => r.reason !== 'AUTO_EXPIRED').reduce((sum, r) => sum + r.count, 0)
+        });
+      } else {
+        console.warn('⚠️ Invalid API response structure:', result);
+        // Set default values
+        setStatistics({
+          totalArchived: 0,
+          totalRevenue: 0,
+          autoArchived: 0,
+          manualArchived: 0
+        });
       }
     } catch (error) {
       console.error('Error fetching archive statistics:', error);
+      // Set default values on error
+      setStatistics({
+        totalArchived: 0,
+        totalRevenue: 0,
+        autoArchived: 0,
+        manualArchived: 0
+      });
     }
   };
 
@@ -125,20 +114,9 @@ const ArchiveManagement = () => {
     }
 
     try {
-      const token = getToken();
-      
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/v1/booking-history/archive/restore`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          booking_id: bookingId
-        })
-      });
+      const result = await bookingHistoryApi.restoreBooking(bookingId);
 
-      if (response.ok) {
+      if (result.success) {
         alert('Booking restored successfully!');
         fetchArchivedBookings(currentPage);
         fetchArchiveStatistics();
@@ -162,20 +140,9 @@ const ArchiveManagement = () => {
     }
 
     try {
-      const token = getToken();
-      
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/v1/booking-history/archive/delete`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          booking_id: bookingId
-        })
-      });
+      const result = await bookingHistoryApi.deleteBooking(bookingId);
 
-      if (response.ok) {
+      if (result.success) {
         alert('Booking permanently deleted!');
         fetchArchivedBookings(currentPage);
         fetchArchiveStatistics();

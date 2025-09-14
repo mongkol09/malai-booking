@@ -432,11 +432,11 @@ export const processCheckOut = async (req: Request, res: Response) => {
       
       console.log(`✅ Status validation passed: ${booking.status}`);
 
-      // 3. Update booking status to checked out
+      // 3. Update booking status to completed
       const updatedBooking = await tx.booking.update({
         where: { id },
         data: {
-          status: 'CheckedOut' as BookingStatus,
+          status: 'Completed' as BookingStatus,
           checkoutTime: new Date(),
           updatedAt: new Date()
         }

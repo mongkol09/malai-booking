@@ -24,14 +24,21 @@ export const validateApiKey = async (
     const apiKey = req.headers['x-api-key'] as string;
     
     if (apiKey) {
-      // Validate API key with new secure keys
+      // Validate API key with current environment keys
       const validApiKeys = [
-        'hotel-booking-api-key-2024', // Keep old key for compatibility
-        'dev-api-key-2024', // Keep old dev key
-        process.env.HOTEL_API_KEY,
-        process.env.ADMIN_API_KEY,
-        process.env.INTERNAL_API_SECRET
+        process.env.API_KEY, // Production API key
+        process.env.ADMIN_API_KEY, // Admin API key
+        process.env.API_KEY_DEV, // Development API key
+        process.env.API_KEY_TEST, // Test API key
+        process.env.API_KEY_INTERNAL, // Internal API key
+        process.env.API_KEY_ANALYTICS, // Analytics API key
+        process.env.API_KEY_ADMIN, // Admin API key
+        'hotel-booking-api-key-2024', // Legacy compatibility
+        'dev-api-key-2024' // Legacy dev key
       ].filter(Boolean); // Remove undefined values
+      
+      console.log('🔍 Validating API key:', apiKey.substring(0, 20) + '...');
+      console.log('🔑 Valid keys count:', validApiKeys.length);
       
       if (validApiKeys.includes(apiKey)) {
         // Create mock user for API key authentication
